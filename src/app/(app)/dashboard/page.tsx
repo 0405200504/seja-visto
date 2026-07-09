@@ -49,14 +49,14 @@ export default async function DashboardPage() {
 
   const [
     { data: modules },
-    { count: totalLessons },
+    { data: lessonCounts },
     { data: progressRows },
     { data: styleLooks },
     { data: favorites },
     { count: planDays },
   ] = await Promise.all([
     supabase.from("modules").select("*").order("order_index"),
-    supabase.from("lessons").select("*", { count: "exact", head: true }),
+    supabase.from("lessons").select("module_id"),
     supabase
       .from("user_progress")
       .select("module_id, lesson_id")
@@ -85,12 +85,12 @@ export default async function DashboardPage() {
     }
   }
 
+  const totalLessons = lessonCounts?.length ?? 0;
   const overallProgress = totalLessons
     ? Math.round((completedLessonIds.size / totalLessons) * 100)
     : 0;
 
   // Próximo módulo recomendado: o primeiro (em ordem) que ainda não foi concluído.
-  const { data: lessonCounts } = await supabase.from("lessons").select("module_id");
   const lessonsPerModule = new Map<string, number>();
   for (const l of lessonCounts ?? []) {
     lessonsPerModule.set(l.module_id, (lessonsPerModule.get(l.module_id) ?? 0) + 1);
@@ -131,7 +131,7 @@ export default async function DashboardPage() {
           </div>
           <Progress value={overallProgress} />
           <p className="mt-2 text-xs text-muted-2">
-            {completedLessonIds.size} de {totalLessons ?? 0} aulas concluídas · {planDays ?? 0}/7 dias do plano
+            {completedLessonIds.size} de {totalLessons} aulas concluídas · {planDays ?? 0}/7 dias do plano
           </p>
         </div>
       </section>

@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Layers, Sparkles } from "lucide-react";
@@ -6,6 +6,10 @@ import { requireProfile } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { STYLE_PROFILES, styleImages } from "@/lib/constants";
+
+export function generateStaticParams() {
+  return Object.keys(STYLE_PROFILES).map((styleSlug) => ({ styleSlug }));
+}
 
 export default async function EstiloDetailPage({
   params,
@@ -58,15 +62,21 @@ export default async function EstiloDetailPage({
       </div>
 
       {/* Galeria estilo lookbook */}
-      <div className="columns-2 gap-3 sm:columns-3 sm:gap-4 lg:columns-4 [&>img]:mb-3 sm:[&>img]:mb-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
         {images.map((src, i) => (
-          <img
+          <div
             key={src}
-            src={src}
-            alt={`${style.label} — referência ${i + 1}`}
-            loading={i < 4 ? "eager" : "lazy"}
-            className="w-full break-inside-avoid rounded-2xl border border-border object-cover transition-transform duration-300 hover:scale-[1.01]"
-          />
+            className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-border"
+          >
+            <Image
+              src={src}
+              alt={`${style.label} — referência ${i + 1}`}
+              fill
+              priority={i < 4}
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-cover object-top transition-transform duration-300 hover:scale-[1.02]"
+            />
+          </div>
         ))}
       </div>
     </div>

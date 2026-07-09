@@ -1,7 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-/** Capa do módulo com fallback editorial numerado. */
+/**
+ * Capa do módulo com fallback editorial numerado.
+ * O elemento pai precisa ter `position: relative` e proporção definida.
+ */
 export function ModuleCover({
   coverUrl,
   title,
@@ -14,13 +17,21 @@ export function ModuleCover({
   className?: string;
 }) {
   if (coverUrl) {
-    return <img src={coverUrl} alt={title} className={cn("size-full object-cover", className)} />;
+    return (
+      <Image
+        src={coverUrl}
+        alt={title}
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        className={cn("object-cover", className)}
+      />
+    );
   }
 
   return (
     <div
       className={cn(
-        "relative flex size-full items-end overflow-hidden bg-gradient-to-br from-surface-3 via-surface to-background p-5",
+        "absolute inset-0 flex items-end overflow-hidden bg-gradient-to-br from-surface-3 via-surface to-background p-5",
         className
       )}
     >

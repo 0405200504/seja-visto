@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowUpRight, Sparkles } from "lucide-react";
@@ -26,7 +26,7 @@ export default async function EstilosPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {ordered.map((style) => {
+        {ordered.map((style, i) => {
           const isYours = style.slug === userStyle;
           return (
             <Link
@@ -35,11 +35,13 @@ export default async function EstilosPage() {
               className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-card transition-all duration-300 hover:border-border-strong hover:shadow-glow"
             >
               <div className="relative aspect-[4/3] overflow-hidden">
-                <img
+                <Image
                   src={`/estilos/${style.slug}/01.jpg`}
                   alt={style.label}
-                  loading="lazy"
-                  className="size-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+                  fill
+                  priority={i < 3}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                 {isYours && (

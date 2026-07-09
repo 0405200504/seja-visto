@@ -1,28 +1,36 @@
-/* eslint-disable @next/next/no-img-element */
+import Image from "next/image";
 import { COLOR_SWATCHES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 /**
- * Imagem do look com fallback elegante: gradiente escuro + monograma,
- * na cor base do look, com aparência de lookbook editorial.
+ * Imagem do look (otimizada via next/image) com fallback elegante:
+ * gradiente escuro + monograma na cor base do look.
+ * O elemento pai precisa ter `position: relative` e proporção definida.
  */
 export function LookImage({
   imageUrl,
   title,
   baseColor,
+  sizes = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw",
+  priority = false,
   className,
 }: {
   imageUrl: string | null;
   title: string;
   baseColor: string;
+  sizes?: string;
+  priority?: boolean;
   className?: string;
 }) {
   if (imageUrl) {
     return (
-      <img
+      <Image
         src={imageUrl}
         alt={title}
-        className={cn("size-full object-cover", className)}
+        fill
+        sizes={sizes}
+        priority={priority}
+        className={cn("object-cover object-top", className)}
       />
     );
   }
@@ -37,7 +45,7 @@ export function LookImage({
 
   return (
     <div
-      className={cn("relative flex size-full items-center justify-center overflow-hidden", className)}
+      className={cn("absolute inset-0 flex items-center justify-center overflow-hidden", className)}
       style={{
         background: `linear-gradient(160deg, ${swatch}66 0%, #0c111a 55%, #06080c 100%)`,
       }}

@@ -49,8 +49,14 @@ export default async function LookDetailPage({
       <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-10">
         {/* Imagem */}
         <div className="overflow-hidden rounded-2xl border border-border shadow-card lg:sticky lg:top-10 lg:self-start">
-          <div className="aspect-[4/5]">
-            <LookImage imageUrl={look.image_url} title={look.title} baseColor={look.base_color} />
+          <div className="relative aspect-[4/5]">
+            <LookImage
+              imageUrl={look.image_url}
+              title={look.title}
+              baseColor={look.base_color}
+              sizes="(max-width: 1024px) 100vw, 45vw"
+              priority
+            />
           </div>
         </div>
 
