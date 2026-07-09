@@ -4,6 +4,17 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PATHS = ["/login", "/cadastro", "/recuperar-senha", "/auth"];
 
 export async function updateSession(request: NextRequest) {
+  // Sem as variáveis do Supabase, avisa claramente em vez de estourar um 500 opaco.
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return new NextResponse(
+      "Configuração ausente: defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY nas variáveis de ambiente (Vercel → Settings → Environment Variables) e faça o redeploy.",
+      { status: 500, headers: { "content-type": "text/plain; charset=utf-8" } }
+    );
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
