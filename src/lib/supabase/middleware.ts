@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/cadastro", "/recuperar-senha", "/auth"];
+const PUBLIC_PATHS = ["/login", "/cadastro", "/recuperar-senha", "/auth", "/api"];
 
 export async function updateSession(request: NextRequest) {
   // Sem as variáveis do Supabase, avisa claramente em vez de estourar um 500 opaco.

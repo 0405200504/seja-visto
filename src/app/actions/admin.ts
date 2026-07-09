@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
+import { ALL_ENTITLEMENT_KEYS } from "@/lib/bonuses";
 import {
   OCCASIONS,
   STYLES,
@@ -181,4 +182,65 @@ export async function deleteWardrobeItem(formData: FormData) {
   await supabase.from("wardrobe_items").delete().eq("id", String(formData.get("id")));
   revalidatePath("/guarda-roupa");
   revalidatePath("/admin/pecas");
+}
+
+/* ---------- Vendas (Cakto) ---------- */
+
+export async function upsertCaktoMapping(formData: FormData) {
+  const { supabase } = await requireAdmin();
+
+  const caktoId = String(formData.get("cakto_id") ?? "").trim();
+  const entitlement = String(formData.get("entitlement") ?? "").trim();
+  const label = text(formData.get("label"));
+
+  if (!caktoId || !ALL_ENTITLEMENT_KEYS.includes(entitlement)) {
+    throw new Error("Informe o ID do produto na Cakto e escolha um produto/bônus válido.");
+  }
+
+  const { error } = await supabase
+    .from("cakto_product_map")
+    .upsert({ cakto_id: caktoId, entitlement, label });
+
+  if (error) throw new Error(`Erro ao salvar mapeamento: ${error.message}`);
+  revalidatePath("/admin/vendas");
+}
+
+export async function deleteCaktoMapping(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  await supabase
+    .from("cakto_product_map")
+    .delete()
+    .eq("cakto_id", String(formData.get("cakto_id")));
+  revalidatePath("/admin/vendas");
+}
+
+export async function grantEntitlementManually(formData: FormData) {
+  const { supabase } = await requireAdmin();
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const entitlement = String(formData.get("entitlement") ?? "").trim();
+
+  if (!email || !ALL_ENTITLEMENT_KEYS.includes(entitlement)) {
+    throw new Error("Informe o e-mail do aluno e escolha um produto/bônus válido.");
+  }
+
+  const { data: profile } = await supabase
+    .from("users_profile")
+    .select("user_id")
+    .ilike("email", email)
+    .maybeSingle();
+
+  if (!profile) {
+    throw new Error(`Nenhum aluno encontrado com o e-mail ${email}.`);
+  }
+
+  const { error } = await supabase
+    .from("user_entitlements")
+    .upsert(
+      { user_id: profile.user_id, entitlement, source: "admin:manual" },
+      { onConflict: "user_id,entitlement", ignoreDuplicates: true }
+    );
+
+  if (error) throw new Error(`Erro ao liberar acesso: ${error.message}`);
+  revalidatePath("/admin/vendas");
 }

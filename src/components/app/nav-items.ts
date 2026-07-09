@@ -9,6 +9,7 @@ import {
   User,
   Palette,
   Tag,
+  Gift,
   type LucideIcon,
 } from "lucide-react";
 
@@ -24,6 +25,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/metodo", label: "Método", icon: BookOpen, mobile: true },
   { href: "/combinacoes", label: "Combinações", icon: Layers, mobile: true },
   { href: "/guias", label: "Guias", icon: BookMarked, mobile: true },
+  { href: "/bonus", label: "Bônus", icon: Gift },
   { href: "/estilos", label: "Estilos", icon: Palette },
   { href: "/mais-procurados", label: "Mais Procurados", icon: Tag },
   { href: "/guarda-roupa", label: "Guarda-Roupa", icon: Shirt },
