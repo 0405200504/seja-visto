@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { BASE_ENTITLEMENT } from "@/lib/bonuses";
 
@@ -27,8 +28,38 @@ function generatePassword(): string {
 }
 
 async function sendEmail(to: string, subject: string, html: string) {
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, "");
+
+  // Caminho principal: SMTP do Gmail (sem depender de domínio verificado)
+  if (gmailUser && gmailPass) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: { user: gmailUser, pass: gmailPass },
+      });
+      await transporter.sendMail({
+        from: process.env.EMAIL_FROM ?? `Manual Prático do Outfit <${gmailUser}>`,
+        to,
+        subject,
+        html,
+      });
+      return { sent: true, via: "gmail" };
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : String(err);
+      const fallback = await sendViaResend(to, subject, html);
+      return fallback.sent ? { ...fallback, gmailError: reason } : { sent: false, reason };
+    }
+  }
+
+  return sendViaResend(to, subject, html);
+}
+
+async function sendViaResend(to: string, subject: string, html: string) {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return { sent: false, reason: "RESEND_API_KEY ausente" };
+  if (!apiKey) return { sent: false, reason: "GMAIL_APP_PASSWORD e RESEND_API_KEY ausentes" };
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -37,7 +68,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: process.env.EMAIL_FROM ?? "Manual Prático do Outfit <onboarding@resend.dev>",
+      from: process.env.RESEND_FROM ?? "Manual Prático do Outfit <onboarding@resend.dev>",
       to: [to],
       subject,
       html,
@@ -48,7 +79,7 @@ async function sendEmail(to: string, subject: string, html: string) {
   if (!res.ok) {
     return { sent: false, reason: `Resend ${res.status}: ${(await res.text()).slice(0, 200)}` };
   }
-  return { sent: true };
+  return { sent: true, via: "resend" };
 }
 
 function emailLayout(content: string, siteUrl: string): string {

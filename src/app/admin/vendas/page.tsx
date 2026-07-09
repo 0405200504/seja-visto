@@ -33,7 +33,9 @@ export default async function AdminVendasPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://SEU-DOMINIO";
   const hasSecret = Boolean(process.env.CAKTO_WEBHOOK_SECRET);
   const hasServiceRole = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
-  const hasResend = Boolean(process.env.RESEND_API_KEY);
+  const hasEmail = Boolean(
+    (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) || process.env.RESEND_API_KEY
+  );
 
   return (
     <div className="animate-fade-up space-y-10">
@@ -65,8 +67,8 @@ export default async function AdminVendasPage() {
           <Badge variant={hasServiceRole ? "success" : "outline"}>
             SUPABASE_SERVICE_ROLE_KEY {hasServiceRole ? "configurada" : "pendente"}
           </Badge>
-          <Badge variant={hasResend ? "success" : "outline"}>
-            RESEND_API_KEY {hasResend ? "configurada" : "pendente"}
+          <Badge variant={hasEmail ? "success" : "outline"}>
+            Envio de e-mail {hasEmail ? "configurado" : "pendente"}
           </Badge>
         </div>
       </section>
