@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import {
   ArrowRight,
+  BookMarked,
   BookOpen,
   CalendarCheck,
   Heart,
@@ -34,6 +35,7 @@ const GOAL_TO_OCCASION: Record<string, string> = {
 const SHORTCUTS = [
   { href: "/metodo", label: "Começar o método", icon: BookOpen },
   { href: "/combinacoes", label: "Ver combinações", icon: Layers },
+  { href: "/guias", label: "Guias de estilo", icon: BookMarked },
   { href: "/estilos", label: "Os 9 estilos", icon: Palette },
   { href: "/mais-procurados", label: "Mais procurados", icon: Tag },
   { href: "/guarda-roupa", label: "Guarda-roupa essencial", icon: Shirt },
