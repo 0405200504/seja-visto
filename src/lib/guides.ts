@@ -6,7 +6,6 @@ import {
   Zap,
   Footprints,
   Shirt,
-  Tag,
   Grid3x3,
   Store,
   Sparkles,

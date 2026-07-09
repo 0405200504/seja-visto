@@ -30,13 +30,18 @@ export function MeasureForm() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
 
+  // Carrega medidas salvas após a montagem (assíncrono: evita mismatch de
+  // hidratação e renders em cascata).
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setValues(JSON.parse(stored));
-    } catch {
-      // localStorage indisponível — segue sem persistência
-    }
+    const frame = requestAnimationFrame(() => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) setValues(JSON.parse(stored));
+      } catch {
+        // localStorage indisponível — segue sem persistência
+      }
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   function save() {
