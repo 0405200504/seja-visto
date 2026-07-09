@@ -177,7 +177,7 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://seja-visto.vercel.app";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.vercel.app";
 
   // Coleta todos os IDs de produto/oferta presentes no payload — cobre tanto
   // um evento por produto quanto a compra inteira (produto + order bumps) num
