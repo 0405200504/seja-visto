@@ -1,4 +1,4 @@
-# Plano Pronto de Estilo
+# Manual Prático do Outfit (MPO)
 
 Plataforma premium de estilo masculino do expert **Raphael Pereira** — área de membros com método em módulos, lookbook com filtros, guarda-roupa essencial, plano de ação de 7 dias e painel administrativo.
 

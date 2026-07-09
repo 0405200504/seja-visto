@@ -14,8 +14,8 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: {
-    default: "Plano Pronto de Estilo",
-    template: "%s · Plano Pronto de Estilo",
+    default: "Manual Prático do Outfit (MPO)",
+    template: "%s · Manual Prático do Outfit",
   },
   description:
     "A plataforma de estilo masculino de Raphael Pereira. Fundamentos, combinações prontas, guarda-roupa inteligente e plano de ação.",

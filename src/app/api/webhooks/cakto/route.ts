@@ -37,7 +37,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: process.env.EMAIL_FROM ?? "Plano Pronto de Estilo <onboarding@resend.dev>",
+      from: process.env.EMAIL_FROM ?? "Manual Prático do Outfit <onboarding@resend.dev>",
       to: [to],
       subject,
       html,
@@ -51,17 +51,17 @@ async function sendEmail(to: string, subject: string, html: string) {
   return { sent: true };
 }
 
-function emailLayout(content: string): string {
+function emailLayout(content: string, siteUrl: string): string {
   return `
   <div style="background:#06080c;padding:32px 16px;font-family:Arial,Helvetica,sans-serif">
     <div style="max-width:520px;margin:0 auto;background:#0c111a;border:1px solid #1e2938;border-radius:16px;padding:32px">
       <div style="margin-bottom:24px">
-        <span style="display:inline-block;background:#2f6bff;color:#fff;font-weight:bold;border-radius:8px;padding:6px 10px;font-size:14px">PE</span>
-        <span style="color:#f4f6f9;font-size:15px;font-weight:bold;margin-left:8px">Plano Pronto de Estilo</span>
+        <img src="${siteUrl}/logo-mpo-192.png" alt="MPO" width="34" height="34" style="border-radius:8px;vertical-align:middle" />
+        <span style="color:#f4f6f9;font-size:15px;font-weight:bold;margin-left:8px;vertical-align:middle">Manual Prático do Outfit</span>
       </div>
       ${content}
       <p style="color:#5c677a;font-size:12px;margin-top:28px;border-top:1px solid #1e2938;padding-top:16px">
-        Você recebeu este e-mail porque realizou uma compra do Plano Pronto de Estilo.
+        Você recebeu este e-mail porque realizou uma compra do Manual Prático do Outfit.
       </p>
     </div>
   </div>`;
@@ -69,7 +69,8 @@ function emailLayout(content: string): string {
 
 function welcomeEmail(name: string, email: string, password: string, siteUrl: string): string {
   const firstName = name.split(" ")[0] || "aluno";
-  return emailLayout(`
+  return emailLayout(
+    `
     <h1 style="color:#f4f6f9;font-size:22px;margin:0 0 12px">Bem-vindo, ${firstName}! 🎉</h1>
     <p style="color:#8b96a8;font-size:14px;line-height:1.6;margin:0 0 20px">
       Sua compra foi aprovada e seu acesso à plataforma já está liberado.
@@ -88,12 +89,15 @@ function welcomeEmail(name: string, email: string, password: string, siteUrl: st
       Dica: você pode trocar sua senha a qualquer momento em Perfil → depois de entrar.
       No primeiro acesso, responda o quiz de estilo — ele personaliza toda a sua experiência.
     </p>
-  `);
+  `,
+    siteUrl
+  );
 }
 
 function bonusEmail(name: string, bonusLabel: string, siteUrl: string): string {
   const firstName = name.split(" ")[0] || "aluno";
-  return emailLayout(`
+  return emailLayout(
+    `
     <h1 style="color:#f4f6f9;font-size:22px;margin:0 0 12px">Bônus liberado, ${firstName}! 🔓</h1>
     <p style="color:#8b96a8;font-size:14px;line-height:1.6;margin:0 0 20px">
       Sua compra foi aprovada e o bônus <strong style="color:#f4f6f9">${bonusLabel}</strong>
@@ -102,7 +106,9 @@ function bonusEmail(name: string, bonusLabel: string, siteUrl: string): string {
     <a href="${siteUrl}/bonus" style="display:block;background:#2f6bff;color:#fff;text-decoration:none;text-align:center;font-weight:bold;font-size:15px;border-radius:12px;padding:14px">
       Ver meus bônus
     </a>
-  `);
+  `,
+    siteUrl
+  );
 }
 
 export async function POST(request: Request) {
@@ -247,7 +253,7 @@ export async function POST(request: Request) {
   if (createdNow && password) {
     emailResult = await sendEmail(
       email,
-      "Seu acesso ao Plano Pronto de Estilo chegou 🎉",
+      "Seu acesso ao Manual Prático do Outfit chegou 🎉",
       welcomeEmail(name, email, password, siteUrl)
     );
   } else if (bonusLabels.length > 0) {

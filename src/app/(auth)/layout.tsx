@@ -13,7 +13,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
         {children}
         <p className="mt-8 text-center text-xs text-muted-2">
-          Plano Pronto de Estilo · por Raphael Pereira
+          Manual Prático do Outfit · por Raphael Pereira
         </p>
       </div>
     </div>
