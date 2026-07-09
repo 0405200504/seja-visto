@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# fotos originais (já otimizadas em public/)
+/Mais procurados/
+/casual/
+/streetwear/
+/workwear/
+/smartcasual/
+/old money/
+/preppy/
+/minimalista/
+/gorpcore/
+/vintage/
