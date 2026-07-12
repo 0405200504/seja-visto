@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Layers } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { PageHeader } from "@/components/app/page-header";
-import { LookFilters } from "@/components/app/look-filters";
+import { LookFilters, type LookFacet } from "@/components/app/look-filters";
 import { LookCard } from "@/components/app/look-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { Look } from "@/lib/types";
@@ -33,13 +33,17 @@ export default async function CombinacoesPage({
     }
   }
 
-  const [{ data: looks }, { data: favorites }] = await Promise.all([
+  const [{ data: looks }, { data: favorites }, { data: facets }] = await Promise.all([
     query.returns<Look[]>(),
     supabase
       .from("user_favorites")
       .select("look_id")
       .eq("user_id", user.id)
       .eq("kind", "favorite"),
+    supabase
+      .from("looks")
+      .select("occasion, style, climate, level, base_color")
+      .returns<LookFacet[]>(),
   ]);
 
   const favoriteIds = new Set((favorites ?? []).map((f) => f.look_id));
@@ -53,7 +57,7 @@ export default async function CombinacoesPage({
       />
 
       <div className="mb-8 rounded-2xl border border-border bg-surface/60 p-4 sm:p-5">
-        <LookFilters />
+        <LookFilters facets={facets ?? []} />
       </div>
 
       {looks && looks.length > 0 ? (

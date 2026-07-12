@@ -36,7 +36,7 @@ const SHORTCUTS = [
   { href: "/metodo", label: "Começar o método", icon: BookOpen },
   { href: "/combinacoes", label: "Ver combinações", icon: Layers },
   { href: "/guias", label: "Guias de estilo", icon: BookMarked },
-  { href: "/estilos", label: "Os 9 estilos", icon: Palette },
+  { href: "/estilos", label: `Os ${Object.keys(STYLES).length} estilos`, icon: Palette },
   { href: "/mais-procurados", label: "Mais procurados", icon: Tag },
   { href: "/guarda-roupa", label: "Guarda-roupa essencial", icon: Shirt },
   { href: "/favoritos", label: "Favoritos", icon: Heart },
