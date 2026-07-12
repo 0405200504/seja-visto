@@ -5,7 +5,7 @@ import { ArrowUpRight, Sparkles } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { PageHeader } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
-import { STYLE_PROFILES } from "@/lib/constants";
+import { STYLE_PROFILES, STYLE_MIXING } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "Estilos" };
 
@@ -21,7 +21,7 @@ export default async function EstilosPage() {
     <div className="animate-fade-up">
       <PageHeader
         eyebrow="Referências"
-        title="Os 9 estilos"
+        title={`Os ${Object.keys(STYLE_PROFILES).length} estilos`}
         description="Explore cada universo de estilo com referências visuais. O seu resultado do quiz é só o ponto de partida — todos estão liberados."
       />
 
@@ -65,6 +65,23 @@ export default async function EstilosPage() {
           );
         })}
       </div>
+
+      <section className="mt-10 rounded-2xl border border-border bg-surface p-6 shadow-card sm:p-8">
+        <h2 className="font-display text-xl font-bold sm:text-2xl">{STYLE_MIXING.title}</h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted">{STYLE_MIXING.intro}</p>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+          {STYLE_MIXING.examples.map((ex) => (
+            <li
+              key={ex.mix}
+              className="rounded-xl border border-border bg-surface-2 px-4 py-3"
+            >
+              <p className="text-sm font-semibold">{ex.mix}</p>
+              <p className="mt-0.5 text-xs text-muted">{ex.example}</p>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-5 text-sm leading-relaxed text-muted">{STYLE_MIXING.outro}</p>
+      </section>
     </div>
   );
 }

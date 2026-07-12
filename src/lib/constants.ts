@@ -17,7 +17,10 @@ export const STYLES: Record<string, string> = {
   preppy: "Preppy",
   minimalista: "Minimalista",
   gorpcore: "Gorpcore",
-  vintage: "Vintage",
+  vintage: "Vintage / Y2K",
+  techwear: "Techwear",
+  skater: "Skater",
+  quietluxury: "Quiet Luxury",
 };
 
 export type StyleProfile = {
@@ -42,20 +45,20 @@ export const STYLE_PROFILES: Record<string, StyleProfile> = {
   streetwear: {
     slug: "streetwear",
     label: "Streetwear",
-    tagline: "Atitude urbana com identidade",
+    tagline: "O estilo urbano mais popular",
     description:
-      "Volumes amplos, referências de rua e peças statement. Boxy tees, calças largas e sneakers marcantes — presença e autenticidade em primeiro lugar.",
-    keyPieces: ["Boxy/oversized tee", "Baggy jeans ou cargo", "Chunky sneakers", "Boné"],
+      "Oversized, camisetas gráficas, hoodies, sneakers, jerseys, bonés e peças inspiradas no skate, hip-hop e basquete.",
+    keyPieces: ["Oversized tee gráfica", "Hoodie", "Jersey", "Sneakers e boné"],
     imageCount: 10,
   },
   workwear: {
     slug: "workwear",
     label: "Workwear",
-    tagline: "Robusto, funcional e masculino",
+    tagline: "Inspirado em uniformes de trabalho",
     description:
-      "Inspirado no vestuário de trabalho americano: jaquetas utilitárias, tecidos resistentes, tons terrosos e botas. Estética durável, com textura e história.",
-    keyPieces: ["Jaqueta utilitária/overshirt", "Calça de sarja robusta", "Bota de trabalho", "Camiseta pesada"],
-    imageCount: 10,
+      "Jeans robustos, carpenter pants, jaquetas de lona, botas e tecidos resistentes. Estética durável, com textura e história.",
+    keyPieces: ["Jaqueta de lona", "Carpenter pants", "Jeans robusto", "Botas"],
+    imageCount: 19,
   },
   smartcasual: {
     slug: "smartcasual",
@@ -69,11 +72,11 @@ export const STYLE_PROFILES: Record<string, StyleProfile> = {
   oldmoney: {
     slug: "oldmoney",
     label: "Old Money",
-    tagline: "Elegância discreta e atemporal",
+    tagline: "Clássico e sofisticado",
     description:
-      "Luxo silencioso: cortes clássicos, tecidos nobres, paleta sóbria e nenhum logo à vista. Navy, caramelo e off-white em peças que atravessam décadas.",
-    keyPieces: ["Blazer clássico", "Polo de malha", "Calça de alfaiataria", "Mocassim de couro"],
-    imageCount: 12,
+      "Visual clássico e sofisticado com polos, tricôs, camisas de linho, alfaiataria e mocassins. Hoje costuma ser misturado com tênis e peças casuais.",
+    keyPieces: ["Polo ou tricô", "Camisa de linho", "Calça de alfaiataria", "Mocassim"],
+    imageCount: 22,
   },
   preppy: {
     slug: "preppy",
@@ -89,28 +92,72 @@ export const STYLE_PROFILES: Record<string, StyleProfile> = {
     label: "Minimalista",
     tagline: "Menos peças, mais intenção",
     description:
-      "Paleta neutra, linhas limpas e silhueta impecável. Cada peça é escolhida com critério — o luxo está no corte e no tecido, não nos detalhes.",
-    keyPieces: ["Camiseta premium neutra", "Calça reta de alfaiataria", "Tênis minimalista", "Sobretudo limpo"],
-    imageCount: 15,
+      "Peças limpas, poucas cores, sem excesso de logos. Caimento e qualidade dos materiais são o destaque.",
+    keyPieces: ["Camiseta premium neutra", "Calça reta limpa", "Tênis minimalista", "Sobretudo limpo"],
+    imageCount: 24,
   },
   gorpcore: {
     slug: "gorpcore",
     label: "Gorpcore",
-    tagline: "Técnico, outdoor e urbano",
+    tagline: "Estética outdoor no dia a dia",
     description:
-      "Peças técnicas de trilha usadas na cidade: parkas impermeáveis, fleeces, tênis de trail e utilidade em cada detalhe. Conforto extremo com estética funcional.",
-    keyPieces: ["Parka/shell técnica", "Fleece", "Calça técnica ou cargo", "Tênis de trail"],
-    imageCount: 15,
+      "Estética outdoor aplicada ao dia a dia. Fleeces, windbreakers, cargos, hiking shoes e marcas de montanhismo.",
+    keyPieces: ["Fleece", "Windbreaker", "Cargo", "Hiking shoes"],
+    imageCount: 23,
   },
   vintage: {
     slug: "vintage",
-    label: "Vintage",
-    tagline: "Peças com história",
+    label: "Vintage / Y2K",
+    tagline: "Referências dos anos 90 e 2000",
     description:
-      "Referências das décadas passadas: lavagens desbotadas, jaquetas retrô, camisetas gráficas antigas e sneakers clássicos. Um estilo com alma e personalidade.",
-    keyPieces: ["Trucker jacket", "Camiseta gráfica retrô", "Jeans reto de lavagem clara", "Retro sneakers"],
-    imageCount: 16,
+      "Mistura referências dos anos 90 e 2000: jerseys, denim lavado, jorts, track jackets, óculos coloridos, acessórios e peças retrô.",
+    keyPieces: ["Jersey", "Denim lavado e jorts", "Track jacket", "Óculos e acessórios retrô"],
+    imageCount: 26,
   },
+  techwear: {
+    slug: "techwear",
+    label: "Techwear",
+    tagline: "Moda funcional e futurista",
+    description:
+      "Moda funcional e futurista. Nylon, bolsos utilitários, tecidos impermeáveis, modelagens técnicas e predominância do preto.",
+    keyPieces: ["Shell impermeável", "Calça técnica com bolsos", "Peças em nylon", "Base toda preta"],
+    imageCount: 9,
+  },
+  skater: {
+    slug: "skater",
+    label: "Skater",
+    tagline: "Cultura do skate dos anos 90 e 2000",
+    description:
+      "Camisetas largas, jeans baggy, tênis de skate, moletons, gorros e forte influência da cultura do skate dos anos 90 e 2000.",
+    keyPieces: ["Camiseta larga", "Baggy jeans", "Tênis de skate", "Moletom e gorro"],
+    imageCount: 10,
+  },
+  quietluxury: {
+    slug: "quietluxury",
+    label: "Quiet Luxury",
+    tagline: "Sofisticação sem ostentação",
+    description:
+      "Luxo discreto: materiais premium, paleta neutra, cortes impecáveis e ausência de logos chamativos.",
+    keyPieces: ["Tricô premium", "Alfaiataria impecável", "Paleta neutra", "Couro discreto"],
+    imageCount: 8,
+  },
+};
+
+/* ---------- Misturando estilos ---------- */
+
+export const STYLE_MIXING = {
+  title: "Hoje, as pessoas normalmente misturam estilos",
+  intro:
+    "É raro alguém se vestir seguindo apenas um estilo. A maioria combina referências. Alguns exemplos:",
+  examples: [
+    { mix: "Streetwear + Workwear", example: "Corteiz, Carhartt WIP" },
+    { mix: "Streetwear + Y2K", example: "baggy jeans + jersey + sneakers retrô" },
+    { mix: "Minimalista + Quiet Luxury", example: "The Row, Lemaire, Auralee" },
+    { mix: "Gorpcore + Techwear", example: "Arc'teryx + Salomon" },
+    { mix: "Old Money + Streetwear", example: "alfaiataria ampla com tênis e boné" },
+  ],
+  outro:
+    "Na cena de moda masculina atual, especialmente entre criadores de conteúdo, atletas e artistas, o streetwear continua sendo a base, enquanto workwear, Y2K, gorpcore e minimalismo são as influências que mais aparecem para construir uma identidade própria.",
 };
 
 /** Caminhos das fotos de um estilo em public/estilos/<slug>/NN.jpg */
