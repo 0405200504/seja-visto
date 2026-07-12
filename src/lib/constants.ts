@@ -49,7 +49,7 @@ export const STYLE_PROFILES: Record<string, StyleProfile> = {
     description:
       "Oversized, camisetas gráficas, hoodies, sneakers, jerseys, bonés e peças inspiradas no skate, hip-hop e basquete.",
     keyPieces: ["Oversized tee gráfica", "Hoodie", "Jersey", "Sneakers e boné"],
-    imageCount: 10,
+    imageCount: 19,
   },
   workwear: {
     slug: "workwear",
