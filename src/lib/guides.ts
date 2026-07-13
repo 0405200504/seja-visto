@@ -427,7 +427,7 @@ export const GUIDES: Guide[] = [
         kind: "text",
         body: [
           "3 partes de cima × 3 partes de baixo × 3 calçados = 27 combinações diferentes. Essa é a mágica do guarda-roupa cápsula: quando TODAS as peças conversam entre si, cada item novo multiplica (e não soma) suas opções.",
-          "Escolhemos as 9 peças abaixo porque cada uma combina com TODAS as outras — não existe combinação proibida entre elas. Use o montador para explorar as 27 e descobrir as que mais têm a ver com você.",
+          "Escolhemos as 9 peças abaixo porque cada uma combina com TODAS as outras — não existe combinação proibida entre elas. Use o montador para explorar as 27 e descobrir as que mais têm a ver com você. Depois, preencha a tabela com as SUAS 9 peças e monte os 27 outfits com o que já está no seu guarda-roupa.",
         ],
       },
       {

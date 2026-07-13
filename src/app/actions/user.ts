@@ -128,6 +128,30 @@ export async function saveDayNotes(day: number, notes: string) {
   revalidatePath("/plano-de-acao");
 }
 
+export type CapsulePieces = { tops: string[]; bottoms: string[]; shoes: string[] };
+
+export async function saveCapsule(pieces: CapsulePieces): Promise<{ error?: string }> {
+  const { supabase, user } = await requireUser();
+
+  const clean = (arr: string[]) =>
+    Array.from({ length: 3 }, (_, i) => (arr[i] ?? "").trim().slice(0, 60));
+
+  const { error } = await supabase.from("user_capsule").upsert({
+    user_id: user.id,
+    tops: clean(pieces.tops),
+    bottoms: clean(pieces.bottoms),
+    shoes: clean(pieces.shoes),
+    updated_at: new Date().toISOString(),
+  });
+
+  if (error) {
+    return { error: "Não foi possível salvar agora. Tente novamente em instantes." };
+  }
+
+  revalidatePath("/guias/monte-27-outfits-com-9-pecas");
+  return {};
+}
+
 export async function updateProfileName(formData: FormData) {
   const { supabase, user } = await requireUser();
   const name = String(formData.get("name") ?? "").trim();

@@ -13,12 +13,6 @@ export function generateStaticParams() {
   return GUIDES.map((g) => ({ guideSlug: g.slug }));
 }
 
-const INTERACTIVE = {
-  outfits: OutfitBuilder,
-  cores: ColorMixer,
-  medidas: MeasureForm,
-} as const;
-
 export default async function GuiaPage({
   params,
 }: {
@@ -28,9 +22,21 @@ export default async function GuiaPage({
   const guide = getGuide(guideSlug);
   if (!guide) notFound();
 
-  await requireProfile();
+  const { supabase, user } = await requireProfile();
 
-  const Interactive = guide.interactive ? INTERACTIVE[guide.interactive.kind] : null;
+  let interactive: React.ReactNode = null;
+  if (guide.interactive?.kind === "outfits") {
+    const { data: capsule } = await supabase
+      .from("user_capsule")
+      .select("tops, bottoms, shoes")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    interactive = <OutfitBuilder capsule={capsule} />;
+  } else if (guide.interactive?.kind === "cores") {
+    interactive = <ColorMixer />;
+  } else if (guide.interactive?.kind === "medidas") {
+    interactive = <MeasureForm />;
+  }
 
   return (
     <div className="animate-fade-up mx-auto max-w-3xl">
@@ -60,7 +66,7 @@ export default async function GuiaPage({
         {guide.sections.map((section, i) => (
           <div key={i} className="space-y-10">
             <Section section={section} />
-            {Interactive && guide.interactive?.after === i && <Interactive />}
+            {guide.interactive?.after === i && interactive}
           </div>
         ))}
       </div>
