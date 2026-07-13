@@ -13,7 +13,6 @@ const PARAM_TO_COLUMN: Record<string, string> = {
   ocasiao: "occasion",
   estilo: "style",
   clima: "climate",
-  nivel: "level",
   cor: "base_color",
 };
 
@@ -53,7 +52,7 @@ export default async function CombinacoesPage({
       <PageHeader
         eyebrow="Lookbook"
         title="Combinações"
-        description="Looks prontos para copiar. Filtre por ocasião, estilo, clima, nível e cor base."
+        description="Looks prontos para copiar. Filtre por ocasião, estilo, clima e cor base."
       />
 
       <div className="mb-8 rounded-2xl border border-border bg-surface/60 p-4 sm:p-5">

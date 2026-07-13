@@ -339,17 +339,28 @@ export type MostWantedItem = {
 export const MOST_WANTED: MostWantedItem[] = [
   { slug: "boxy-tee", name: "Boxy tee", knownAs: "Camiseta larga e quadrada", description: "Corte amplo e reto, mais curto no comprimento — a silhueta quadrada típica do streetwear." },
   { slug: "oversized-tee", name: "Oversized tee", knownAs: "Camiseta larga", description: "Camiseta em tamanho proposital acima do seu: ombros caídos e caimento solto, sem parecer emprestada." },
+  { slug: "slim-tee", name: "Slim tee", knownAs: "Camiseta justa", description: "Corte ajustado que acompanha o corpo sem apertar — linhas limpas que valorizam quem treina." },
+  { slug: "regata-machao", name: "Regata machão", knownAs: "Camiseta sem manga", description: "Regata de cavas largas e caimento solto — a peça sem manga do verão, das quadras e do street." },
+  { slug: "double-sleeve-tee", name: "Double sleeve tee", knownAs: "Camiseta com manga comprida", description: "Duas camisetas em uma: manga curta sobreposta à manga longa — o layering pronto herdado do skate dos anos 2000." },
   { slug: "baggy-jeans", name: "Baggy jeans", knownAs: "Calça jeans larga", description: "Jeans de pernas amplas do quadril ao tornozelo, herança dos anos 90 e do skate." },
   { slug: "cargo-pants", name: "Cargo pants", knownAs: "Calça com bolsos laterais", description: "Calça utilitária com bolsos grandes nas laterais — funcional e cheia de atitude." },
   { slug: "parachute-pants", name: "Parachute pants", knownAs: "Calça larga estilo paraquedas", description: "Calça volumosa de tecido leve (geralmente nylon) com ajustes de cordão — silhueta ampla e fluida." },
+  { slug: "calca-alfaiataria", name: "Calça de alfaiataria", knownAs: "Calça social", description: "A 'calça social' repaginada: tecido plano, caimento fluido e pregas — elegante até com tênis." },
+  { slug: "calca-flare", name: "Calça flare", knownAs: "Calça boca de sino", description: "Ajustada na coxa e abrindo do joelho para baixo — a boca de sino dos anos 70 de volta ao jogo." },
   { slug: "jorts", name: "Jorts", knownAs: "Bermuda jeans larga", description: "Jeans + shorts: a bermuda jeans de corte largo e comprimento abaixo do joelho." },
+  { slug: "mesh-shorts", name: "Mesh shorts", knownAs: "Short de basquete", description: "O short de tela respirável herdado das quadras — par natural do jersey e dos looks de verão." },
   { slug: "jersey", name: "Football jersey", knownAs: "Camiseta de time", description: "Camisa de futebol usada como peça de estilo — vintage ou atual, dentro ou fora do estádio." },
   { slug: "bomber-jacket", name: "Bomber jacket", knownAs: "Jaqueta curta arredondada", description: "Jaqueta de aviador: curta, com punhos e barra em ribana, silhueta arredondada." },
   { slug: "trucker-jacket", name: "Trucker jacket", knownAs: "Jaqueta jeans clássica", description: "A jaqueta jeans tradicional de corte reto, botões frontais e bolsos no peito." },
+  { slug: "biker-jacket", name: "Biker jacket", knownAs: "Jaqueta de rockeiro", description: "A jaqueta de couro com zíper diagonal e lapelas — atitude rocker instantânea em qualquer look." },
   { slug: "chunky-sneakers", name: "Chunky sneakers", knownAs: "Tênis grandão", description: "Tênis de sola volumosa e formas exageradas — presença máxima nos pés." },
   { slug: "retro-sneakers", name: "Retro sneakers", knownAs: "Tênis com estética retrô", description: "Modelos clássicos das décadas de 70–90 (ou releituras): perfil baixo e visual atemporal." },
+  { slug: "retro-runner", name: "Retro runner", knownAs: "Tênis de corrida", description: "O tênis de corrida vintage: perfil fino, entressola de espuma e cores retrô das pistas dos anos 70–90." },
+  { slug: "work-boot", name: "Work boot", knownAs: "Bota de obra", description: "A bota de trabalho em couro ou camurça que saiu da obra e virou peça-chave do workwear." },
   { slug: "trucker-cap", name: "Trucker cap", knownAs: "Boné de tela atrás", description: "Boné com frente de espuma e traseira de tela — o clássico americano de estrada." },
   { slug: "five-panel-cap", name: "Five panel cap", knownAs: "Boné baixinho de 5 partes", description: "Boné de perfil baixo construído em 5 painéis — minimalista e urbano." },
+  { slug: "fitted-cap", name: "Fitted cap", knownAs: "Boné aba reta", description: "O boné de aba reta e coroa estruturada, sem regulagem atrás — clássico do beisebol e do street." },
+  { slug: "polo-cap", name: "Polo cap", knownAs: "Boné amassadinho", description: "Boné de perfil baixo e tecido macio, sem estrutura — o 'amassadinho' que descontrai qualquer look." },
 ];
 
 export type ActionDay = {

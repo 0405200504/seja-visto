@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-const TOPS = ["Camiseta branca lisa", "Camiseta preta lisa", "Camisa azul-clara"];
-const BOTTOMS = ["Jeans escuro reto", "Chino bege", "Alfaiataria cinza"];
-const SHOES = ["Tênis branco minimalista", "Chelsea boot preta", "Tênis retrô"];
+const TOPS = ["Camiseta lisa branca", "Moletom cinza", "Camisa azul-clara"];
+const BOTTOMS = ["Jeans azul baggy", "Jorts camuflado", "Calça preta reta"];
+const SHOES = ["Retrô runner", "Tênis fino", "Work boot"];
 
 // Formalidade de cada opção (0 = casual, 2 = arrumado)
-const FORMALITY = { top: [0, 0, 2], bottom: [0, 1, 2], shoe: [1, 2, 0] };
+const FORMALITY = { top: [1, 0, 2], bottom: [1, 0, 2], shoe: [0, 2, 1] };
 
 const OCCASIONS = [
   "Fim de semana, rolês leves e dia a dia sem esforço.",
@@ -22,14 +22,15 @@ const OCCASIONS = [
 ];
 
 function tipFor(t: number, b: number, s: number): string {
-  if (t === 1 && b === 0 && s === 1) return "O clássico noturno: adicione uma jaqueta e vá direto pro bar.";
-  if (t === 0 && b === 0 && s === 0) return "O look mais confiável da história da moda masculina. Impossível errar.";
-  if (t === 2 && b === 2 && s === 1) return "O topo da formalidade da cápsula — pronto para qualquer reunião.";
-  if (t === 1 && b === 2 && s === 1) return "Elegância sem esforço: preto sobre cinza é presença silenciosa.";
-  if (t === 0 && b === 1 && s === 0) return "Verão em estado puro: claro, leve e fresco.";
-  if (s === 2) return "O tênis retrô injeta personalidade — deixe o resto do look limpo.";
-  if (t === 2 && s === 0) return "Camisa com tênis branco: arrumado em cima, moderno embaixo.";
-  if (b === 2) return "A alfaiataria eleva qualquer parte de cima — até a camiseta mais básica.";
+  if (t === 0 && b === 0 && s === 0) return "Camiseta branca, baggy e retrô runner: o uniforme do street atual. Impossível errar.";
+  if (t === 2 && b === 2 && s === 1) return "O topo da formalidade da cápsula — camisa, calça preta e tênis fino fecham qualquer jantar.";
+  if (t === 1 && b === 1) return "Conforto máximo de fim de semana — o camuflado pede o resto do look liso e neutro.";
+  if (t === 1 && b === 2 && s === 2) return "Moletom, calça preta e work boot: o look de frio pronto — só falta o café.";
+  if (b === 1) return "Jorts camuflado é estampa: mantenha a parte de cima lisa e o tênis discreto.";
+  if (s === 2) return "O work boot aterra o look — deixe a barra da calça cair reta por cima do cano.";
+  if (t === 2 && s === 0) return "Camisa com retrô runner: arrumado em cima, despretensioso embaixo.";
+  if (b === 2) return "A calça preta reta eleva qualquer parte de cima — até o moletom.";
+  if (b === 0 && t !== 0) return "Baggy embaixo pede a parte de cima mais próxima do corpo — o contraste define a silhueta.";
   return "Combinação equilibrada da cápsula: caimento certo e peças limpas fazem o resto.";
 }
 
