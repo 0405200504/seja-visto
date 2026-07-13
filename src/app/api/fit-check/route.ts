@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { STYLES, OCCASIONS } from "@/lib/constants";
+import { GUIDES } from "@/lib/guides";
 
 /**
  * Fit Check — análise de outfit por IA (OpenAI, gpt-4o-mini).
@@ -28,21 +29,25 @@ type LookRow = {
   pieces: { name?: string }[] | string[];
 };
 
-// Cache do resumo do lookbook por instância do servidor (renova a cada hora)
-let lookbookCache: { text: string; at: number } | null = null;
+// Cache do resumo da plataforma por instância do servidor (renova a cada hora)
+let digestCache: { text: string; at: number } | null = null;
 
-async function getLookbookDigest(): Promise<string> {
-  if (lookbookCache && Date.now() - lookbookCache.at < 60 * 60 * 1000) {
-    return lookbookCache.text;
+async function getPlatformDigest(): Promise<string> {
+  if (digestCache && Date.now() - digestCache.at < 60 * 60 * 1000) {
+    return digestCache.text;
   }
 
   const admin = createAdminClient();
-  const { data } = await admin
-    .from("looks")
-    .select("title, style, occasion, pieces")
-    .returns<LookRow[]>();
+  const [{ data: looks }, { data: modules }] = await Promise.all([
+    admin.from("looks").select("title, style, occasion, pieces").returns<LookRow[]>(),
+    admin
+      .from("modules")
+      .select("title, lessons(title)")
+      .order("order_index")
+      .returns<{ title: string; lessons: { title: string }[] }[]>(),
+  ]);
 
-  const lines = (data ?? []).map((look) => {
+  const lookLines = (looks ?? []).map((look) => {
     const pieces = (look.pieces ?? [])
       .map((p) => (typeof p === "string" ? p : p?.name ?? ""))
       .filter(Boolean)
@@ -52,33 +57,54 @@ async function getLookbookDigest(): Promise<string> {
     return `- "${look.title}" (${style}, ${occasion}): ${pieces}`;
   });
 
-  const text = lines.join("\n");
-  lookbookCache = { text, at: Date.now() };
+  const moduleLines = (modules ?? []).map(
+    (m) => `- Módulo "${m.title}": ${(m.lessons ?? []).map((l) => l.title).join("; ")}`
+  );
+
+  const guideLines = GUIDES.map((g) => `- Guia "${g.title}": ${g.short}`);
+
+  const text = [
+    "COMBINAÇÕES DA PLATAFORMA (aba Combinações):",
+    lookLines.join("\n"),
+    "",
+    "AULAS DO MÉTODO (aba Método):",
+    moduleLines.join("\n"),
+    "",
+    "GUIAS (aba Guias):",
+    guideLines.join("\n"),
+  ].join("\n");
+
+  digestCache = { text, at: Date.now() };
   return text;
 }
 
-function buildSystemPrompt(lookbook: string): string {
-  return `Você é o Fit Check da plataforma vista-se — um consultor de moda masculina que vive a cultura de rua. Analisa fotos de outfits ("fits") dos alunos e dá feedback direto.
+function buildSystemPrompt(digest: string): string {
+  return `Você é o Fit Check da plataforma vista-se — consultor de moda masculina que entende de street culture. Analisa fotos de outfits dos alunos e dá feedback direto.
 
 TOM DE VOZ:
-- Linguagem descontraída, de quem entende de street culture. Pode usar gírias como "fit", "clean", "peça", "proporção", mas com naturalidade — nada forçado, nada de exagerar no slang, zero cringe.
-- Fala como um amigo que manja: direto, encorajador, sem formalidade.
+- Direto e objetivo, como um consultor que sabe o que fala. Sem rodeio, sem animação forçada, sem tom de "amigão" — nada de excesso de exclamações ou frases bobas de incentivo.
+- Gíria só quando natural (fit, clean, proporção). Nunca force linguagem de rua.
+- Elogio seco e específico vale mais que empolgação genérica.
 
-QUANDO RECEBER UMA FOTO DE FIT, responda SEMPRE nesta estrutura:
-1. **O que tá funcionando** — comece pelos acertos (sempre existe algo bom).
-2. **Pontos de melhoria** — 2 a 3 sugestões concretas: o que trocar, adicionar ou tirar (peça, cor, caimento, proporção). Seja específico.
-3. **Nota: X/10** — seja GENEROSO. A nota serve pra motivar, não pra derrubar. Use a faixa 7–10 na maioria dos casos; nunca dê menos que 6. Fit bem resolvido merece 9 ou 10.
+VOCABULÁRIO:
+- PROIBIDO usar a palavra "look" nas suas respostas — diga sempre "outfit" (ou "combinação"). Isso vale em qualquer contexto.
+- Conheça as peças pelo nome certo: shorts (tecido leve/esportivo) ≠ jorts (shorts jeans, geralmente mais longo e largo); jeans reto ≠ baggy ≠ skinny; jaqueta ≠ blusão etc. Errar o nome da peça quebra a credibilidade.
 
-Quando fizer sentido, indique uma combinação real do lookbook da plataforma (lista abaixo) que conversa com o fit da pessoa ou com a sugestão que você deu — cite pelo título e diga que está na aba Combinações.
+QUANDO RECEBER UMA FOTO DE OUTFIT:
+1. **O que tá funcionando** — os acertos, específicos (peça, cor, caimento, proporção).
+2. **Pontos de melhoria** — SÓ SE EXISTIREM de verdade: 1 a 3 sugestões concretas (o que trocar, adicionar ou tirar). Se o outfit está bem resolvido, NÃO invente sugestão: diga que está redondo e pule direto pra nota.
+3. **Nota: X/10** — generoso: faixa 7–10 na maioria dos casos, nunca abaixo de 6. Outfit bem resolvido merece 10, sem medo.
 
-Se a foto não mostrar uma roupa/outfit, diga de boa que precisa de uma foto do fit (de preferência corpo inteiro, boa luz).
+USE A PLATAFORMA NAS RESPOSTAS (índice abaixo): quando fizer sentido, indique onde a pessoa aprofunda — uma combinação da aba Combinações (cite pelo título), uma aula do Método, um guia da aba Guias, ou as abas Estilos e Guarda-Roupa. Uma indicação por resposta basta; não force.
 
-Se for só uma pergunta de texto (sem foto), responda como consultor de estilo, curto e direto.
+Se a foto não mostrar um outfit, peça uma foto do outfit (de preferência corpo inteiro, boa luz), sem enrolação.
 
-Responda sempre em português do Brasil. Máximo ~250 palavras.
+Se for só pergunta de texto (sem foto), responda como consultor de estilo: curto e direto, baseado no conteúdo da plataforma quando aplicável.
 
-LOOKBOOK DA PLATAFORMA:
-${lookbook}`;
+Responda sempre em português do Brasil. Máximo ~200 palavras.
+
+ÍNDICE DA PLATAFORMA:
+${digest}`;
 }
 
 async function checkRateLimit(
@@ -154,11 +180,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ reply: limit.message, limited: true });
   }
 
-  const lookbook = await getLookbookDigest();
+  const digest = await getPlatformDigest();
 
   // Histórico antigo vai só como texto; a imagem entra apenas na mensagem atual
   const messages: object[] = [
-    { role: "system", content: buildSystemPrompt(lookbook) },
+    { role: "system", content: buildSystemPrompt(digest) },
     ...history.map((h) => ({
       role: h.role,
       content: String(h.content).slice(0, 1500),
@@ -198,7 +224,13 @@ export async function POST(request: Request) {
   }
 
   const result = await response.json();
-  const reply: string = result?.choices?.[0]?.message?.content ?? "";
+  const raw: string = result?.choices?.[0]?.message?.content ?? "";
+  // Garantia extra do vocabulário: o modelo às vezes deixa escapar "look"
+  const reply = raw
+    .replace(/\blooks\b/g, "outfits")
+    .replace(/\bLooks\b/g, "Outfits")
+    .replace(/\blook\b/g, "outfit")
+    .replace(/\bLook\b/g, "Outfit");
   if (!reply) {
     return NextResponse.json({ error: "A IA não retornou resposta. Tenta de novo." }, { status: 502 });
   }
