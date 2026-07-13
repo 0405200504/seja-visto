@@ -10,6 +10,7 @@ import {
   Palette,
   Tag,
   Gift,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
@@ -23,6 +24,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/metodo", label: "Método", icon: BookOpen },
   { href: "/combinacoes", label: "Combinações", icon: Layers },
+  { href: "/fit-check", label: "Fit Check", icon: Sparkles },
   { href: "/guias", label: "Guias", icon: BookMarked },
   { href: "/bonus", label: "Bônus", icon: Gift },
   { href: "/estilos", label: "Estilos", icon: Palette },
