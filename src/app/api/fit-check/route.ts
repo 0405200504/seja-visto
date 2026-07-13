@@ -156,7 +156,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }
 
-  let body: { image?: string; message?: string; history?: HistoryItem[] };
+  let body: {
+    image?: string;
+    thumb?: string;
+    message?: string;
+    history?: HistoryItem[];
+    conversationId?: string;
+  };
   try {
     body = await request.json();
   } catch {
@@ -164,8 +170,13 @@ export async function POST(request: Request) {
   }
 
   const image = typeof body.image === "string" ? body.image : undefined;
+  const thumb =
+    typeof body.thumb === "string" && body.thumb.startsWith("data:image/") && body.thumb.length < 60_000
+      ? body.thumb
+      : undefined;
   const message = typeof body.message === "string" ? body.message.slice(0, 1000) : "";
   const history = Array.isArray(body.history) ? body.history.slice(-6) : [];
+  let conversationId = typeof body.conversationId === "string" ? body.conversationId : null;
 
   if (!image && !message.trim()) {
     return NextResponse.json({ error: "Envie uma foto ou uma mensagem." }, { status: 400 });
@@ -238,5 +249,51 @@ export async function POST(request: Request) {
   // Registra o uso (ignora erro se a tabela ainda não existir)
   await supabase.from("fit_check_logs").insert({ user_id: user.id, kind });
 
-  return NextResponse.json({ reply });
+  // ---------- Persistência da conversa (histórico de 5) ----------
+  if (!conversationId) {
+    const title = (message.trim() || "Fit check").slice(0, 60);
+    const { data: conv } = await supabase
+      .from("fit_check_conversations")
+      .insert({ user_id: user.id, title })
+      .select("id")
+      .single<{ id: string }>();
+    conversationId = conv?.id ?? null;
+
+    // Mantém só as 5 conversas mais recentes
+    if (conversationId) {
+      const { data: all } = await supabase
+        .from("fit_check_conversations")
+        .select("id")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false });
+      const excess = (all ?? []).slice(5).map((c) => c.id);
+      if (excess.length > 0) {
+        await supabase.from("fit_check_conversations").delete().in("id", excess);
+      }
+    }
+  }
+
+  if (conversationId) {
+    await supabase.from("fit_check_messages").insert([
+      {
+        conversation_id: conversationId,
+        user_id: user.id,
+        role: "user",
+        content: message.trim() || "Fit check!",
+        thumb: image ? thumb ?? null : null,
+      },
+      {
+        conversation_id: conversationId,
+        user_id: user.id,
+        role: "assistant",
+        content: reply,
+      },
+    ]);
+    await supabase
+      .from("fit_check_conversations")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", conversationId);
+  }
+
+  return NextResponse.json({ reply, conversationId });
 }
