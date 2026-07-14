@@ -11,7 +11,6 @@ import {
   Layers,
   Plus,
   Shirt,
-  Sparkles,
   Star,
 } from "lucide-react";
 import { Reveal, ProgressFill } from "./reveal";
@@ -128,6 +127,7 @@ export function FeaturesSection() {
                       alt=""
                       fill
                       sizes="80px"
+                      quality={55}
                       className="object-cover"
                     />
                   </div>
@@ -204,7 +204,7 @@ export function FeaturesSection() {
           {/* Fit Check */}
           <Reveal delay={400} className="md:col-span-2 lg:col-span-2">
             <BentoCard
-              icon={Sparkles}
+              icon={Camera}
               title="Fit Check com IA"
               text="Envie uma foto ou descreva o look e receba uma análise sobre o que está funcionando e o que pode melhorar."
               highlight
@@ -351,6 +351,7 @@ export function LookbookSection() {
                     alt={`Referência de look: ${look.nome}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
+                    quality={55}
                     className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                   />
                   <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0A0A0A] to-transparent" />
@@ -413,7 +414,13 @@ export function FitCheckSection() {
       {/* Background diferenciado */}
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[#0A0A0A]">
         <div className="absolute left-1/2 top-0 h-px w-full max-w-[1280px] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#146CFF]/40 to-transparent" />
-        <div className="absolute -top-48 left-1/2 h-96 w-[640px] -translate-x-1/2 rounded-full bg-[#146CFF]/[0.1] blur-[140px]" />
+        <div
+          className="absolute -top-48 left-1/2 h-96 w-[640px] -translate-x-1/2"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(20,108,255,0.1) 0%, transparent 65%)",
+          }}
+        />
       </div>
 
       <div className="relative mx-auto max-w-[1280px] px-5 md:px-8">
@@ -475,6 +482,7 @@ export function FitCheckSection() {
                     alt="Foto de look enviada para análise no Fit Check"
                     fill
                     sizes="144px"
+                    quality={55}
                     className="object-cover"
                   />
                 </div>
@@ -483,8 +491,7 @@ export function FitCheckSection() {
 
             <Reveal delay={350}>
               <div className="max-w-[92%] rounded-2xl rounded-bl-md border border-[#20242C] bg-[#111318] px-5 py-4">
-                <p className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#78A9FF]">
-                  <Sparkles className="size-3.5" aria-hidden />
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[#78A9FF]">
                   Fit Check
                 </p>
                 <p className="text-sm leading-relaxed text-[#A4AAB5]">

@@ -269,7 +269,11 @@ export function MetricsSection() {
           <div className="relative overflow-hidden rounded-2xl border border-[#20242C] bg-[#0A0A0A] px-6 py-10 md:px-12 md:py-12">
             <div
               aria-hidden
-              className="absolute -top-32 left-1/2 h-64 w-[540px] -translate-x-1/2 rounded-full bg-[#146CFF]/[0.09] blur-[100px]"
+              className="absolute -top-32 left-1/2 h-64 w-[540px] -translate-x-1/2"
+              style={{
+                background:
+                  "radial-gradient(ellipse at center, rgba(20,108,255,0.09) 0%, transparent 65%)",
+              }}
             />
             <dl className="relative grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
               {METRICS.map((m) => (

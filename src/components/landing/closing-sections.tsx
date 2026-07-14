@@ -4,7 +4,6 @@ import {
   Check,
   ChevronDown,
   Minus,
-  Sparkles,
   Tag,
 } from "lucide-react";
 import { Reveal } from "./reveal";
@@ -70,7 +69,11 @@ export function ComparisonSection() {
             <div className="relative h-full overflow-hidden rounded-2xl border border-[#146CFF]/40 bg-gradient-to-b from-[#146CFF]/[0.09] to-[#0A0A0A] p-7 md:p-8">
               <div
                 aria-hidden
-                className="absolute -top-20 right-0 h-40 w-40 rounded-full bg-[#146CFF]/[0.15] blur-[70px]"
+                className="absolute -top-20 right-0 h-40 w-40"
+                style={{
+                  background:
+                    "radial-gradient(circle at center, rgba(20,108,255,0.15) 0%, transparent 65%)",
+                }}
               />
               <p className="relative mb-6 font-display text-sm font-bold uppercase tracking-[0.18em] text-[#78A9FF]">
                 MPO
@@ -377,7 +380,13 @@ export function PricingSection() {
     <section id="planos" className="relative scroll-mt-24 overflow-hidden py-20 md:py-28">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#146CFF]/40 to-transparent" />
-        <div className="absolute -top-40 left-1/2 h-80 w-[600px] -translate-x-1/2 rounded-full bg-[#146CFF]/[0.08] blur-[130px]" />
+        <div
+          className="absolute -top-40 left-1/2 h-80 w-[600px] -translate-x-1/2"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(20,108,255,0.08) 0%, transparent 65%)",
+          }}
+        />
       </div>
 
       <div className="relative mx-auto max-w-[1080px] px-5 md:px-8">
@@ -561,13 +570,18 @@ export function FinalCtaSection() {
               "radial-gradient(ellipse 70% 60% at 50% 50%, black 20%, transparent 75%)",
           }}
         />
-        <div className="absolute left-1/2 top-1/2 h-96 w-[680px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#146CFF]/[0.12] blur-[140px]" />
+        <div
+          className="absolute left-1/2 top-1/2 h-96 w-[680px] -translate-x-1/2 -translate-y-1/2"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(20,108,255,0.12) 0%, transparent 65%)",
+          }}
+        />
       </div>
 
       <div className="relative mx-auto max-w-3xl px-5 text-center md:px-8">
         <Reveal>
-          <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#20242C] bg-white/[0.03] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
-            <Sparkles className="size-3.5" aria-hidden />
+          <p className="mb-5 inline-block rounded-full border border-[#20242C] bg-white/[0.03] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
             Seu guarda-roupa já tem um ponto de partida
           </p>
         </Reveal>

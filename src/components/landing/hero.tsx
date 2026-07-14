@@ -2,12 +2,11 @@ import Image from "next/image";
 import {
   Bookmark,
   Calendar,
+  Camera,
   Compass,
   Home,
   Layers,
-  Play,
   Shirt,
-  Sparkles,
 } from "lucide-react";
 import { Reveal, ProgressFill } from "./reveal";
 import { ANNUAL_CHECKOUT_URL, checkoutHref } from "./checkout";
@@ -29,16 +28,27 @@ export function Hero() {
               "radial-gradient(ellipse 90% 70% at 50% 20%, black 30%, transparent 75%)",
           }}
         />
-        <div className="absolute -top-40 left-1/2 h-[480px] w-[720px] -translate-x-1/2 rounded-full bg-[#146CFF]/[0.13] blur-[140px]" />
-        <div className="absolute top-1/2 right-[-160px] h-[360px] w-[360px] rounded-full bg-[#146CFF]/[0.07] blur-[120px]" />
+        <div
+          className="absolute -top-40 left-1/2 h-[480px] w-[720px] -translate-x-1/2"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(20,108,255,0.13) 0%, transparent 65%)",
+          }}
+        />
+        <div
+          className="absolute top-1/2 right-[-160px] h-[360px] w-[360px]"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(20,108,255,0.07) 0%, transparent 65%)",
+          }}
+        />
       </div>
 
       <div className="relative mx-auto grid max-w-[1280px] items-center gap-14 px-5 md:px-8 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
         {/* Texto */}
         <div>
           <Reveal>
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#20242C] bg-white/[0.03] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
-              <Sparkles className="size-3.5" aria-hidden />
+            <p className="mb-5 inline-block rounded-full border border-[#20242C] bg-white/[0.03] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
               Manual Prático do Outfit
             </p>
           </Reveal>
@@ -46,12 +56,8 @@ export function Hero() {
           <Reveal delay={100}>
             <h1 className="font-display text-4xl font-bold leading-[1.06] tracking-[-0.03em] text-[#F5F7FA] sm:text-5xl lg:text-[60px]">
               Pare de se vestir no{" "}
-              <span className="relative inline-block bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
                 improviso
-                <span
-                  aria-hidden
-                  className="absolute -inset-x-2 -inset-y-1 -z-10 rounded-2xl bg-[#146CFF]/[0.12] blur-2xl"
-                />
               </span>
               .
             </h1>
@@ -83,9 +89,8 @@ export function Hero() {
               </a>
               <a
                 href="#como-funciona"
-                className="inline-flex h-[52px] items-center justify-center gap-2 rounded-xl border border-[#20242C] bg-white/[0.02] px-8 text-sm font-semibold text-[#F5F7FA] transition-all hover:border-[#146CFF]/60 hover:bg-[#146CFF]/[0.06]"
+                className="inline-flex h-[52px] items-center justify-center rounded-xl border border-[#20242C] bg-white/[0.02] px-8 text-sm font-semibold text-[#F5F7FA] transition-all hover:border-[#146CFF]/60 hover:bg-[#146CFF]/[0.06]"
               >
-                <Play className="size-4 text-[#78A9FF]" aria-hidden />
                 VER COMO FUNCIONA
               </a>
             </div>
@@ -152,7 +157,7 @@ export function Hero() {
                     <Shirt className="size-3" /> Guarda-roupa
                   </span>
                   <span className="flex items-center gap-2 px-2.5 py-1.5">
-                    <Sparkles className="size-3" /> Fit Check
+                    <Camera className="size-3" /> Fit Check
                   </span>
                   <span className="flex items-center gap-2 px-2.5 py-1.5">
                     <Calendar className="size-3" /> Plano 7 dias
@@ -227,6 +232,7 @@ export function Hero() {
                             alt={img.alt}
                             fill
                             sizes="120px"
+                            quality={55}
                             className="object-cover"
                           />
                         </div>

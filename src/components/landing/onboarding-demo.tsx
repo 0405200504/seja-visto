@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -93,7 +93,11 @@ export function OnboardingDemo() {
     >
       <div
         aria-hidden
-        className="absolute -top-24 right-0 h-48 w-48 rounded-full bg-[#146CFF]/[0.1] blur-[80px]"
+        className="absolute -top-24 right-0 h-48 w-48"
+        style={{
+          background:
+            "radial-gradient(circle at center, rgba(20,108,255,0.1) 0%, transparent 65%)",
+        }}
       />
 
       {/* Indicador de etapas */}
@@ -111,8 +115,7 @@ export function OnboardingDemo() {
 
       {showResult ? (
         <div key="result" className="animate-fade-up">
-          <p className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#146CFF]/[0.12] px-3 py-1 text-[11px] font-semibold text-[#78A9FF]">
-            <Sparkles className="size-3" aria-hidden />
+          <p className="mb-3 inline-block rounded-full bg-[#146CFF]/[0.12] px-3 py-1 text-[11px] font-semibold text-[#78A9FF]">
             Resultado do seu diagnóstico
           </p>
           <p className="font-display text-2xl font-bold text-[#F5F7FA]">
