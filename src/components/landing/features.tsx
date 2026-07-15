@@ -127,7 +127,7 @@ export function FeaturesSection() {
                       alt=""
                       fill
                       sizes="80px"
-                      quality={55}
+                      quality={70}
                       className="object-cover"
                     />
                   </div>
@@ -351,7 +351,7 @@ export function LookbookSection() {
                     alt={`Referência de look: ${look.nome}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
-                    quality={55}
+                    quality={70}
                     className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                   />
                   <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0A0A0A] to-transparent" />
@@ -482,7 +482,7 @@ export function FitCheckSection() {
                     alt="Foto de look enviada para análise no Fit Check"
                     fill
                     sizes="144px"
-                    quality={55}
+                    quality={70}
                     className="object-cover"
                   />
                 </div>

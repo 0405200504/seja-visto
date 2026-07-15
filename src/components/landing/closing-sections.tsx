@@ -133,7 +133,7 @@ function ArtistMarquee() {
                     alt={clone ? "" : "Artista vestido por Raphael Pereira"}
                     fill
                     sizes="(max-width: 768px) 168px, 216px"
-                    quality={55}
+                    quality={80}
                     className="object-cover"
                   />
                 </div>
@@ -161,7 +161,7 @@ export function RaphaelSection() {
                 alt="Raphael Pereira, stylist e dono do MPO"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
-                quality={55}
+                quality={80}
                 className="object-cover"
               />
               <div

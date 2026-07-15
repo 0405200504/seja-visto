@@ -109,21 +109,21 @@ export function Hero() {
             {/* Cards flutuantes */}
             <div
               aria-hidden
-              className="absolute -top-5 -left-3 z-10 hidden animate-[landing-float_7s_ease-in-out_infinite] rounded-xl border border-[#20242C] bg-[#0A0A0A]/90 px-3.5 py-2.5 backdrop-blur-md sm:block"
+              className="absolute -top-5 -left-3 z-10 hidden rounded-xl border border-[#20242C] bg-[#0A0A0A] px-3.5 py-2.5 sm:block"
             >
               <p className="text-[10px] font-medium text-[#A4AAB5]">Seu estilo</p>
               <p className="text-xs font-bold text-[#F5F7FA]">Streetwear</p>
             </div>
             <div
               aria-hidden
-              className="absolute -right-3 top-16 z-10 hidden animate-[landing-float_8s_ease-in-out_infinite_1s] rounded-xl border border-[#146CFF]/40 bg-[#0A0A0A]/90 px-3.5 py-2.5 shadow-[0_0_24px_-8px_rgb(20_108_255/0.6)] backdrop-blur-md sm:block"
+              className="absolute -right-3 top-16 z-10 hidden rounded-xl border border-[#146CFF]/40 bg-[#0A0A0A] px-3.5 py-2.5 shadow-[0_0_24px_-8px_rgb(20_108_255/0.6)] sm:block"
             >
               <p className="text-[10px] font-medium text-[#A4AAB5]">Fit Check</p>
               <p className="text-xs font-bold text-[#78A9FF]">8,7/10</p>
             </div>
             <div
               aria-hidden
-              className="absolute -bottom-4 left-10 z-10 hidden animate-[landing-float_6.5s_ease-in-out_infinite_0.5s] items-center gap-2 rounded-xl border border-[#20242C] bg-[#0A0A0A]/90 px-3.5 py-2.5 backdrop-blur-md sm:flex"
+              className="absolute -bottom-4 left-10 z-10 hidden items-center gap-2 rounded-xl border border-[#20242C] bg-[#0A0A0A] px-3.5 py-2.5 sm:flex"
             >
               <Bookmark className="size-3.5 text-[#78A9FF]" />
               <p className="text-xs font-semibold text-[#F5F7FA]">Look salvo</p>
@@ -232,7 +232,7 @@ export function Hero() {
                             alt={img.alt}
                             fill
                             sizes="120px"
-                            quality={55}
+                            quality={70}
                             className="object-cover"
                           />
                         </div>
