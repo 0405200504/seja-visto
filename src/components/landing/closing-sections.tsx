@@ -107,7 +107,7 @@ function ArtistMarquee() {
   return (
     <div className="relative mt-16 md:mt-20">
       <p className="mb-6 text-center text-xs font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
-        +30 artistas vestidos pelo Rapha
+Já vestiu os principais artistas da geração
       </p>
       <div className="marquee-mask relative overflow-hidden">
         <div className="marquee-track flex w-max">
@@ -187,9 +187,9 @@ export function RaphaelSection() {
             <Reveal delay={200}>
               <p className="mt-6 leading-relaxed text-[#A4AAB5]">
                 Raphael Pereira é stylist desde 2017 e uma referência no meio.
-                Em quase uma década de carreira, já vestiu mais de 30 artistas
-                — construindo, outfit por outfit, o olhar que hoje está dentro do
-                MPO.
+                Em quase uma década de carreira, já vestiu os principais
+                artistas da geração — construindo, outfit por outfit, o olhar
+                que hoje está dentro do MPO.
               </p>
             </Reveal>
             <Reveal delay={280}>
@@ -226,7 +226,7 @@ export function RaphaelSection() {
               <div className="mt-7 flex flex-wrap gap-2.5">
                 {[
                   "Stylist desde 2017",
-                  "+30 artistas vestidos",
+                  "Principais artistas da geração",
                   "Matuê",
                   "Renner",
                   "PlayStation",
