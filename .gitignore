@@ -52,3 +52,8 @@ next-env.d.ts
 /gorpcore/
 /vintage/
 /estilos 2.0/
+
+# Fotos originais de trabalho (fonte) — as versões usadas ficam em public/images
+/artistas rapha/
+/imagem rapha.jpg
+/mais procurados 2.0/
