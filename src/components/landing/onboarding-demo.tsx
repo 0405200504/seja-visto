@@ -31,7 +31,7 @@ const STEPS = [
     selected: 3,
   },
   {
-    question: "Qual look você usaria em um sábado à tarde?",
+    question: "Qual outfit você usaria em um sábado à tarde?",
     options: [
       "Camiseta lisa, calça reta e tênis limpo",
       "Peças amplas e streetwear",

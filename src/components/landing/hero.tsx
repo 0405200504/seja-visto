@@ -55,9 +55,9 @@ export function Hero() {
 
           <Reveal delay={100}>
             <h1 className="font-display text-4xl font-bold leading-[1.06] tracking-[-0.03em] text-[#F5F7FA] sm:text-5xl lg:text-[60px]">
-              Pare de se vestir no{" "}
+              Se vestir melhor,{" "}
               <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
-                improviso
+                sem complicação
               </span>
               .
             </h1>
@@ -65,10 +65,10 @@ export function Hero() {
 
           <Reveal delay={200}>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-[#A4AAB5] md:text-lg">
-              Você não precisa comprar mais roupa sem saber o que fazer com ela.
-              O MPO mostra quais peças combinam com você, quais looks funcionam
-              para cada ocasião e o que mudar para construir um estilo que
-              realmente tenha a sua cara.
+              O MPO existe para facilitar a vida de quem quer se vestir melhor.
+              Ele mostra quais peças combinam com você, quais outfits funcionam
+              para cada ocasião e o que ajustar — sem comprar mais roupa por
+              impulso e sem viver na tentativa e erro.
             </p>
           </Reveal>
 
@@ -126,7 +126,7 @@ export function Hero() {
               className="absolute -bottom-4 left-10 z-10 hidden items-center gap-2 rounded-xl border border-[#20242C] bg-[#0A0A0A] px-3.5 py-2.5 sm:flex"
             >
               <Bookmark className="size-3.5 text-[#78A9FF]" />
-              <p className="text-xs font-semibold text-[#F5F7FA]">Look salvo</p>
+              <p className="text-xs font-semibold text-[#F5F7FA]">Outfit salvo</p>
             </div>
 
             {/* Janela da plataforma */}
@@ -215,13 +215,13 @@ export function Hero() {
 
                   <div>
                     <p className="mb-2 text-[10px] font-semibold text-[#F5F7FA]">
-                      Looks para o seu perfil
+                      Outfits para o seu perfil
                     </p>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { src: "/estilos/streetwear/01.jpg", alt: "Look streetwear recomendado" },
-                        { src: "/estilos/streetwear/03.jpg", alt: "Look urbano recomendado" },
-                        { src: "/estilos/casual/02.jpg", alt: "Look casual recomendado" },
+                        { src: "/estilos/streetwear/01.jpg", alt: "Outfit streetwear recomendado" },
+                        { src: "/estilos/streetwear/03.jpg", alt: "Outfit urbano recomendado" },
+                        { src: "/estilos/casual/02.jpg", alt: "Outfit casual recomendado" },
                       ].map((img) => (
                         <div
                           key={img.src}

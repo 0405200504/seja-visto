@@ -1,11 +1,5 @@
 import Image from "next/image";
-import {
-  BadgePercent,
-  Check,
-  ChevronDown,
-  Minus,
-  Tag,
-} from "lucide-react";
+import { Check, ChevronDown, Minus } from "lucide-react";
 import { Reveal } from "./reveal";
 import {
   ANNUAL_CHECKOUT_URL,
@@ -27,7 +21,7 @@ const MPO_WAY = [
   "Conteúdo direto e consultável",
   "Recomendações personalizadas",
   "Ferramentas interativas",
-  "Looks filtrados por contexto",
+  "Outfits filtrados por contexto",
   "Guarda-roupa organizado",
   "Progresso acompanhado",
   "Fit Check com IA",
@@ -194,7 +188,7 @@ export function RaphaelSection() {
               <p className="mt-6 leading-relaxed text-[#A4AAB5]">
                 Raphael Pereira é stylist desde 2017 e uma referência no meio.
                 Em quase uma década de carreira, já vestiu mais de 30 artistas
-                — construindo, look por look, o olhar que hoje está dentro do
+                — construindo, outfit por outfit, o olhar que hoje está dentro do
                 MPO.
               </p>
             </Reveal>
@@ -267,7 +261,7 @@ const FOR_WHO = [
   "Salva muitas referências, mas não consegue adaptá-las",
   "Quer montar um guarda-roupa mais inteligente",
   "Deseja passar mais presença e intenção através da imagem",
-  "Quer receber uma opinião antes de sair com determinado look",
+  "Quer receber uma opinião antes de sair com determinado outfit",
   "Não tem paciência para consumir um curso longo em vídeo",
 ];
 
@@ -319,15 +313,14 @@ const DELIVERABLES = [
   "12 estilos masculinos",
   "Mais de 190 referências",
   "11 guias práticos",
-  "Três ferramentas interativas",
-  "Glossário com 24 peças",
+  "Ferramentas interativas",
+  "Dicionário do outfit",
   "Guarda-roupa inteligente",
   "Lista de compras",
   "Área de favoritos",
   "Plano de ação de 7 dias",
   "Fit Check com IA",
   "Histórico das análises",
-  "Cupons exclusivos em marcas parceiras",
   "Atualizações da plataforma",
 ];
 
@@ -355,30 +348,6 @@ export function StackSection() {
                 </li>
               ))}
             </ul>
-
-            <div className="mt-9 grid gap-3 border-t border-[#20242C] pt-8 sm:grid-cols-2">
-              <div className="flex items-center gap-4 rounded-xl border border-[#20242C] bg-[#111318] px-5 py-4">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#146CFF]/[0.1] text-[#78A9FF]">
-                  <Tag className="size-5" aria-hidden />
-                </span>
-                <div>
-                  <p className="font-display text-sm font-bold text-[#F5F7FA]">FAMILY</p>
-                  <p className="text-xs text-[#A4AAB5]">15% de desconto na Rapha</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 rounded-xl border border-[#20242C] bg-[#111318] px-5 py-4">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#146CFF]/[0.1] text-[#78A9FF]">
-                  <BadgePercent className="size-5" aria-hidden />
-                </span>
-                <div>
-                  <p className="font-display text-sm font-bold text-[#F5F7FA]">RAPHAGSHOCK</p>
-                  <p className="text-xs text-[#A4AAB5]">15% de desconto na Casio & G-Shock</p>
-                </div>
-              </div>
-            </div>
-            <p className="mt-4 text-[11px] text-[#A4AAB5]/60">
-              Cupons sujeitos às regras e disponibilidade das marcas parceiras.
-            </p>
           </div>
         </Reveal>
 
@@ -525,7 +494,7 @@ const FAQ = [
   },
   {
     q: "Como funciona o Fit Check?",
-    a: "Você envia uma foto do look ou faz uma descrição por texto. A ferramenta analisa a combinação e apresenta pontos positivos, possíveis ajustes e uma nota geral.",
+    a: "Você envia uma foto do outfit ou faz uma descrição por texto. A ferramenta analisa a combinação e apresenta pontos positivos, possíveis ajustes e uma nota geral.",
   },
   {
     q: "Existe limite para usar o Fit Check?",

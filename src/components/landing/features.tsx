@@ -30,7 +30,7 @@ export function FeaturesSection() {
           </Reveal>
           <Reveal delay={100}>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-              Do primeiro diagnóstico até o look pronto.
+              Do primeiro diagnóstico até o outfit pronto.
             </h2>
           </Reveal>
         </div>
@@ -41,7 +41,7 @@ export function FeaturesSection() {
             <BentoCard
               icon={LayoutDashboard}
               title="Dashboard personalizado"
-              text="Acompanhe seu progresso, veja seu estilo principal, continue de onde parou e receba looks filtrados para o seu perfil."
+              text="Acompanhe seu progresso, veja seu estilo principal, continue de onde parou e receba outfits filtrados para o seu perfil."
             >
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-[#20242C] bg-[#111318] p-3.5">
@@ -206,14 +206,14 @@ export function FeaturesSection() {
             <BentoCard
               icon={Camera}
               title="Fit Check com IA"
-              text="Envie uma foto ou descreva o look e receba uma análise sobre o que está funcionando e o que pode melhorar."
+              text="Envie uma foto ou descreva o outfit e receba uma análise sobre o que está funcionando e o que pode melhorar."
               highlight
             >
               <div className="mt-5 flex items-center gap-3 rounded-xl border border-[#146CFF]/30 bg-[#146CFF]/[0.06] px-4 py-3" aria-hidden>
                 <Camera className="size-4 shrink-0 text-[#78A9FF]" />
                 <p className="text-[11px] text-[#A4AAB5]">
                   &ldquo;A paleta funciona bem. Testar um tênis com menos volume deixaria o
-                  look mais equilibrado.&rdquo;
+                  outfit mais equilibrado.&rdquo;
                 </p>
                 <span className="ml-auto shrink-0 rounded-lg bg-[#146CFF] px-2.5 py-1 font-display text-xs font-bold text-white">
                   8,7
@@ -278,7 +278,7 @@ const LOOKBOOK_CARDS = [
     src: "/estilos/smartcasual/02.jpg",
     nome: "Smart casual para o date",
     pecas: "Overshirt · camiseta lisa · calça reta · tênis limpo",
-    porque: "A terceira peça estrutura o look sem exigir alfaiataria completa.",
+    porque: "A terceira peça estrutura o outfit sem exigir alfaiataria completa.",
     tags: ["Date", "Meia-estação", "Nível fácil"],
   },
   {
@@ -309,7 +309,7 @@ export function LookbookSection() {
           <Reveal>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
               Você não recebe só a foto.{" "}
-              <span className="text-[#78A9FF]">Recebe a lógica por trás do look.</span>
+              <span className="text-[#78A9FF]">Recebe a lógica por trás do outfit.</span>
             </h2>
           </Reveal>
           <Reveal delay={120}>
@@ -340,7 +340,7 @@ export function LookbookSection() {
           </div>
         </Reveal>
 
-        {/* Cards de looks */}
+        {/* Cards de outfits */}
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {LOOKBOOK_CARDS.map((look, i) => (
             <Reveal key={look.nome} delay={i * 140}>
@@ -348,7 +348,7 @@ export function LookbookSection() {
                 <div className="relative aspect-[4/5] overflow-hidden">
                   <Image
                     src={look.src}
-                    alt={`Referência de look: ${look.nome}`}
+                    alt={`Referência de outfit: ${look.nome}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     quality={70}
@@ -433,7 +433,7 @@ export function FitCheckSection() {
             </Reveal>
             <Reveal delay={100}>
               <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-                Montou o look e ficou na dúvida?{" "}
+                Montou o outfit e ficou na dúvida?{" "}
                 <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">
                   Manda uma foto.
                 </span>
@@ -443,7 +443,7 @@ export function FitCheckSection() {
               <p className="mt-6 leading-relaxed text-[#A4AAB5]">
                 O Fit Check analisa a combinação que você está usando e devolve
                 um feedback direto. Ele mostra o que está funcionando, aponta
-                possíveis ajustes e dá uma nota geral para o look.
+                possíveis ajustes e dá uma nota geral para o outfit.
               </p>
             </Reveal>
             <Reveal delay={280}>
@@ -474,12 +474,12 @@ export function FitCheckSection() {
             <Reveal delay={150}>
               <div className="ml-auto max-w-[85%] rounded-2xl rounded-br-md border border-[#20242C] bg-[#146CFF]/[0.12] px-4 py-3">
                 <p className="text-sm text-[#F5F7FA]">
-                  Vou usar esse look em um date. O que você mudaria?
+                  Vou usar esse outfit em um date. O que você mudaria?
                 </p>
                 <div className="relative mt-3 aspect-[4/5] w-36 overflow-hidden rounded-xl border border-[#20242C]">
                   <Image
                     src="/estilos/smartcasual/04.jpg"
-                    alt="Foto de look enviada para análise no Fit Check"
+                    alt="Foto de outfit enviada para análise no Fit Check"
                     fill
                     sizes="144px"
                     quality={70}
@@ -497,7 +497,7 @@ export function FitCheckSection() {
                 <p className="text-sm leading-relaxed text-[#A4AAB5]">
                   A combinação está equilibrada e a paleta funciona bem. A calça
                   mais ampla conversa com o formato da camiseta, mas o tênis
-                  está criando um peso visual maior do que o restante do look.
+                  está criando um peso visual maior do que o restante do outfit.
                 </p>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">

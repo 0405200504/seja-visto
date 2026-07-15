@@ -66,12 +66,24 @@ export function LandingHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <Link
+            href="/login"
+            className="hidden rounded-lg border border-[#20242C] px-4 py-2.5 text-[13px] font-semibold text-[#F5F7FA] transition-colors hover:border-[#146CFF]/60 hover:text-white sm:inline-flex"
+          >
+            Já sou membro
+          </Link>
           <a
             href={checkoutHref(ANNUAL_CHECKOUT_URL)}
             className="hidden rounded-lg bg-[#146CFF] px-4 py-2.5 text-[13px] font-semibold text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_28px_-6px_rgb(20_108_255/0.8)] sm:inline-flex"
           >
             QUERO ACESSAR O MPO
           </a>
+          <Link
+            href="/login"
+            className="inline-flex items-center rounded-lg border border-[#20242C] px-3 py-2 text-xs font-semibold text-[#F5F7FA] sm:hidden"
+          >
+            Entrar
+          </Link>
           <a
             href="#planos"
             className="inline-flex rounded-lg bg-[#146CFF] px-3.5 py-2 text-xs font-semibold text-white sm:hidden"
@@ -107,6 +119,15 @@ export function LandingHeader() {
                 </a>
               </li>
             ))}
+            <li className="mt-2 border-t border-[#20242C]/60 pt-2">
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="block rounded-lg px-3 py-3 text-sm font-semibold text-[#F5F7FA] transition-colors hover:bg-white/[0.04]"
+              >
+                Já sou membro — Entrar
+              </Link>
+            </li>
           </ul>
         </nav>
       )}

@@ -112,12 +112,12 @@ const FLOW_STEPS = [
   {
     icon: Shirt,
     title: "Monte seu sistema pessoal",
-    text: "Organize o guarda-roupa, salve looks e crie sua lista de compras.",
+    text: "Organize o guarda-roupa, salve outfits e crie sua lista de compras.",
   },
   {
     icon: ClipboardCheck,
     title: "Teste e ajuste",
-    text: "Use o Fit Check para receber feedback sobre os seus próprios looks.",
+    text: "Use o Fit Check para receber feedback sobre os seus próprios outfits.",
   },
 ];
 
@@ -145,7 +145,7 @@ export function SolutionSection() {
               Ao entrar, você responde cinco perguntas rápidas sobre seu
               objetivo, suas dificuldades e o jeito que gostaria de ser
               percebido. A plataforma cruza essas respostas com 12 perfis de
-              estilo e passa a recomendar looks, conteúdos e próximos passos de
+              estilo e passa a recomendar outfits, conteúdos e próximos passos de
               acordo com você.
             </p>
           </Reveal>
@@ -153,7 +153,7 @@ export function SolutionSection() {
             <p className="mt-4 leading-relaxed text-[#A4AAB5]">
               Você aprende os fundamentos, aplica no seu próprio guarda-roupa,
               salva referências, organiza suas compras e ainda pode mandar uma
-              foto do look para receber uma análise instantânea.
+              foto do outfit para receber uma análise instantânea.
             </p>
           </Reveal>
           <Reveal delay={360}>
@@ -218,7 +218,7 @@ export function OnboardingSection() {
                   "Qual é o seu objetivo principal?",
                   "Qual é a sua maior dificuldade?",
                   "Como você quer ser percebido?",
-                  "Qual look você usaria em um sábado à tarde?",
+                  "Qual outfit você usaria em um sábado à tarde?",
                   "Qual paleta de cores mais combina com você?",
                 ].map((q, i) => (
                   <li key={q} className="flex items-center gap-3.5">

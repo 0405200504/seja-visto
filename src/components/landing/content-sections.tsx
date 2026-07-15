@@ -48,7 +48,7 @@ export function StylesSection() {
           <Reveal delay={200}>
             <p className="mt-4 leading-relaxed text-[#A4AAB5]">
               A plataforma mostra o que define cada estética e como essas
-              referências aparecem em looks reais.
+              referências aparecem em outfits reais.
             </p>
           </Reveal>
         </div>
@@ -182,7 +182,7 @@ export function GuidesSection() {
           <div className="flex flex-col gap-4">
             <Reveal delay={200}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
-                Três guias são ferramentas interativas
+                Ferramentas interativas
               </p>
             </Reveal>
             {INTERACTIVE_GUIDES.map((g, i) => (
@@ -218,7 +218,7 @@ export function GuidesSection() {
   );
 }
 
-/* ── Seção 12 — Glossário visual ──────────────────────────── */
+/* ── Seção 12 — Dicionário do outfit ──────────────────────── */
 
 const GLOSSARY = [
   { nome: "Boxy tee", desc: "camiseta larga e quadrada" },
@@ -242,6 +242,11 @@ export function GlossarySection() {
       <div className="mx-auto max-w-[1280px] px-5 md:px-8">
         <div className="max-w-2xl">
           <Reveal>
+            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
+              Dicionário do outfit
+            </p>
+          </Reveal>
+          <Reveal delay={80}>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
               Você sabe qual peça quer.{" "}
               <span className="text-[#A4AAB5]">Só não sabe o nome dela.</span>
@@ -251,7 +256,7 @@ export function GlossarySection() {
             <p className="mt-6 leading-relaxed text-[#A4AAB5]">
               Muita gente encontra uma roupa interessante em uma referência, mas
               não consegue pesquisar ou pedir a peça porque não sabe como ela é
-              chamada. O glossário visual resolve isso.
+              chamada. O dicionário do outfit resolve isso.
             </p>
           </Reveal>
         </div>
@@ -441,13 +446,13 @@ const PLAN_DAYS = [
   },
   {
     dia: 2,
-    titulo: "Monte três looks básicos",
+    titulo: "Monte três outfits básicos",
     texto: "Crie três combinações simples com o que você já possui.",
   },
   {
     dia: 3,
     titulo: "Teste uma combinação neutra",
-    texto: "Monte um look usando apenas tons neutros.",
+    texto: "Monte um outfit usando apenas tons neutros.",
   },
   {
     dia: 4,
@@ -457,11 +462,11 @@ const PLAN_DAYS = [
   {
     dia: 5,
     titulo: "Ajuste calçado e acessórios",
-    texto: "Mude a leitura do look utilizando os detalhes.",
+    texto: "Mude a leitura do outfit utilizando os detalhes.",
   },
   {
     dia: 6,
-    titulo: "Monte um look para sair",
+    titulo: "Monte um outfit para sair",
     texto: "Prepare uma combinação completa para uma ocasião noturna.",
   },
   {
