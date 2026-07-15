@@ -104,6 +104,48 @@ export function ComparisonSection() {
 
 /* ── Seção 16 — Raphael Pereira ───────────────────────────── */
 
+const ARTIST_PHOTOS = Array.from({ length: 21 }, (_, i) => {
+  const n = String(i + 1).padStart(2, "0");
+  return `/images/raphael/artistas/artista-${n}.jpg`;
+});
+
+function ArtistMarquee() {
+  return (
+    <div className="relative mt-16 md:mt-20">
+      <p className="mb-6 text-center text-xs font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
+        +30 artistas vestidos pelo Rapha
+      </p>
+      <div className="marquee-mask relative overflow-hidden">
+        <div className="marquee-track flex w-max">
+          {[false, true].map((clone) => (
+            <div
+              key={clone ? "clone" : "original"}
+              aria-hidden={clone || undefined}
+              className="flex shrink-0 gap-4 pr-4"
+            >
+              {ARTIST_PHOTOS.map((src) => (
+                <div
+                  key={src}
+                  className="relative aspect-[3/4] h-56 shrink-0 overflow-hidden rounded-xl border border-[#20242C] bg-[#111318] md:h-72"
+                >
+                  <Image
+                    src={src}
+                    alt={clone ? "" : "Artista vestido por Raphael Pereira"}
+                    fill
+                    sizes="(max-width: 768px) 168px, 216px"
+                    quality={55}
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function RaphaelSection() {
   return (
     <section className="relative overflow-hidden py-20 md:py-28">
@@ -112,48 +154,26 @@ export function RaphaelSection() {
       </div>
       <div className="relative mx-auto max-w-[1280px] px-5 md:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
-          {/* Foto editorial.
-              TROCAR PELA FOTO REAL: salve a imagem em
-              /public/images/raphael/raphael.jpg e substitua o bloco
-              <div className="editorial-placeholder"> pelo <Image> comentado abaixo. */}
           <Reveal>
             <figure className="relative mx-auto aspect-[3/4] w-full max-w-md overflow-hidden rounded-2xl border border-[#20242C] bg-[#111318]">
-              {/*
               <Image
                 src="/images/raphael/raphael.jpg"
-                alt="Raphael Pereira, criador do MPO"
+                alt="Raphael Pereira, stylist e dono do MPO"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
+                quality={55}
                 className="object-cover"
               />
-              */}
-              <div className="editorial-placeholder absolute inset-0 flex flex-col items-center justify-center gap-4">
-                <div
-                  aria-hidden
-                  className="absolute inset-0 opacity-40"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(rgba(32,36,44,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(32,36,44,0.6) 1px, transparent 1px)",
-                    backgroundSize: "40px 40px",
-                  }}
-                />
-                <div
-                  aria-hidden
-                  className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-[#0A0A0A] to-transparent"
-                />
-                <span className="relative flex size-24 items-center justify-center rounded-full border border-[#146CFF]/40 bg-[#146CFF]/[0.08] font-display text-3xl font-bold text-[#78A9FF]">
-                  RP
-                </span>
-                <p className="relative text-xs font-medium uppercase tracking-[0.3em] text-[#A4AAB5]/60">
-                  Foto editorial
-                </p>
-              </div>
+              <div
+                aria-hidden
+                className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-[#0A0A0A] to-transparent"
+              />
               <figcaption className="absolute bottom-5 left-5 right-5">
                 <p className="font-display text-lg font-bold text-[#F5F7FA]">
                   Raphael Pereira
                 </p>
                 <p className="text-xs text-[#A4AAB5]">
-                  Fundador da AGED · Criador do MPO
+                  Stylist desde 2017 · Criador e dono do MPO
                 </p>
               </figcaption>
             </figure>
@@ -161,30 +181,38 @@ export function RaphaelSection() {
 
           <div>
             <Reveal delay={100}>
+              <p className="mb-4 inline-block rounded-full border border-[#146CFF]/40 bg-[#146CFF]/[0.08] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#78A9FF]">
+                Quem está por trás do MPO
+              </p>
+            </Reveal>
+            <Reveal delay={150}>
               <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-                Criado por quem construiu uma vida dentro da moda.
+                O MPO tem dono. E ele veste artista desde 2017.
               </h2>
             </Reveal>
             <Reveal delay={200}>
               <p className="mt-6 leading-relaxed text-[#A4AAB5]">
-                Raphael Pereira não aprendeu sobre roupa apenas estudando
-                referências. Ele criou a própria marca começando com R$1.400 e
-                levou a AGED a um faturamento de mais de R$2 milhões em 12
-                meses.
+                Raphael Pereira é stylist desde 2017 e uma referência no meio.
+                Em quase uma década de carreira, já vestiu mais de 30 artistas
+                — construindo, look por look, o olhar que hoje está dentro do
+                MPO.
               </p>
             </Reveal>
             <Reveal delay={280}>
               <p className="mt-4 leading-relaxed text-[#A4AAB5]">
-                Durante essa trajetória, vestiu nomes como Matuê, participou de
-                projetos com Renner e PlayStation e levou sua marca para uma
-                pop-up em Paris.
+                Para o Rapha, moda nunca foi só profissão. Se vestir bem é o
+                lifestyle dele: uma paixão que começou antes do trabalho e que
+                ele vive todos os dias — no espelho e nos bastidores com os
+                artistas.
               </p>
             </Reveal>
             <Reveal delay={360}>
               <p className="mt-4 leading-relaxed text-[#A4AAB5]">
-                O MPO reúne o repertório que Raphael construiu criando produtos,
-                observando comportamento, montando coleções e vivendo o mercado
-                de moda na prática.
+                No caminho, ainda fundou a própria marca, vestiu nomes como
+                Matuê e participou de projetos com Renner e PlayStation. Mas é
+                o repertório de stylist — de quem decide na prática o que
+                funciona em cada corpo e contexto — que ele destilou na
+                plataforma.
               </p>
             </Reveal>
             <Reveal delay={440}>
@@ -202,7 +230,13 @@ export function RaphaelSection() {
             </Reveal>
             <Reveal delay={500}>
               <div className="mt-7 flex flex-wrap gap-2.5">
-                {["AGED", "Matuê", "Renner", "PlayStation", "Pop-up em Paris"].map((tag) => (
+                {[
+                  "Stylist desde 2017",
+                  "+30 artistas vestidos",
+                  "Matuê",
+                  "Renner",
+                  "PlayStation",
+                ].map((tag) => (
                   <span
                     key={tag}
                     className="rounded-full border border-[#20242C] bg-white/[0.02] px-4 py-2 text-xs font-medium text-[#A4AAB5]"
@@ -214,6 +248,10 @@ export function RaphaelSection() {
             </Reveal>
           </div>
         </div>
+
+        <Reveal delay={200}>
+          <ArtistMarquee />
+        </Reveal>
       </div>
     </section>
   );
