@@ -25,7 +25,7 @@ export default async function AdminAlunosPage() {
     supabase.from("user_progress").select("user_id").eq("completed", true),
     supabase.from("lessons").select("*", { count: "exact", head: true }),
     supabase.from("fit_check_logs").select("user_id, prompt_tokens, completion_tokens, total_tokens, kind"),
-    supabase.from("fit_check_messages").select("user_id, role"),
+    supabase.from("fit_check_messages").select("user_id, role, content, thumb"),
   ]);
 
   // Busca o último acesso na API de Admin (opcional - sem service key falha silenciosamente)
@@ -60,14 +60,35 @@ export default async function AdminAlunosPage() {
     }
   }
 
-  // Agrupa o uso de tokens por usuário (com fallback de estimativa realista para registros antigos)
+  // Agrupa o uso de tokens por usuário (com fallback de estimativa realista a partir das mensagens do chat)
   const aiTokensByUser = new Map<string, number>();
-  for (const log of aiLogs ?? []) {
-    const promptEst = log.prompt_tokens || (log.kind === "photo" ? 1200 : 600);
-    const compEst = log.completion_tokens || 400;
-    const logTotal = log.total_tokens || (promptEst + compEst);
-    
-    aiTokensByUser.set(log.user_id, (aiTokensByUser.get(log.user_id) ?? 0) + logTotal);
+  
+  const logsHasTokens = (aiLogs ?? []).some((l) => (l.total_tokens ?? 0) > 0);
+
+  if (logsHasTokens) {
+    for (const log of aiLogs ?? []) {
+      const promptEst = log.prompt_tokens || (log.kind === "photo" ? 1200 : 600);
+      const compEst = log.completion_tokens || 400;
+      const logTotal = log.total_tokens || (promptEst + compEst);
+      
+      aiTokensByUser.set(log.user_id, (aiTokensByUser.get(log.user_id) ?? 0) + logTotal);
+    }
+  } else {
+    // Estimativa a partir de todas as mensagens reais do chat
+    for (const msg of aiMessages ?? []) {
+      const wordCount = (msg.content ?? "").split(/\s+/).filter(Boolean).length;
+      const tokensEst = Math.round(wordCount * 1.35);
+      
+      let msgTokens = 0;
+      if (msg.role === "user") {
+        const photoBonus = msg.thumb ? 1500 : 0;
+        msgTokens = tokensEst + photoBonus + 800; // prompt de sistema
+      } else {
+        msgTokens = tokensEst;
+      }
+      
+      aiTokensByUser.set(msg.user_id, (aiTokensByUser.get(msg.user_id) ?? 0) + msgTokens);
+    }
   }
 
   const students = profiles ?? [];

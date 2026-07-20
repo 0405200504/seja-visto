@@ -23,7 +23,8 @@ export default async function AdminOverviewPage() {
     { data: profiles },
     { data: progressRows },
     { count: totalLessons },
-    { data: aiLogs }
+    { data: aiLogs },
+    { data: aiMessages }
   ] = await Promise.all([
     supabase.from("users_profile").select("*", { count: "exact", head: true }),
     supabase.from("users_profile").select("*", { count: "exact", head: true }).eq("onboarding_completed", true),
@@ -40,7 +41,8 @@ export default async function AdminOverviewPage() {
       .returns<Profile[]>(),
     supabase.from("user_progress").select("user_id").eq("completed", true),
     supabase.from("lessons").select("*", { count: "exact", head: true }),
-    supabase.from("fit_check_logs").select("prompt_tokens, completion_tokens, total_tokens, kind")
+    supabase.from("fit_check_logs").select("prompt_tokens, completion_tokens, total_tokens, kind"),
+    supabase.from("fit_check_messages").select("role, content, thumb")
   ]);
 
   // Agrupa progresso
@@ -70,24 +72,51 @@ export default async function AdminOverviewPage() {
     { label: "Looks Cadastrados", value: looks ?? 0 },
   ];
 
-  // Agrega métricas globais de consumo de IA com fallbacks estimados para logs antigos
-  const safeAiLogs = aiLogs ?? [];
-  const totalPromptTokens = safeAiLogs.reduce((acc, log) => {
-    const val = log.prompt_tokens || (log.kind === "photo" ? 1200 : 600);
-    return acc + val;
-  }, 0);
-  const totalCompletionTokens = safeAiLogs.reduce((acc, log) => {
-    const val = log.completion_tokens || 400;
-    return acc + val;
-  }, 0);
-  const totalTokens = safeAiLogs.reduce((acc, log) => {
-    const promptEst = log.prompt_tokens || (log.kind === "photo" ? 1200 : 600);
-    const compEst = log.completion_tokens || 400;
-    const val = log.total_tokens || (promptEst + compEst);
-    return acc + val;
-  }, 0);
-  const totalPhotos = safeAiLogs.filter((log) => log.kind === "photo").length;
-  const totalTexts = safeAiLogs.filter((log) => log.kind === "text").length;
+  // Agrega métricas globais de consumo de IA de forma combinada (dados reais da API + retroativo estimado)
+  const logsHasTokens = (aiLogs ?? []).some((l) => (l.total_tokens ?? 0) > 0);
+
+  let totalPromptTokens = 0;
+  let totalCompletionTokens = 0;
+  let totalTokens = 0;
+  let totalPhotos = 0;
+  let totalTexts = 0;
+
+  if (logsHasTokens) {
+    const safeAiLogs = aiLogs ?? [];
+    totalPromptTokens = safeAiLogs.reduce((acc, log) => {
+      const val = log.prompt_tokens || (log.kind === "photo" ? 1200 : 600);
+      return acc + val;
+    }, 0);
+    totalCompletionTokens = safeAiLogs.reduce((acc, log) => {
+      const val = log.completion_tokens || 400;
+      return acc + val;
+    }, 0);
+    totalTokens = safeAiLogs.reduce((acc, log) => {
+      const promptEst = log.prompt_tokens || (log.kind === "photo" ? 1200 : 600);
+      const compEst = log.completion_tokens || 400;
+      return acc + (log.total_tokens || (promptEst + compEst));
+    }, 0);
+    totalPhotos = safeAiLogs.filter((log) => log.kind === "photo").length;
+    totalTexts = safeAiLogs.filter((log) => log.kind === "text").length;
+  } else {
+    // Estimativa retroativa a partir de todas as mensagens de fit_check_messages (se logs estiverem vazios/nulos)
+    const messages = aiMessages ?? [];
+    totalPhotos = messages.filter((m) => m.role === "user" && m.thumb).length;
+    totalTexts = messages.filter((m) => m.role === "user" && !m.thumb).length;
+
+    for (const msg of messages) {
+      const wordCount = (msg.content ?? "").split(/\s+/).filter(Boolean).length;
+      const tokensEst = Math.round(wordCount * 1.35); // tokens por palavra aproximado
+
+      if (msg.role === "user") {
+        const photoBonus = msg.thumb ? 1500 : 0;
+        totalPromptTokens += tokensEst + photoBonus + 800; // prompt de sistema
+      } else {
+        totalCompletionTokens += tokensEst;
+      }
+    }
+    totalTokens = totalPromptTokens + totalCompletionTokens;
+  }
 
   return (
     <div className="animate-fade-up">
