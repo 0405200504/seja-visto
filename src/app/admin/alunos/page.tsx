@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PageHeader } from "@/components/app/page-header";
 import { BONUSES, BASE_ENTITLEMENT } from "@/lib/bonuses";
-import { StudentCard } from "@/components/admin/student-card";
+import { StudentList } from "@/components/admin/student-list";
 
 export default async function AdminAlunosPage() {
   const { supabase } = await requireAdmin();
@@ -53,6 +53,14 @@ export default async function AdminAlunosPage() {
     (p) => (entitlementsByUser.get(p.user_id) ?? []).some((e) => e !== BASE_ENTITLEMENT)
   ).length;
 
+  // Modela os dados em um formato plano para passar de forma limpa ao Client Component
+  const studentsData = students.map((p) => ({
+    student: p,
+    entitlements: entitlementsByUser.get(p.user_id) ?? [],
+    lastSeen: lastSignIn.get(p.user_id),
+    completedLessonsCount: progressByUser.get(p.user_id) ?? 0,
+  }));
+
   return (
     <div className="animate-fade-up">
       <PageHeader
@@ -84,30 +92,11 @@ export default async function AdminAlunosPage() {
         </div>
       </div>
 
-      {/* Lista de Alunos Interativos */}
-      <div className="space-y-3.5">
-        {students.map((p) => {
-          const keys = entitlementsByUser.get(p.user_id) ?? [];
-          const seen = lastSignIn.get(p.user_id);
-
-          return (
-            <StudentCard
-              key={p.user_id}
-              student={p}
-              entitlements={keys}
-              lastSeen={seen}
-              completedLessonsCount={progressByUser.get(p.user_id) ?? 0}
-              totalLessonsCount={totalLessons ?? 0}
-            />
-          );
-        })}
-
-        {students.length === 0 && (
-          <p className="rounded-2xl border border-dashed border-border px-5 py-8 text-center text-sm text-muted">
-            Nenhum aluno cadastrado no sistema ainda.
-          </p>
-        )}
-      </div>
+      {/* Lista de Alunos Interativos com Campo de Busca */}
+      <StudentList 
+        initialStudents={studentsData} 
+        totalLessonsCount={totalLessons ?? 0} 
+      />
     </div>
   );
 }
