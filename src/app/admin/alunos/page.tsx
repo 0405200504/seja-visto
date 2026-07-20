@@ -14,7 +14,8 @@ export default async function AdminAlunosPage() {
     { data: entitlements },
     { data: progressRows },
     { count: totalLessons },
-    { data: aiLogs }
+    { data: aiLogs },
+    { data: aiMessages }
   ] = await Promise.all([
     supabase
       .from("users_profile")
@@ -23,7 +24,8 @@ export default async function AdminAlunosPage() {
     supabase.from("user_entitlements").select("user_id, entitlement"),
     supabase.from("user_progress").select("user_id").eq("completed", true),
     supabase.from("lessons").select("*", { count: "exact", head: true }),
-    supabase.from("fit_check_logs").select("user_id, total_tokens"),
+    supabase.from("fit_check_logs").select("user_id, prompt_tokens, completion_tokens, total_tokens, kind"),
+    supabase.from("fit_check_messages").select("user_id, role"),
   ]);
 
   // Busca o último acesso na API de Admin (opcional - sem service key falha silenciosamente)
@@ -50,12 +52,22 @@ export default async function AdminAlunosPage() {
     progressByUser.set(row.user_id, (progressByUser.get(row.user_id) ?? 0) + 1);
   }
 
-  // Agrupa o uso de IA (tokens e mensagens) por usuário
+  // Agrupa mensagens reais enviadas pelo usuário (role = 'user')
   const aiMessagesByUser = new Map<string, number>();
+  for (const msg of aiMessages ?? []) {
+    if (msg.role === "user") {
+      aiMessagesByUser.set(msg.user_id, (aiMessagesByUser.get(msg.user_id) ?? 0) + 1);
+    }
+  }
+
+  // Agrupa o uso de tokens por usuário (com fallback de estimativa realista para registros antigos)
   const aiTokensByUser = new Map<string, number>();
   for (const log of aiLogs ?? []) {
-    aiMessagesByUser.set(log.user_id, (aiMessagesByUser.get(log.user_id) ?? 0) + 1);
-    aiTokensByUser.set(log.user_id, (aiTokensByUser.get(log.user_id) ?? 0) + (log.total_tokens ?? 0));
+    const promptEst = log.prompt_tokens || (log.kind === "photo" ? 1200 : 600);
+    const compEst = log.completion_tokens || 400;
+    const logTotal = log.total_tokens || (promptEst + compEst);
+    
+    aiTokensByUser.set(log.user_id, (aiTokensByUser.get(log.user_id) ?? 0) + logTotal);
   }
 
   const students = profiles ?? [];

@@ -207,6 +207,14 @@ export function AiStatsCard({
           </span>
         </div>
       </div>
+
+      {/* Rodapé Informativo sobre a API da OpenAI */}
+      <div className="rounded-xl bg-surface-2/40 p-3.5 text-[10px] text-muted flex items-start gap-2 border border-border/40 leading-relaxed">
+        <span className="text-accent shrink-0 font-bold uppercase text-[9px] bg-accent/15 px-1.5 py-0.5 rounded-md">Info</span>
+        <p>
+          A API da OpenAI não fornece um endpoint público para consultar o saldo em dólares ou limite de tokens restante da sua carteira programaticamente. Defina o seu limite mensal de tokens contratado no campo de orçamento de tokens acima para monitorar e acompanhar o uso real da sua chave.
+        </p>
+      </div>
       
     </div>
   );

@@ -70,11 +70,22 @@ export default async function AdminOverviewPage() {
     { label: "Looks Cadastrados", value: looks ?? 0 },
   ];
 
-  // Agrega métricas globais de consumo de IA
+  // Agrega métricas globais de consumo de IA com fallbacks estimados para logs antigos
   const safeAiLogs = aiLogs ?? [];
-  const totalPromptTokens = safeAiLogs.reduce((acc, log) => acc + (log.prompt_tokens ?? 0), 0);
-  const totalCompletionTokens = safeAiLogs.reduce((acc, log) => acc + (log.completion_tokens ?? 0), 0);
-  const totalTokens = safeAiLogs.reduce((acc, log) => acc + (log.total_tokens ?? 0), 0);
+  const totalPromptTokens = safeAiLogs.reduce((acc, log) => {
+    const val = log.prompt_tokens || (log.kind === "photo" ? 1200 : 600);
+    return acc + val;
+  }, 0);
+  const totalCompletionTokens = safeAiLogs.reduce((acc, log) => {
+    const val = log.completion_tokens || 400;
+    return acc + val;
+  }, 0);
+  const totalTokens = safeAiLogs.reduce((acc, log) => {
+    const promptEst = log.prompt_tokens || (log.kind === "photo" ? 1200 : 600);
+    const compEst = log.completion_tokens || 400;
+    const val = log.total_tokens || (promptEst + compEst);
+    return acc + val;
+  }, 0);
   const totalPhotos = safeAiLogs.filter((log) => log.kind === "photo").length;
   const totalTexts = safeAiLogs.filter((log) => log.kind === "text").length;
 
