@@ -2,8 +2,9 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { Camera, History, Plus, Send, Sparkles, X } from "lucide-react";
+import { Camera, Coins, History, Plus, Search, Send, Sparkles, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { TOKENS_200_CHECKOUT_URL, TOKENS_50_CHECKOUT_URL } from "@/components/landing/checkout";
 import { cn } from "@/lib/utils";
 
 type ChatMessage = {
@@ -97,6 +98,9 @@ export function FitCheckChat() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [search, setSearch] = useState("");
+  const [credits, setCredits] = useState<number | null>(null);
+  const [buyStep, setBuyStep] = useState<0 | 1 | 2>(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -109,14 +113,35 @@ export function FitCheckChat() {
     const { data } = await supabase
       .from("fit_check_conversations")
       .select("id, title, updated_at")
-      .order("updated_at", { ascending: false })
-      .limit(5);
+      .order("updated_at", { ascending: false });
     setConversations((data as Conversation[]) ?? []);
+  }, []);
+
+  const loadCredits = useCallback(async () => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("fit_check_credits")
+      .select("balance")
+      .maybeSingle<{ balance: number }>();
+    if (data) setCredits(data.balance);
   }, []);
 
   useEffect(() => {
     loadConversations();
-  }, [loadConversations]);
+    loadCredits();
+  }, [loadConversations, loadCredits]);
+
+  async function deleteConversation(id: string) {
+    if (!window.confirm("Excluir esta conversa? Isso não tem como desfazer.")) return;
+    const supabase = createClient();
+    await supabase.from("fit_check_conversations").delete().eq("id", id);
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+    if (id === conversationId) newChat();
+  }
+
+  const filteredConversations = conversations.filter((c) =>
+    c.title.toLowerCase().includes(search.trim().toLowerCase())
+  );
 
   function newChat() {
     setMessages([]);
@@ -163,6 +188,12 @@ export function FitCheckChat() {
     if ((!text && !pendingImage) || loading) return;
 
     const image = pendingImage;
+
+    // Sem tokens e tentando mandar foto: abre o popup de compra direto.
+    if (image && credits !== null && credits <= 0) {
+      setBuyStep(1);
+      return;
+    }
     const userMessage: ChatMessage = {
       role: "user",
       content: text || "Fit check!",
@@ -194,8 +225,18 @@ export function FitCheckChat() {
         }),
       });
       const data = await res.json();
+      // Tokens de imagem acabaram: devolve o que a pessoa mandou e abre o popup.
+      if (data?.needTokens) {
+        setCredits(0);
+        setMessages((prev) => prev.slice(0, -1));
+        setInput(text);
+        setPendingImage(image);
+        setBuyStep(1);
+        return;
+      }
       if (!res.ok) throw new Error(data?.error ?? "Erro na análise.");
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+      if (typeof data.credits === "number") setCredits(data.credits);
       if (data.conversationId && data.conversationId !== conversationId) {
         setConversationId(data.conversationId);
       }
@@ -223,40 +264,80 @@ export function FitCheckChat() {
           <Plus className="h-3.5 w-3.5" />
           Novo chat
         </button>
-        <button
-          type="button"
-          onClick={() => setShowHistory((v) => !v)}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition",
-            showHistory
-              ? "border-accent bg-accent-soft text-accent"
-              : "border-border bg-surface-2 text-muted hover:border-border-strong hover:text-foreground"
+        <div className="flex items-center gap-2">
+          {credits !== null && (
+            <button
+              type="button"
+              onClick={() => setBuyStep(1)}
+              title="Cada imagem analisada usa 1 token. Clique para comprar mais."
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition",
+                credits <= 0
+                  ? "border-danger/50 bg-danger/10 text-danger hover:border-danger"
+                  : "border-border bg-surface-2 text-muted hover:border-border-strong hover:text-foreground"
+              )}
+            >
+              <Coins className="h-3.5 w-3.5" />
+              {credits} {credits === 1 ? "token" : "tokens"}
+            </button>
           )}
-        >
-          <History className="h-3.5 w-3.5" />
-          Histórico
-        </button>
+          <button
+            type="button"
+            onClick={() => setShowHistory((v) => !v)}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition",
+              showHistory
+                ? "border-accent bg-accent-soft text-accent"
+                : "border-border bg-surface-2 text-muted hover:border-border-strong hover:text-foreground"
+            )}
+          >
+            <History className="h-3.5 w-3.5" />
+            Histórico
+          </button>
+        </div>
       </div>
 
       {/* Painel de histórico */}
       {showHistory && (
         <div className="border-b border-border px-3 py-2 sm:px-4">
+          {/* Busca */}
+          <div className="relative mb-1">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-2" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar conversa…"
+              className="w-full rounded-lg border border-border bg-surface-2 py-1.5 pl-8 pr-3 text-xs outline-none transition placeholder:text-muted-2 focus:border-accent"
+            />
+          </div>
+
           {conversations.length === 0 ? (
             <p className="py-2 text-xs text-muted">Nenhuma conversa ainda.</p>
+          ) : filteredConversations.length === 0 ? (
+            <p className="py-2 text-xs text-muted">Nenhuma conversa encontrada.</p>
           ) : (
-            <ul className="divide-y divide-border/60">
-              {conversations.map((conv) => (
-                <li key={conv.id}>
+            <ul className="max-h-64 divide-y divide-border/60 overflow-y-auto">
+              {filteredConversations.map((conv) => (
+                <li key={conv.id} className="group flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => openConversation(conv.id)}
                     className={cn(
-                      "flex w-full items-center justify-between gap-3 py-2 text-left text-sm transition hover:text-foreground",
+                      "flex min-w-0 flex-1 items-center justify-between gap-3 py-2 text-left text-sm transition hover:text-foreground",
                       conv.id === conversationId ? "text-accent" : "text-muted"
                     )}
                   >
                     <span className="truncate">{conv.title}</span>
                     <span className="shrink-0 text-xs text-muted-2">{formatDay(conv.updated_at)}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteConversation(conv.id)}
+                    className="shrink-0 rounded-md p-1.5 text-muted-2 opacity-60 transition hover:bg-danger/10 hover:text-danger group-hover:opacity-100"
+                    aria-label="Excluir conversa"
+                    title="Excluir conversa"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </li>
               ))}
@@ -398,6 +479,90 @@ export function FitCheckChat() {
           aria-label="Enviar"
         >
           <Send className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Popup de compra de tokens */}
+      {buyStep !== 0 && (
+        <TokenModal
+          step={buyStep as 1 | 2}
+          onDecline={() => setBuyStep(2)}
+          onClose={() => setBuyStep(0)}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Oferta principal (200 tokens) e, se recusar, oferta de saída (50 tokens). */
+function TokenModal({
+  step,
+  onDecline,
+  onClose,
+}: {
+  step: 1 | 2;
+  onDecline: () => void;
+  onClose: () => void;
+}) {
+  const isMain = step === 1;
+  const amount = isMain ? 200 : 50;
+  const price = isMain ? "97" : "27";
+  const url = isMain ? TOKENS_200_CHECKOUT_URL : TOKENS_50_CHECKOUT_URL;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl border border-border bg-surface p-6 text-center shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="ml-auto flex h-7 w-7 items-center justify-center rounded-full text-muted transition hover:text-foreground"
+          aria-label="Fechar"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft">
+          <Coins className="h-7 w-7 text-accent" />
+        </div>
+
+        <h3 className="text-lg font-semibold text-foreground">
+          {isMain ? "Seus tokens acabaram" : "Que tal um pacote menor?"}
+        </h3>
+        <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted">
+          {isMain
+            ? "Cada imagem analisada usa 1 token. Recarregue e continue mandando seus fits pra IA analisar."
+            : "Sem problema. Pega um pacote de entrada e continue de onde parou."}
+        </p>
+
+        <div className="mt-5 rounded-xl border border-border bg-surface-2 p-4">
+          <p className="text-3xl font-bold text-foreground">
+            {amount} <span className="text-base font-medium text-muted">tokens</span>
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            {amount} imagens · <span className="font-semibold text-foreground">R$ {price}</span>
+          </p>
+        </div>
+
+        <a
+          href={url || "#"}
+          {...(url ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          className="mt-4 flex w-full items-center justify-center rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground transition hover:bg-accent-hover"
+        >
+          {isMain ? `Quero ${amount} tokens — R$ ${price}` : `Pegar ${amount} tokens — R$ ${price}`}
+        </a>
+
+        <button
+          type="button"
+          onClick={isMain ? onDecline : onClose}
+          className="mt-2 w-full py-2 text-sm text-muted transition hover:text-foreground"
+        >
+          {isMain ? "Agora não" : "Fechar"}
         </button>
       </div>
     </div>

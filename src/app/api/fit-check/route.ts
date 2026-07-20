@@ -16,8 +16,10 @@ import { GUIDES } from "@/lib/guides";
 const MODEL = "gpt-5.5";
 // gpt-5.x usa parte do orçamento de saída para "raciocínio" interno — dar folga
 const MAX_OUTPUT_TOKENS = 1500;
-const DAILY_PHOTO_LIMIT = 10;
-const DAILY_MESSAGE_LIMIT = 40;
+// Cada conta nova ganha 5 imagens grátis; depois precisa comprar tokens.
+const FREE_CREDITS = 5;
+// Trava de segurança contra abuso de mensagens de texto (texto é grátis).
+const DAILY_TEXT_LIMIT = 60;
 // ~2,8 MB de data URL ≈ foto de 1024px em JPEG com folga
 const MAX_IMAGE_CHARS = 2_800_000;
 
@@ -113,10 +115,10 @@ Responda sempre em português do Brasil. Máximo ~200 palavras.
 ${digest}`;
 }
 
-async function checkRateLimit(
+/** Trava de abuso só para mensagens de texto — fotos são governadas por tokens. */
+async function checkTextRateLimit(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string,
-  kind: "photo" | "text"
+  userId: string
 ): Promise<{ ok: boolean; message?: string }> {
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
@@ -125,27 +127,85 @@ async function checkRateLimit(
     .from("fit_check_logs")
     .select("kind")
     .eq("user_id", userId)
+    .eq("kind", "text")
     .gte("created_at", startOfDay.toISOString());
 
   // Tabela ainda não criada (migração pendente) — segue sem limite
   if (error) return { ok: true };
 
-  const photos = data.filter((r) => r.kind === "photo").length;
-  const total = data.length;
-
-  if (kind === "photo" && photos >= DAILY_PHOTO_LIMIT) {
-    return {
-      ok: false,
-      message: `Você já mandou ${DAILY_PHOTO_LIMIT} fits hoje. Volta amanhã que a gente analisa mais!`,
-    };
-  }
-  if (total >= DAILY_MESSAGE_LIMIT) {
+  if (data.length >= DAILY_TEXT_LIMIT) {
     return {
       ok: false,
       message: "Limite de mensagens de hoje atingido. Amanhã tem mais!",
     };
   }
   return { ok: true };
+}
+
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+/** Lê o saldo de tokens, criando a linha com os 5 grátis se ainda não existir. */
+async function getCredits(admin: AdminClient, userId: string): Promise<number> {
+  const { data } = await admin
+    .from("fit_check_credits")
+    .select("balance")
+    .eq("user_id", userId)
+    .maybeSingle<{ balance: number }>();
+  if (data) return data.balance;
+
+  const { data: created } = await admin
+    .from("fit_check_credits")
+    .insert({ user_id: userId, balance: FREE_CREDITS })
+    .select("balance")
+    .maybeSingle<{ balance: number }>();
+  return created?.balance ?? FREE_CREDITS;
+}
+
+/** Desconta 1 token de forma atômica. Retorna o novo saldo ou null se zerou. */
+async function consumeCredit(admin: AdminClient, userId: string): Promise<number | null> {
+  const { data } = await admin.rpc("consume_fit_check_credit", { p_user: userId });
+  return typeof data === "number" ? data : null;
+}
+
+/** Gera um título curto e descritivo para a conversa a partir da 1ª troca. */
+async function generateTitle(
+  apiKey: string,
+  message: string,
+  reply: string,
+  hasImage: boolean
+): Promise<string> {
+  const fallback = (message.trim() || "Análise de outfit").slice(0, 60);
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: MODEL,
+        max_completion_tokens: 300,
+        reasoning_effort: "low",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Crie um título curto (máximo 5 palavras, sem aspas, sem ponto final) que resuma o assunto desta conversa de análise de outfit, para a pessoa achar depois no histórico. Ex.: 'Look casual com jeans', 'Dúvida sobre tênis branco'. Responda só o título.",
+          },
+          {
+            role: "user",
+            content: `${hasImage ? "[foto de um outfit] " : ""}Mensagem: ${
+              message.trim() || "(sem texto, só a foto)"
+            }\n\nResposta da IA: ${reply.slice(0, 500)}`,
+          },
+        ],
+      }),
+    });
+    if (!res.ok) return fallback;
+    const json = await res.json();
+    const raw: string = json?.choices?.[0]?.message?.content ?? "";
+    const title = raw.replace(/^["'\s]+|["'.\s]+$/g, "").slice(0, 60);
+    return title || fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 export async function POST(request: Request) {
@@ -192,9 +252,31 @@ export async function POST(request: Request) {
   }
 
   const kind = image ? "photo" : "text";
-  const limit = await checkRateLimit(supabase, user.id, kind);
-  if (!limit.ok) {
-    return NextResponse.json({ reply: limit.message, limited: true });
+  const admin = createAdminClient();
+
+  // Admin da plataforma não gasta tokens.
+  const { data: profileRow } = await supabase
+    .from("users_profile")
+    .select("is_admin")
+    .eq("user_id", user.id)
+    .maybeSingle<{ is_admin: boolean }>();
+  const isAdmin = profileRow?.is_admin === true;
+
+  if (image && !isAdmin) {
+    // Fotos consomem tokens: bloqueia antes de chamar a IA se o saldo zerou.
+    const balance = await getCredits(admin, user.id);
+    if (balance <= 0) {
+      return NextResponse.json({
+        error: "Seus tokens de análise de imagem acabaram.",
+        needTokens: true,
+        balance: 0,
+      });
+    }
+  } else if (!image) {
+    const limit = await checkTextRateLimit(supabase, user.id);
+    if (!limit.ok) {
+      return NextResponse.json({ reply: limit.message, limited: true });
+    }
   }
 
   const digest = await getPlatformDigest();
@@ -267,28 +349,22 @@ export async function POST(request: Request) {
     total_tokens: totalTokens
   });
 
-  // ---------- Persistência da conversa (histórico de 5) ----------
+  // Desconta 1 token por imagem analisada (admin não paga).
+  let credits: number | null = null;
+  if (image && !isAdmin) {
+    credits = await consumeCredit(admin, user.id);
+  }
+
+  // ---------- Persistência da conversa (sem limite de quantidade) ----------
   if (!conversationId) {
-    const title = (message.trim() || "Fit check").slice(0, 60);
+    // Título inteligente a partir da 1ª troca, pra pessoa achar no histórico.
+    const title = await generateTitle(apiKey, message, reply, Boolean(image));
     const { data: conv } = await supabase
       .from("fit_check_conversations")
       .insert({ user_id: user.id, title })
       .select("id")
       .single<{ id: string }>();
     conversationId = conv?.id ?? null;
-
-    // Mantém só as 5 conversas mais recentes
-    if (conversationId) {
-      const { data: all } = await supabase
-        .from("fit_check_conversations")
-        .select("id")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false });
-      const excess = (all ?? []).slice(5).map((c) => c.id);
-      if (excess.length > 0) {
-        await supabase.from("fit_check_conversations").delete().in("id", excess);
-      }
-    }
   }
 
   if (conversationId) {
@@ -313,5 +389,5 @@ export async function POST(request: Request) {
       .eq("id", conversationId);
   }
 
-  return NextResponse.json({ reply, conversationId });
+  return NextResponse.json({ reply, conversationId, credits });
 }

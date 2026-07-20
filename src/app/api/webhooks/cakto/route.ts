@@ -18,6 +18,16 @@ import { BASE_ENTITLEMENT } from "@/lib/bonuses";
 const GRANT_EVENTS = new Set(["purchase_approved", "subscription_renewed"]);
 const REVOKE_EVENTS = new Set(["refund", "chargeback", "purchase_refunded", "subscription_canceled"]);
 
+/**
+ * Pacotes de tokens do Fit Check: mapeie o produto da Cakto (em /admin/vendas)
+ * para um entitlement no formato "tokens-200" ou "tokens-50" e o webhook credita
+ * essa quantidade de imagens em vez de liberar um bônus permanente.
+ */
+function parseTokenGrant(entitlement: string): number | null {
+  const m = /^tokens[-:_]?(\d+)$/i.exec(entitlement.trim());
+  return m ? parseInt(m[1], 10) : null;
+}
+
 const PASSWORD_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
 
 function generatePassword(): string {
@@ -203,9 +213,13 @@ export async function POST(request: Request) {
     .in("cakto_id", candidateIds.size ? [...candidateIds] : ["__none__"]);
 
   const mappings = mappingRows ?? [];
-  const entitlements = mappings.length
+  const allEntitlements = mappings.length
     ? [...new Set(mappings.map((m) => m.entitlement))]
     : [BASE_ENTITLEMENT];
+
+  // Separa pacotes de tokens (consumíveis) dos entitlements permanentes.
+  const tokenCredits = allEntitlements.reduce((sum, e) => sum + (parseTokenGrant(e) ?? 0), 0);
+  const entitlements = allEntitlements.filter((e) => parseTokenGrant(e) === null);
 
   /* ---------- Revogação (reembolso/chargeback) ---------- */
   if (REVOKE_EVENTS.has(event)) {
@@ -285,6 +299,11 @@ export async function POST(request: Request) {
     );
   }
 
+  // Credita os tokens de imagem do Fit Check, quando foi um pacote de tokens.
+  if (tokenCredits > 0) {
+    await admin.rpc("add_fit_check_credits", { p_user: userId, p_amount: tokenCredits });
+  }
+
   // Registra a venda na tabela sales
   try {
     const amountRaw = data.amount ?? data.price ?? data.value ?? 0;
@@ -312,9 +331,9 @@ export async function POST(request: Request) {
     // Ignora falha de gravação financeira para não quebrar a liberação do aluno
   }
 
-  // E-mail
+  // E-mail (pacotes de tokens não contam como bônus permanente)
   const bonusLabels = mappings
-    .filter((m) => m.entitlement !== BASE_ENTITLEMENT)
+    .filter((m) => m.entitlement !== BASE_ENTITLEMENT && parseTokenGrant(m.entitlement) === null)
     .map((m) => m.label ?? m.entitlement);
 
   let emailResult: { sent: boolean; reason?: string };
