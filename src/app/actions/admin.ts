@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import nodemailer from "nodemailer";
 import { requireAdmin } from "@/lib/auth";
 import { ALL_ENTITLEMENT_KEYS } from "@/lib/bonuses";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -312,4 +313,193 @@ export async function toggleAdminStatusAction(userId: string, isAdmin: boolean) 
   }
 
   revalidatePath("/admin/alunos");
+}
+
+/* ---------- Rastreamento de Links ---------- */
+
+export async function createTrackingLinkAction(formData: FormData) {
+  const { supabase } = await requireAdmin();
+
+  const slug = String(formData.get("slug") ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-_]/g, ""); // limpa caracteres especiais
+  const destinationUrl = String(formData.get("destination_url") ?? "").trim();
+  const description = text(formData.get("description"));
+
+  if (!slug || !destinationUrl) {
+    throw new Error("Slug e URL de destino são obrigatórios.");
+  }
+
+  // Verifica se o slug já existe
+  const { data: existing } = await supabase
+    .from("tracking_links")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (existing) {
+    throw new Error(`O link com o slug "${slug}" já está cadastrado.`);
+  }
+
+  const { error } = await supabase
+    .from("tracking_links")
+    .insert({
+      slug,
+      destination_url: destinationUrl,
+      description,
+      clicks_count: 0
+    });
+
+  if (error) {
+    throw new Error(`Erro ao criar link de rastreamento: ${error.message}`);
+  }
+
+  revalidatePath("/admin/links");
+}
+
+export async function deleteTrackingLinkAction(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+
+  if (!id) throw new Error("ID do link inválido.");
+
+  const { error } = await supabase
+    .from("tracking_links")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Erro ao excluir link de rastreamento: ${error.message}`);
+  }
+
+  revalidatePath("/admin/links");
+}
+
+/* ---------- Lançamento Manual de Vendas (CRM) ---------- */
+
+export async function createManualSaleAction(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const adminClient = createAdminClient();
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const name = String(formData.get("name") ?? "").trim();
+  const rawAmount = String(formData.get("amount") ?? "").replace(",", ".");
+  const paymentMethod = String(formData.get("payment_method") ?? "manual").toLowerCase();
+  const entitlement = String(formData.get("entitlement") ?? "base").trim();
+
+  const amountCents = Math.round(parseFloat(rawAmount) * 100);
+
+  if (!email || isNaN(amountCents) || amountCents <= 0) {
+    throw new Error("Preencha o e-mail do aluno e um valor de venda válido.");
+  }
+
+  if (!ALL_ENTITLEMENT_KEYS.includes(entitlement)) {
+    throw new Error("Bônus ou produto selecionado é inválido.");
+  }
+
+  // 1. Busca se o usuário já existe
+  const { data: existingProfile } = await supabase
+    .from("users_profile")
+    .select("user_id, name")
+    .ilike("email", email)
+    .maybeSingle();
+
+  let userId = existingProfile?.user_id;
+
+  // 2. Se não existir, cria o usuário no Auth
+  if (!userId) {
+    const passwordAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    let password = "estilo-";
+    for (let i = 0; i < 8; i++) {
+      password += passwordAlphabet[Math.floor(Math.random() * passwordAlphabet.length)];
+    }
+
+    const { data: created, error: createError } = await adminClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { name: name || "Aluno" }
+    });
+
+    if (createError || !created.user) {
+      throw new Error(`Erro ao criar conta para novo aluno: ${createError?.message}`);
+    }
+
+    userId = created.user.id;
+
+    // Enviar e-mail de acesso via Nodemailer se possível
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailPass = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, "");
+    if (gmailUser && gmailPass) {
+      try {
+        const transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: { user: gmailUser, pass: gmailPass }
+        });
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.vercel.app";
+        await transporter.sendMail({
+          from: process.env.EMAIL_FROM ?? `Manual Prático do Outfit <${gmailUser}>`,
+          to: email,
+          subject: "Bem-vindo ao Manual Prático do Outfit! 🎉",
+          html: `
+            <div style="background:#06080c;padding:32px 16px;font-family:Arial,Helvetica,sans-serif">
+              <div style="max-width:520px;margin:0 auto;background:#0c111a;border:1px solid #1e2938;border-radius:16px;padding:32px">
+                <h1 style="color:#f4f6f9;font-size:22px;margin:0 0 12px">Bem-vindo, ${name || "aluno"}! 🎉</h1>
+                <p style="color:#8b96a8;font-size:14px;line-height:1.6;margin:0 0 20px">
+                  Sua inscrição foi confirmada manualmente pelo administrador e seu acesso já está liberado.
+                  Guarde seus dados de login:
+                </p>
+                <div style="background:#121924;border:1px solid #1e2938;border-radius:12px;padding:16px 20px;margin-bottom:20px">
+                  <p style="color:#8b96a8;font-size:12px;margin:0 0 4px">E-mail</p>
+                  <p style="color:#f4f6f9;font-size:15px;font-weight:bold;margin:0 0 12px">${email}</p>
+                  <p style="color:#8b96a8;font-size:12px;margin:0 0 4px">Senha Provisória</p>
+                  <p style="color:#f4f6f9;font-size:15px;font-weight:bold;margin:0">${password}</p>
+                </div>
+                <a href="${siteUrl}/login" style="display:block;background:#2f6bff;color:#fff;text-decoration:none;text-align:center;font-weight:bold;font-size:15px;border-radius:12px;padding:14px">
+                  Acessar a plataforma
+                </a>
+              </div>
+            </div>`
+        });
+      } catch (err) {
+        // ignora erro de envio do email
+      }
+    }
+  }
+
+  // 3. Registra a venda na tabela sales
+  const { error: saleError } = await supabase
+    .from("sales")
+    .insert({
+      user_id: userId,
+      email,
+      name: name || existingProfile?.name || "Aluno",
+      amount_cents: amountCents,
+      status: "approved",
+      payment_method: paymentMethod,
+      created_at: new Date().toISOString()
+    });
+
+  if (saleError) {
+    throw new Error(`Erro ao salvar venda no CRM: ${saleError.message}`);
+  }
+
+  // 4. Concede o entitlement (acesso) correspondente
+  const { error: entitlementError } = await supabase
+    .from("user_entitlements")
+    .upsert(
+      { user_id: userId, entitlement, source: "admin:manual_sale" },
+      { onConflict: "user_id,entitlement", ignoreDuplicates: true }
+    );
+
+  if (entitlementError) {
+    throw new Error(`Erro ao liberar acesso do bônus/plano: ${entitlementError.message}`);
+  }
+
+  revalidatePath("/admin/vendas");
+  revalidatePath("/admin/alunos");
+  revalidatePath("/admin");
 }

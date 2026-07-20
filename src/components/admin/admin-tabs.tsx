@@ -9,8 +9,9 @@ const TABS = [
   { href: "/admin/looks", label: "Looks" },
   { href: "/admin/modulos", label: "Módulos & Aulas" },
   { href: "/admin/pecas", label: "Peças" },
-  { href: "/admin/vendas", label: "Vendas" },
+  { href: "/admin/vendas", label: "CRM & Financeiro" },
   { href: "/admin/alunos", label: "Alunos" },
+  { href: "/admin/links", label: "Links (Rastreamento)" },
 ];
 
 export function AdminTabs() {

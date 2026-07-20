@@ -10,21 +10,26 @@ export const metadata: Metadata = { title: "Admin" };
 export default async function AdminOverviewPage() {
   const { supabase } = await requireAdmin();
 
+  // Executa todas as consultas agregadas e de amostragem em paralelo
   const [
     { count: users },
+    { count: onboardingCompletedCount },
     { count: looks },
     { count: modules },
     { count: lessons },
     { count: items },
+    { data: salesRows },
     { data: profiles },
     { data: progressRows },
     { count: totalLessons },
   ] = await Promise.all([
     supabase.from("users_profile").select("*", { count: "exact", head: true }),
+    supabase.from("users_profile").select("*", { count: "exact", head: true }).eq("onboarding_completed", true),
     supabase.from("looks").select("*", { count: "exact", head: true }),
     supabase.from("modules").select("*", { count: "exact", head: true }),
     supabase.from("lessons").select("*", { count: "exact", head: true }),
     supabase.from("wardrobe_items").select("*", { count: "exact", head: true }),
+    supabase.from("sales").select("amount_cents, status"),
     supabase
       .from("users_profile")
       .select("*")
@@ -35,42 +40,57 @@ export default async function AdminOverviewPage() {
     supabase.from("lessons").select("*", { count: "exact", head: true }),
   ]);
 
+  // Agrupa progresso
   const doneByUser = new Map<string, number>();
   for (const row of progressRows ?? []) {
     doneByUser.set(row.user_id, (doneByUser.get(row.user_id) ?? 0) + 1);
   }
 
+  // Cálculos de métricas adicionais (Financeiro & CRM)
+  const approvedSales = salesRows?.filter((s) => s.status === "approved") ?? [];
+  const refundedSales = salesRows?.filter((s) => s.status === "refunded") ?? [];
+  const netRevenueCents = 
+    approvedSales.reduce((acc, s) => acc + s.amount_cents, 0) - 
+    refundedSales.reduce((acc, s) => acc + s.amount_cents, 0);
+  const netRevenue = netRevenueCents / 100;
+
+  const totalUsers = users ?? 0;
+  const onboardingPct = totalUsers 
+    ? Math.round(((onboardingCompletedCount ?? 0) / totalUsers) * 100) 
+    : 0;
+
   const stats = [
-    { label: "Usuários", value: users ?? 0 },
-    { label: "Looks", value: looks ?? 0 },
-    { label: "Módulos", value: modules ?? 0 },
-    { label: "Aulas", value: lessons ?? 0 },
-    { label: "Peças", value: items ?? 0 },
+    { label: "Receita Líquida", value: netRevenue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) },
+    { label: "Alunos Totais", value: totalUsers },
+    { label: "Conversão Onboarding", value: `${onboardingPct}%` },
+    { label: "Aulas Concluídas", value: progressRows?.length ?? 0 },
+    { label: "Looks Cadastrados", value: looks ?? 0 },
   ];
 
   return (
     <div className="animate-fade-up">
       <PageHeader
         title="Visão geral"
-        description="Conteúdo cadastrado e usuários da plataforma."
+        description="Conteúdo cadastrado, faturamento e engajamento dos alunos."
       />
 
-      <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-5">
+      {/* Grid de KPIs no topo da visão geral */}
+      <div className="mb-10 grid grid-cols-2 gap-3.5 sm:grid-cols-5">
         {stats.map((s) => (
           <Card key={s.label}>
             <CardContent className="p-5">
-              <p className="font-display text-2xl font-bold text-accent">{s.value}</p>
+              <p className="font-display text-lg sm:text-xl font-bold text-accent truncate">{s.value}</p>
               <p className="mt-1 text-xs text-muted">{s.label}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <h2 className="mb-4 text-lg font-semibold">Usuários cadastrados</h2>
+      <h2 className="mb-4 text-lg font-semibold">Alunos Recentes</h2>
       <div className="overflow-x-auto rounded-2xl border border-border">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface-2 text-xs uppercase tracking-wider text-muted">
+            <tr className="border-b border-border bg-surface-2 text-xs uppercase tracking-wider text-muted font-semibold">
               <th className="px-5 py-3.5 font-medium">Nome</th>
               <th className="px-5 py-3.5 font-medium">Objetivo</th>
               <th className="px-5 py-3.5 font-medium">Estilo</th>
@@ -85,10 +105,10 @@ export default async function AdminOverviewPage() {
               const pct = totalLessons ? Math.round((done / totalLessons) * 100) : 0;
               return (
                 <tr key={p.id} className="border-b border-border last:border-0 hover:bg-surface-2/50">
-                  <td className="px-5 py-3.5 font-medium">
+                  <td className="px-5 py-3.5 font-medium text-foreground">
                     {p.name ?? "—"}
                     {p.is_admin && (
-                      <span className="ml-2 text-[10px] font-semibold uppercase text-accent">
+                      <span className="ml-2 inline-flex items-center rounded bg-accent-soft px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#7ea2ff]">
                         admin
                       </span>
                     )}
@@ -101,7 +121,7 @@ export default async function AdminOverviewPage() {
                   </td>
                   <td className="px-5 py-3.5">
                     {p.onboarding_completed ? (
-                      <span className="text-success">Completo</span>
+                      <span className="text-success font-medium">Completo</span>
                     ) : (
                       <span className="text-muted">Pendente</span>
                     )}
@@ -121,3 +141,4 @@ export default async function AdminOverviewPage() {
     </div>
   );
 }
+

@@ -222,6 +222,16 @@ export async function POST(request: Request) {
         .eq("user_id", profile.user_id)
         .in("entitlement", entitlements);
     }
+
+    // Registra o reembolso na tabela sales
+    const caktoSaleId = String(data.id ?? data.purchase_id ?? payload.id ?? "");
+    if (caktoSaleId) {
+      await admin
+        .from("sales")
+        .update({ status: "refunded" })
+        .eq("cakto_id", caktoSaleId);
+    }
+
     return NextResponse.json({ ok: true, revoked: entitlements, user: Boolean(profile) });
   }
 
@@ -273,6 +283,33 @@ export async function POST(request: Request) {
       { error: `Falha ao liberar acesso: ${grantError.message}` },
       { status: 500 }
     );
+  }
+
+  // Registra a venda na tabela sales
+  try {
+    const amountRaw = data.amount ?? data.price ?? data.value ?? 0;
+    let amountCents = 0;
+    if (typeof amountRaw === "number") {
+      amountCents = Math.round(amountRaw * 100);
+    } else if (typeof amountRaw === "string") {
+      amountCents = Math.round(parseFloat(amountRaw) * 100);
+    }
+
+    const paymentMethod = String(data.payment_method ?? data.payment_type ?? "cakto").toLowerCase();
+    const caktoSaleId = String(data.id ?? data.purchase_id ?? payload.id ?? "");
+
+    await admin.from("sales").insert({
+      user_id: userId,
+      email,
+      name: name || existingProfile?.name || "Aluno",
+      amount_cents: amountCents,
+      status: "approved",
+      payment_method: paymentMethod,
+      cakto_id: caktoSaleId,
+      created_at: new Date().toISOString()
+    });
+  } catch (err) {
+    // Ignora falha de gravação financeira para não quebrar a liberação do aluno
   }
 
   // E-mail
