@@ -569,5 +569,10 @@ export function getBonus(key: string): Bonus | undefined {
   return BONUSES.find((b) => b.key === key);
 }
 
-/** Chaves válidas de entitlement (produto base + todos os bônus). */
-export const ALL_ENTITLEMENT_KEYS = [BASE_ENTITLEMENT, ...BONUSES.map((b) => b.key)];
+/** Chaves válidas de entitlement (produto base, todos os bônus e pacotes de tokens). */
+export const ALL_ENTITLEMENT_KEYS = [
+  BASE_ENTITLEMENT, 
+  ...BONUSES.map((b) => b.key),
+  "tokens-50",
+  "tokens-200"
+];

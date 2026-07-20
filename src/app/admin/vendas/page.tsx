@@ -25,6 +25,8 @@ import { BONUSES, BASE_ENTITLEMENT } from "@/lib/bonuses";
 const ENTITLEMENT_OPTIONS = [
   { key: BASE_ENTITLEMENT, title: "Produto principal (acesso à plataforma)" },
   ...BONUSES.map((b) => ({ key: b.key, title: b.title })),
+  { key: "tokens-50", title: "Fit Check: Pacote de 50 tokens de IA" },
+  { key: "tokens-200", title: "Fit Check: Pacote de 200 tokens de IA" },
 ];
 
 function entitlementTitle(key: string): string {
