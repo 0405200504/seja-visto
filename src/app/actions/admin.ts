@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { ALL_ENTITLEMENT_KEYS } from "@/lib/bonuses";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   OCCASIONS,
   STYLES,
@@ -243,4 +244,72 @@ export async function grantEntitlementManually(formData: FormData) {
 
   if (error) throw new Error(`Erro ao liberar acesso: ${error.message}`);
   revalidatePath("/admin/vendas");
+}
+
+/* ---------- Gerenciamento de Alunos ---------- */
+
+export async function deleteStudentAction(userId: string) {
+  await requireAdmin();
+  
+  // Como o usuário está em auth.users, precisamos usar a service_role
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(userId);
+
+  if (error) {
+    throw new Error(`Erro ao excluir aluno do sistema: ${error.message}`);
+  }
+
+  revalidatePath("/admin/alunos");
+}
+
+export async function grantStudentEntitlementAction(userId: string, entitlement: string) {
+  const { supabase } = await requireAdmin();
+
+  if (!ALL_ENTITLEMENT_KEYS.includes(entitlement)) {
+    throw new Error("Produto ou bônus inválido.");
+  }
+
+  const { error } = await supabase
+    .from("user_entitlements")
+    .upsert(
+      { user_id: userId, entitlement, source: "admin:manual" },
+      { onConflict: "user_id,entitlement", ignoreDuplicates: true }
+    );
+
+  if (error) {
+    throw new Error(`Erro ao liberar acesso: ${error.message}`);
+  }
+
+  revalidatePath("/admin/alunos");
+}
+
+export async function revokeStudentEntitlementAction(userId: string, entitlement: string) {
+  const { supabase } = await requireAdmin();
+
+  const { error } = await supabase
+    .from("user_entitlements")
+    .delete()
+    .eq("user_id", userId)
+    .eq("entitlement", entitlement);
+
+  if (error) {
+    throw new Error(`Erro ao revogar acesso: ${error.message}`);
+  }
+
+  revalidatePath("/admin/alunos");
+}
+
+export async function toggleAdminStatusAction(userId: string, isAdmin: boolean) {
+  const { supabase } = await requireAdmin();
+
+  const { error } = await supabase
+    .from("users_profile")
+    .update({ is_admin: isAdmin })
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error(`Erro ao atualizar privilégios do usuário: ${error.message}`);
+  }
+
+  revalidatePath("/admin/alunos");
 }
