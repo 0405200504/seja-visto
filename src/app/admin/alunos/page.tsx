@@ -13,7 +13,8 @@ export default async function AdminAlunosPage() {
     { data: profiles }, 
     { data: entitlements },
     { data: progressRows },
-    { count: totalLessons }
+    { count: totalLessons },
+    { data: aiLogs }
   ] = await Promise.all([
     supabase
       .from("users_profile")
@@ -22,6 +23,7 @@ export default async function AdminAlunosPage() {
     supabase.from("user_entitlements").select("user_id, entitlement"),
     supabase.from("user_progress").select("user_id").eq("completed", true),
     supabase.from("lessons").select("*", { count: "exact", head: true }),
+    supabase.from("fit_check_logs").select("user_id, total_tokens"),
   ]);
 
   // Busca o último acesso na API de Admin (opcional - sem service key falha silenciosamente)
@@ -48,6 +50,14 @@ export default async function AdminAlunosPage() {
     progressByUser.set(row.user_id, (progressByUser.get(row.user_id) ?? 0) + 1);
   }
 
+  // Agrupa o uso de IA (tokens e mensagens) por usuário
+  const aiMessagesByUser = new Map<string, number>();
+  const aiTokensByUser = new Map<string, number>();
+  for (const log of aiLogs ?? []) {
+    aiMessagesByUser.set(log.user_id, (aiMessagesByUser.get(log.user_id) ?? 0) + 1);
+    aiTokensByUser.set(log.user_id, (aiTokensByUser.get(log.user_id) ?? 0) + (log.total_tokens ?? 0));
+  }
+
   const students = profiles ?? [];
   const withBonus = students.filter(
     (p) => (entitlementsByUser.get(p.user_id) ?? []).some((e) => e !== BASE_ENTITLEMENT)
@@ -59,6 +69,8 @@ export default async function AdminAlunosPage() {
     entitlements: entitlementsByUser.get(p.user_id) ?? [],
     lastSeen: lastSignIn.get(p.user_id),
     completedLessonsCount: progressByUser.get(p.user_id) ?? 0,
+    aiMessagesCount: aiMessagesByUser.get(p.user_id) ?? 0,
+    aiTokensCount: aiTokensByUser.get(p.user_id) ?? 0,
   }));
 
   return (

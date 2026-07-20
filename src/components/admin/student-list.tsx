@@ -19,6 +19,8 @@ interface StudentData {
   entitlements: string[];
   lastSeen: string | undefined;
   completedLessonsCount: number;
+  aiMessagesCount: number;
+  aiTokensCount: number;
 }
 
 interface StudentListProps {
@@ -84,6 +86,8 @@ export function StudentList({ initialStudents, totalLessonsCount }: StudentListP
             lastSeen={item.lastSeen}
             completedLessonsCount={item.completedLessonsCount}
             totalLessonsCount={totalLessonsCount}
+            aiMessagesCount={item.aiMessagesCount}
+            aiTokensCount={item.aiTokensCount}
           />
         ))}
 

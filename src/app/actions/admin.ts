@@ -503,3 +503,42 @@ export async function createManualSaleAction(formData: FormData) {
   revalidatePath("/admin/alunos");
   revalidatePath("/admin");
 }
+
+export async function getStudentConversationsAction(studentUserId: string) {
+  await requireAdmin();
+  const admin = createAdminClient();
+
+  // Busca conversas do aluno ordenadas pela atualização mais recente
+  const { data: conversations, error: convError } = await admin
+    .from("fit_check_conversations")
+    .select("id, title, created_at, updated_at")
+    .eq("user_id", studentUserId)
+    .order("updated_at", { ascending: false });
+
+  if (convError) {
+    throw new Error(`Erro ao carregar conversas do aluno: ${convError.message}`);
+  }
+
+  // Busca as mensagens associadas a cada conversa
+  const conversationsWithMessages = await Promise.all(
+    (conversations ?? []).map(async (c) => {
+      const { data: messages, error: msgError } = await admin
+        .from("fit_check_messages")
+        .select("id, role, content, thumb, created_at")
+        .eq("conversation_id", c.id)
+        .order("created_at", { ascending: true });
+
+      if (msgError) {
+        console.error(`Erro ao carregar mensagens da conversa ${c.id}:`, msgError);
+      }
+
+      return {
+        ...c,
+        messages: messages ?? [],
+      };
+    })
+  );
+
+  return conversationsWithMessages;
+}
+

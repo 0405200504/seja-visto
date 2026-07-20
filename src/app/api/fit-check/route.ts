@@ -253,8 +253,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "A IA não retornou resposta. Tenta de novo." }, { status: 502 });
   }
 
-  // Registra o uso (ignora erro se a tabela ainda não existir)
-  await supabase.from("fit_check_logs").insert({ user_id: user.id, kind });
+  const usage = result?.usage;
+  const promptTokens = usage?.prompt_tokens ?? 0;
+  const completionTokens = usage?.completion_tokens ?? 0;
+  const totalTokens = usage?.total_tokens ?? 0;
+
+  // Registra o uso (incluindo o consumo de tokens)
+  await supabase.from("fit_check_logs").insert({ 
+    user_id: user.id, 
+    kind,
+    prompt_tokens: promptTokens,
+    completion_tokens: completionTokens,
+    total_tokens: totalTokens
+  });
 
   // ---------- Persistência da conversa (histórico de 5) ----------
   if (!conversationId) {

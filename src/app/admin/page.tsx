@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { STYLE_GOALS, STYLES } from "@/lib/constants";
 import type { Profile } from "@/lib/types";
+import { AiStatsCard } from "@/components/admin/ai-stats-card";
 
 export const metadata: Metadata = { title: "Admin" };
 
@@ -22,6 +23,7 @@ export default async function AdminOverviewPage() {
     { data: profiles },
     { data: progressRows },
     { count: totalLessons },
+    { data: aiLogs }
   ] = await Promise.all([
     supabase.from("users_profile").select("*", { count: "exact", head: true }),
     supabase.from("users_profile").select("*", { count: "exact", head: true }).eq("onboarding_completed", true),
@@ -38,6 +40,7 @@ export default async function AdminOverviewPage() {
       .returns<Profile[]>(),
     supabase.from("user_progress").select("user_id").eq("completed", true),
     supabase.from("lessons").select("*", { count: "exact", head: true }),
+    supabase.from("fit_check_logs").select("prompt_tokens, completion_tokens, total_tokens, kind")
   ]);
 
   // Agrupa progresso
@@ -46,7 +49,7 @@ export default async function AdminOverviewPage() {
     doneByUser.set(row.user_id, (doneByUser.get(row.user_id) ?? 0) + 1);
   }
 
-  // Cálculos de métricas adicionais (Financeiro & CRM)
+  // Métricas financeiras e de conversão
   const approvedSales = salesRows?.filter((s) => s.status === "approved") ?? [];
   const refundedSales = salesRows?.filter((s) => s.status === "refunded") ?? [];
   const netRevenueCents = 
@@ -67,6 +70,14 @@ export default async function AdminOverviewPage() {
     { label: "Looks Cadastrados", value: looks ?? 0 },
   ];
 
+  // Agrega métricas globais de consumo de IA
+  const safeAiLogs = aiLogs ?? [];
+  const totalPromptTokens = safeAiLogs.reduce((acc, log) => acc + (log.prompt_tokens ?? 0), 0);
+  const totalCompletionTokens = safeAiLogs.reduce((acc, log) => acc + (log.completion_tokens ?? 0), 0);
+  const totalTokens = safeAiLogs.reduce((acc, log) => acc + (log.total_tokens ?? 0), 0);
+  const totalPhotos = safeAiLogs.filter((log) => log.kind === "photo").length;
+  const totalTexts = safeAiLogs.filter((log) => log.kind === "text").length;
+
   return (
     <div className="animate-fade-up">
       <PageHeader
@@ -75,7 +86,7 @@ export default async function AdminOverviewPage() {
       />
 
       {/* Grid de KPIs no topo da visão geral */}
-      <div className="mb-10 grid grid-cols-2 gap-3.5 sm:grid-cols-5">
+      <div className="mb-8 grid grid-cols-2 gap-3.5 sm:grid-cols-5">
         {stats.map((s) => (
           <Card key={s.label}>
             <CardContent className="p-5">
@@ -84,6 +95,17 @@ export default async function AdminOverviewPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Painel Consumido de IA & Controle de Tokens */}
+      <div className="mb-10">
+        <AiStatsCard
+          totalPromptTokens={totalPromptTokens}
+          totalCompletionTokens={totalCompletionTokens}
+          totalTokens={totalTokens}
+          totalPhotos={totalPhotos}
+          totalTexts={totalTexts}
+        />
       </div>
 
       <h2 className="mb-4 text-lg font-semibold">Alunos Recentes</h2>
@@ -141,4 +163,3 @@ export default async function AdminOverviewPage() {
     </div>
   );
 }
-

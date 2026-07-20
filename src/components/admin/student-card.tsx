@@ -15,7 +15,8 @@ import {
   UserMinus, 
   Mail, 
   Calendar,
-  Zap
+  Zap,
+  MessageSquare
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import {
   revokeStudentEntitlementAction, 
   toggleAdminStatusAction 
 } from "@/app/actions/admin";
+import { StudentChatModal } from "@/components/admin/student-chat-modal";
 
 interface StudentCardProps {
   student: {
@@ -44,6 +46,8 @@ interface StudentCardProps {
   lastSeen: string | undefined;
   completedLessonsCount: number;
   totalLessonsCount: number;
+  aiMessagesCount: number;
+  aiTokensCount: number;
 }
 
 export function StudentCard({
@@ -51,11 +55,14 @@ export function StudentCard({
   entitlements,
   lastSeen,
   completedLessonsCount,
-  totalLessonsCount
+  totalLessonsCount,
+  aiMessagesCount,
+  aiTokensCount
 }: StudentCardProps) {
   const [isPending, startTransition] = useTransition();
   const [showDetails, setShowDetails] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const initials = (student.name ?? "S N")
@@ -181,6 +188,26 @@ export function StudentCard({
             className="h-full rounded-full bg-accent transition-all duration-500" 
             style={{ width: `${Math.min(pctProgress, 100)}%` }}
           />
+        </div>
+      </div>
+
+      {/* Uso de IA (Mensagens e Tokens) */}
+      <div className="mt-2.5 rounded-xl bg-surface-2/40 border border-border/40 p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <span className="text-muted flex items-center gap-1.5">
+          <Sparkles className="size-3.5 text-accent" /> Chat IA (Fit Check)
+        </span>
+        <div className="flex items-center gap-4 text-muted-2">
+          <span>Mensagens: <strong className="text-foreground">{aiMessagesCount}</strong></span>
+          <span>Tokens: <strong className="text-foreground">{aiTokensCount.toLocaleString("pt-BR")}</strong></span>
+          
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-[11px] font-semibold gap-1"
+            onClick={() => setIsChatModalOpen(true)}
+          >
+            <MessageSquare className="size-3 text-accent" /> Ver Chat
+          </Button>
         </div>
       </div>
 
@@ -367,6 +394,14 @@ export function StudentCard({
           </div>
         )}
       </div>
+
+      {/* Modal de Histórico de Chats de IA do Aluno */}
+      <StudentChatModal
+        isOpen={isChatModalOpen}
+        onClose={() => setIsChatModalOpen(false)}
+        studentId={student.user_id}
+        studentName={student.name ?? student.email ?? "Aluno"}
+      />
     </div>
   );
 }
