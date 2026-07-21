@@ -144,11 +144,14 @@ export function FitCheckChat() {
   }, [loadConversations, loadCredits]);
 
   useEffect(() => {
-    if (simularTokens) {
-      setCredits(0);
-      setBuyStep(1);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("simular_tokens") === "true") {
+        setCredits(0);
+        setBuyStep(1);
+      }
     }
-  }, [simularTokens]);
+  }, []);
 
   async function deleteConversation(id: string) {
     if (!window.confirm("Excluir esta conversa? Isso não tem como desfazer.")) return;

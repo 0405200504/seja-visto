@@ -3,6 +3,7 @@ import { Sidebar, MobileHeader } from "@/components/app/app-nav";
 import { signOut } from "@/app/actions/auth";
 import { AlertCircle, LogOut, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SubscriptionSimulator } from "@/components/app/subscription-simulator";
 
 export default async function AppLayout({
   children,
@@ -40,7 +41,7 @@ export default async function AppLayout({
   return (
     <div className="relative min-h-dvh">
       {/* Container principal da plataforma - Embaçado se expirado */}
-      <div className={isExpired ? "filter blur-md select-none pointer-events-none" : ""}>
+      <div id="app-layout-container" className={isExpired ? "filter blur-md select-none pointer-events-none" : ""}>
         <Sidebar isAdmin={profile.is_admin} name={profile.name} />
         <MobileHeader isAdmin={profile.is_admin} name={profile.name} />
         <main className="pb-10 pt-14 lg:pl-64 lg:pt-0">
@@ -89,6 +90,9 @@ export default async function AppLayout({
           </div>
         </div>
       )}
+
+      {/* Simulador de testes visuais via query parameters no navegador */}
+      <SubscriptionSimulator name={profile.name || "Aluno"} />
     </div>
   );
 }
