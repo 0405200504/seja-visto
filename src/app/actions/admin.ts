@@ -351,6 +351,48 @@ export async function revokeStudentEntitlementAction(userId: string, entitlement
   revalidatePath("/admin/alunos");
 }
 
+export async function grantBaseEntitlementWithExpiryAction(userId: string, validityDays: number | null) {
+  const { supabase } = await requireAdmin();
+
+  let expiresAt: string | null = null;
+
+  if (validityDays !== null) {
+    // 1. Busca se o usuário já tem o entitlement base no banco
+    const { data: existing } = await supabase
+      .from("user_entitlements")
+      .select("expires_at")
+      .eq("user_id", userId)
+      .eq("entitlement", "base")
+      .maybeSingle();
+
+    const existingExpiry = existing?.expires_at ? new Date(existing.expires_at) : null;
+    
+    // Se a assinatura ainda estiver ativa no futuro, somamos a validade nela. Se não, começa de hoje.
+    const baseDate = (existingExpiry && existingExpiry > new Date()) ? existingExpiry : new Date();
+    baseDate.setDate(baseDate.getDate() + validityDays);
+    expiresAt = baseDate.toISOString();
+  }
+
+  const { error } = await supabase
+    .from("user_entitlements")
+    .upsert(
+      { 
+        user_id: userId, 
+        entitlement: "base", 
+        source: "admin:manual", 
+        expires_at: expiresAt 
+      }, 
+      { onConflict: "user_id,entitlement" }
+    );
+
+  if (error) {
+    throw new Error(`Erro ao liberar acesso principal: ${error.message}`);
+  }
+
+  revalidatePath("/admin/alunos");
+}
+
+
 export async function toggleAdminStatusAction(userId: string, isAdmin: boolean) {
   const { supabase } = await requireAdmin();
 

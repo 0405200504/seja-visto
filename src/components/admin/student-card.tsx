@@ -27,7 +27,8 @@ import {
   grantStudentEntitlementAction, 
   revokeStudentEntitlementAction, 
   toggleAdminStatusAction,
-  addStudentTokensAction
+  addStudentTokensAction,
+  grantBaseEntitlementWithExpiryAction
 } from "@/app/actions/admin";
 import { StudentChatModal } from "@/components/admin/student-chat-modal";
 
@@ -43,7 +44,7 @@ interface StudentCardProps {
     preferred_style?: string | null;
     main_difficulty?: string | null;
   };
-  entitlements: string[];
+  entitlements: { entitlement: string; expires_at: string | null }[];
   lastSeen: string | undefined;
   completedLessonsCount: number;
   totalLessonsCount: number;
@@ -68,6 +69,9 @@ export function StudentCard({
   const [isPending, startTransition] = useTransition();
   const [showDetails, setShowDetails] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const hasEntitlement = (key: string) => entitlements.some((e) => e.entitlement === key);
+  const getEntitlement = (key: string) => entitlements.find((e) => e.entitlement === key);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -111,6 +115,10 @@ export function StudentCard({
     } else {
       handleAction(() => grantStudentEntitlementAction(student.user_id, key));
     }
+  };
+
+  const handleGrantBaseWithExpiry = (days: number | null) => {
+    handleAction(() => grantBaseEntitlementWithExpiryAction(student.user_id, days));
   };
 
   const handleToggleAdmin = () => {
@@ -314,40 +322,92 @@ export function StudentCard({
         <div className="flex flex-col gap-2">
           {/* Acesso Base */}
           {(() => {
-            const hasBase = entitlements.includes(BASE_ENTITLEMENT);
+            const baseEnt = getEntitlement(BASE_ENTITLEMENT);
+            const hasBase = !!baseEnt;
+            const isBaseExpired = baseEnt?.expires_at ? new Date(baseEnt.expires_at) <= new Date() : false;
+            
             return (
-              <div className="flex items-center justify-between rounded-xl border border-border/50 bg-surface-2/40 px-3.5 py-2.5">
-                <div>
-                  <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    Acesso Principal à Plataforma
-                    {hasBase ? (
-                      <span className="text-[10px] font-normal text-success bg-success/10 px-1.5 py-0.5 rounded-full">Ativo</span>
-                    ) : (
-                      <span className="text-[10px] font-normal text-muted bg-surface-2 px-1.5 py-0.5 rounded-full">Sem acesso</span>
-                    )}
-                  </p>
-                  <p className="text-[10px] text-muted mt-0.5">Controla se o aluno consegue navegar pelo app</p>
-                </div>
-                
-                <Button
-                  size="sm"
-                  variant={hasBase ? "outline" : "default"}
-                  disabled={isPending}
-                  className="h-8 text-xs font-medium"
-                  onClick={() => handleToggleEntitlement(BASE_ENTITLEMENT, hasBase)}
-                >
-                  {isPending ? (
-                    <Loader2 className="size-3 animate-spin" />
-                  ) : hasBase ? (
-                    <>
-                      <Check className="size-3 mr-1 text-success" /> Revogar
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="size-3 mr-1" /> Conceder
-                    </>
+              <div className="flex flex-col gap-3 rounded-xl border border-border/50 bg-surface-2/40 px-3.5 py-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      Acesso Principal (MPO)
+                      {hasBase ? (
+                        isBaseExpired ? (
+                          <span className="text-[10px] font-normal text-danger bg-danger/10 px-1.5 py-0.5 rounded-full border border-danger/10">Expirado</span>
+                        ) : (
+                          <span className="text-[10px] font-normal text-success bg-success/10 px-1.5 py-0.5 rounded-full border border-success/10">Ativo</span>
+                        )
+                      ) : (
+                        <span className="text-[10px] font-normal text-muted bg-surface-2 px-1.5 py-0.5 rounded-full border border-border/10">Sem acesso</span>
+                      )}
+                    </p>
+                    <p className="text-[10px] text-muted mt-1">
+                      {baseEnt ? (
+                        baseEnt.expires_at ? (
+                          <>
+                            {isBaseExpired ? "Acesso expirou em: " : "Vence em: "}
+                            <strong className="text-foreground">{new Date(baseEnt.expires_at).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}</strong>
+                          </>
+                        ) : (
+                          <span className="text-success font-medium">Acesso Vitalício / Permanente</span>
+                        )
+                      ) : (
+                        "O aluno não possui permissão para navegar na plataforma"
+                      )}
+                    </p>
+                  </div>
+
+                  {hasBase && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isPending}
+                      className="h-8 text-xs font-medium text-danger hover:bg-danger/5 border-danger/20 hover:text-danger"
+                      onClick={() => handleToggleEntitlement(BASE_ENTITLEMENT, true)}
+                    >
+                      {isPending ? (
+                        <Loader2 className="size-3 animate-spin" />
+                      ) : (
+                        "Revogar Acesso"
+                      )}
+                    </Button>
                   )}
-                </Button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 border-t border-border/10 pt-2.5">
+                  <span className="text-[10px] text-muted mr-1">Liberar / Estender acesso:</span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isPending}
+                    className="h-7 text-[10px] font-semibold gap-1 hover:bg-accent/5 hover:text-accent border-accent/20"
+                    onClick={() => handleGrantBaseWithExpiry(30)}
+                  >
+                    {isPending ? <Loader2 className="size-3 animate-spin" /> : "+30 dias (Mensal)"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isPending}
+                    className="h-7 text-[10px] font-semibold gap-1 hover:bg-accent/5 hover:text-accent border-accent/20"
+                    onClick={() => handleGrantBaseWithExpiry(365)}
+                  >
+                    {isPending ? <Loader2 className="size-3 animate-spin" /> : "+1 ano (Anual)"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isPending}
+                    className="h-7 text-[10px] font-semibold gap-1 hover:bg-accent/5 hover:text-accent border-accent/20"
+                    onClick={() => handleGrantBaseWithExpiry(null)}
+                  >
+                    {isPending ? <Loader2 className="size-3 animate-spin" /> : "Vitalício (Permanente)"}
+                  </Button>
+                </div>
               </div>
             );
           })()}
@@ -355,7 +415,8 @@ export function StudentCard({
           {/* Bônus */}
           <div className="grid gap-2 sm:grid-cols-2 mt-1">
             {BONUSES.map((bonus) => {
-              const hasBonus = entitlements.includes(bonus.key);
+              const hasBonus = hasEntitlement(bonus.key);
+              const bonusObj = getEntitlement(bonus.key);
               const BonusIcon = bonus.icon;
               return (
                 <div 
@@ -367,7 +428,13 @@ export function StudentCard({
                       {BonusIcon && <BonusIcon className="size-3.5 text-accent shrink-0" />}
                       {bonus.title}
                     </p>
-                    <p className="text-[9px] text-muted truncate mt-0.5">{bonus.short}</p>
+                    <p className="text-[9px] text-muted truncate mt-0.5">
+                      {bonusObj?.expires_at ? (
+                        `Expira em: ${new Date(bonusObj.expires_at).toLocaleDateString("pt-BR")}`
+                      ) : (
+                        bonus.short
+                      )}
+                    </p>
                   </div>
                   
                   <Button

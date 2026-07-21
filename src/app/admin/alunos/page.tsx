@@ -22,7 +22,7 @@ export default async function AdminAlunosPage() {
       .from("users_profile")
       .select("user_id, name, email, is_admin, onboarding_completed, created_at, style_goal, preferred_style, main_difficulty")
       .order("created_at", { ascending: false }),
-    supabase.from("user_entitlements").select("user_id, entitlement"),
+    supabase.from("user_entitlements").select("user_id, entitlement, expires_at"),
     supabase.from("user_progress").select("user_id").eq("completed", true),
     supabase.from("lessons").select("*", { count: "exact", head: true }),
     supabase.from("fit_check_logs").select("user_id, prompt_tokens, completion_tokens, total_tokens, kind"),
@@ -43,9 +43,12 @@ export default async function AdminAlunosPage() {
   }
 
   // Agrupa entitlements por usuário
-  const entitlementsByUser = new Map<string, string[]>();
+  const entitlementsByUser = new Map<string, { entitlement: string; expires_at: string | null }[]>();
   for (const e of entitlements ?? []) {
-    entitlementsByUser.set(e.user_id, [...(entitlementsByUser.get(e.user_id) ?? []), e.entitlement]);
+    entitlementsByUser.set(e.user_id, [
+      ...(entitlementsByUser.get(e.user_id) ?? []),
+      { entitlement: e.entitlement, expires_at: e.expires_at }
+    ]);
   }
 
   // Agrupa créditos de IA por usuário
@@ -101,7 +104,7 @@ export default async function AdminAlunosPage() {
 
   const students = profiles ?? [];
   const withBonus = students.filter(
-    (p) => (entitlementsByUser.get(p.user_id) ?? []).some((e) => e !== BASE_ENTITLEMENT)
+    (p) => (entitlementsByUser.get(p.user_id) ?? []).some((e) => e.entitlement !== BASE_ENTITLEMENT)
   ).length;
 
   // Modela os dados em um formato plano para passar de forma limpa ao Client Component

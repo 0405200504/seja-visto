@@ -16,7 +16,7 @@ interface StudentData {
     preferred_style?: string | null;
     main_difficulty?: string | null;
   };
-  entitlements: string[];
+  entitlements: { entitlement: string; expires_at: string | null }[];
   lastSeen: string | undefined;
   completedLessonsCount: number;
   aiMessagesCount: number;
