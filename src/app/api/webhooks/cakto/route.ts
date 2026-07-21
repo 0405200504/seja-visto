@@ -228,7 +228,7 @@ export async function POST(request: Request) {
 
   const { data: mappingRows } = await admin
     .from("cakto_product_map")
-    .select("entitlement, label")
+    .select("entitlement, label, validity_days")
     .in("cakto_id", candidateIds.size ? [...candidateIds] : ["__none__"]);
 
   const mappings = mappingRows ?? [];
@@ -302,16 +302,38 @@ export async function POST(request: Request) {
     createdNow = true;
   }
 
+  // Busca os entitlements atuais do usuário para calcular a nova data de validade de forma justa
+  const { data: currentEntitlements } = await admin
+    .from("user_entitlements")
+    .select("entitlement, expires_at")
+    .eq("user_id", userId);
+
   // Libera acesso base + tudo que foi comprado (produto e order bumps)
-  const grants = Array.from(new Set([BASE_ENTITLEMENT, ...entitlements])).map((key) => ({
-    user_id: userId,
-    entitlement: key,
-    source: `cakto:${[...candidateIds][0] ?? event}`,
-  }));
+  const grants = Array.from(new Set([BASE_ENTITLEMENT, ...entitlements])).map((key) => {
+    const mapItem = mappings.find((m) => m.entitlement === key);
+    const validityDays = mapItem?.validity_days;
+    let expiresAt: string | null = null;
+
+    if (validityDays) {
+      const existing = currentEntitlements?.find((c) => c.entitlement === key);
+      const existingExpiry = existing?.expires_at ? new Date(existing.expires_at) : null;
+      // Se a assinatura ainda estiver ativa no futuro, somamos a validade nela. Se não, começa de hoje.
+      const baseDate = (existingExpiry && existingExpiry > new Date()) ? existingExpiry : new Date();
+      baseDate.setDate(baseDate.getDate() + validityDays);
+      expiresAt = baseDate.toISOString();
+    }
+
+    return {
+      user_id: userId,
+      entitlement: key,
+      source: `cakto:${[...candidateIds][0] ?? event}`,
+      expires_at: expiresAt,
+    };
+  });
 
   const { error: grantError } = await admin
     .from("user_entitlements")
-    .upsert(grants, { onConflict: "user_id,entitlement", ignoreDuplicates: true });
+    .upsert(grants, { onConflict: "user_id,entitlement" });
 
   if (grantError) {
     return NextResponse.json(

@@ -43,7 +43,7 @@ export default async function AdminVendasPage() {
   ] = await Promise.all([
     supabase
       .from("cakto_product_map")
-      .select("cakto_id, entitlement, label")
+      .select("cakto_id, entitlement, label, validity_days")
       .order("created_at"),
     supabase
       .from("sales")
@@ -293,7 +293,7 @@ export default async function AdminVendasPage() {
 
         <form
           action={upsertCaktoMapping}
-          className="grid gap-3 rounded-2xl border border-border bg-surface p-5 sm:grid-cols-[1fr_1fr_auto]"
+          className="grid gap-3 rounded-2xl border border-border bg-surface p-5 sm:grid-cols-[1.2fr_1.2fr_0.6fr_auto]"
         >
           <div>
             <label className="mb-1.5 block text-xs font-medium text-muted">
@@ -320,16 +320,26 @@ export default async function AdminVendasPage() {
               ))}
             </select>
           </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-muted">Validade (dias)</label>
+            <input
+              name="validity_days"
+              type="number"
+              min="1"
+              placeholder="Vitalício"
+              className="w-full rounded-xl border border-border bg-surface-2 px-3 py-2.5 text-xs outline-none focus:border-accent"
+            />
+          </div>
           <div className="flex items-end">
             <Button type="submit" className="h-10 px-4 text-xs font-medium">
               <Plus className="size-3.5" />
-              Mapear Produto
+              Mapear
             </Button>
           </div>
         </form>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          {(mappings ?? []).map((m) => (
+          {(mappings ?? []).map((m: any) => (
             <div
               key={m.cakto_id}
               className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-5 py-3.5"
@@ -338,6 +348,12 @@ export default async function AdminVendasPage() {
                 <p className="font-semibold text-xs text-foreground truncate">{entitlementTitle(m.entitlement)}</p>
                 <p className="mt-1 text-[10px] text-muted">
                   ID Cakto: <span className="font-mono text-foreground">{m.cakto_id}</span>
+                  {m.validity_days && (
+                    <>
+                      <span className="mx-1.5">•</span>
+                      Validade: <span className="text-foreground">{m.validity_days} dias</span>
+                    </>
+                  )}
                 </p>
               </div>
               <form action={deleteCaktoMapping}>

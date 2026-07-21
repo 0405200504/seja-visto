@@ -194,6 +194,9 @@ export async function upsertCaktoMapping(formData: FormData) {
   const caktoId = String(formData.get("cakto_id") ?? "").trim();
   const entitlement = String(formData.get("entitlement") ?? "").trim();
   const label = text(formData.get("label"));
+  
+  const validityDaysRaw = formData.get("validity_days");
+  const validityDays = validityDaysRaw ? parseInt(String(validityDaysRaw), 10) : null;
 
   if (!caktoId || !ALL_ENTITLEMENT_KEYS.includes(entitlement)) {
     throw new Error("Informe o ID do produto na Cakto e escolha um produto/bônus válido.");
@@ -201,7 +204,12 @@ export async function upsertCaktoMapping(formData: FormData) {
 
   const { error } = await supabase
     .from("cakto_product_map")
-    .upsert({ cakto_id: caktoId, entitlement, label });
+    .upsert({ 
+      cakto_id: caktoId, 
+      entitlement, 
+      label,
+      validity_days: (validityDays !== null && !isNaN(validityDays)) ? validityDays : null
+    });
 
   if (error) throw new Error(`Erro ao salvar mapeamento: ${error.message}`);
   revalidatePath("/admin/vendas");
