@@ -173,15 +173,31 @@ export async function POST(request: Request) {
   }
 
   const event = String(payload.event ?? "");
-  const data = (payload.data ?? {}) as Record<string, unknown>;
-  const customer = (data.customer ?? {}) as Record<string, string>;
-
-  const email = customer.email?.trim().toLowerCase();
-  const name = customer.name?.trim() || "Aluno";
+  const dataRaw = payload.data;
 
   if (!GRANT_EVENTS.has(event) && !REVOKE_EVENTS.has(event)) {
     return NextResponse.json({ ok: true, ignored: event });
   }
+  if (!dataRaw) {
+    return NextResponse.json({ error: "Dados da transação ausentes" }, { status: 400 });
+  }
+
+  // Normaliza o data para ser sempre um Array de objetos
+  const isArray = Array.isArray(dataRaw);
+  const dataList = isArray 
+    ? (dataRaw as Record<string, unknown>[]) 
+    : [dataRaw as Record<string, unknown>];
+
+  if (dataList.length === 0) {
+    return NextResponse.json({ error: "Lista de transações vazia" }, { status: 400 });
+  }
+
+  // Extrai informações do comprador (customer) a partir do primeiro item
+  const firstItem = dataList[0];
+  const customer = (firstItem.customer ?? {}) as Record<string, string>;
+  const email = customer.email?.trim().toLowerCase();
+  const name = customer.name?.trim() || "Aluno";
+
   if (!email) {
     return NextResponse.json({ error: "E-mail do cliente ausente" }, { status: 400 });
   }
@@ -189,9 +205,7 @@ export async function POST(request: Request) {
   const admin = createAdminClient();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.vercel.app";
 
-  // Coleta todos os IDs de produto/oferta presentes no payload — cobre tanto
-  // um evento por produto quanto a compra inteira (produto + order bumps) num
-  // evento só, independente do nome do campo que a Cakto usar.
+  // Coleta todos os IDs de produto/oferta presentes no payload de todas as transações
   const candidateIds = new Set<string>();
   const collect = (value: unknown) => {
     if (!value || typeof value !== "object") return;
@@ -203,8 +217,13 @@ export async function POST(request: Request) {
       }
     }
   };
-  for (const field of ["product", "offer", "products", "offers", "items", "order_bumps", "orderBumps"]) {
-    collect(data[field]);
+
+  for (const item of dataList) {
+    collect(item.product);
+    collect(item.offer);
+    for (const field of ["products", "offers", "items", "order_bumps", "orderBumps"]) {
+      collect(item[field]);
+    }
   }
 
   const { data: mappingRows } = await admin
@@ -237,13 +256,15 @@ export async function POST(request: Request) {
         .in("entitlement", entitlements);
     }
 
-    // Registra o reembolso na tabela sales
-    const caktoSaleId = String(data.id ?? data.purchase_id ?? payload.id ?? "");
-    if (caktoSaleId) {
-      await admin
-        .from("sales")
-        .update({ status: "refunded" })
-        .eq("cakto_id", caktoSaleId);
+    // Registra o reembolso para cada transação na tabela sales
+    for (const item of dataList) {
+      const caktoSaleId = String(item.id ?? item.purchase_id ?? payload.id ?? "");
+      if (caktoSaleId) {
+        await admin
+          .from("sales")
+          .update({ status: "refunded" })
+          .eq("cakto_id", caktoSaleId);
+      }
     }
 
     return NextResponse.json({ ok: true, revoked: entitlements, user: Boolean(profile) });
@@ -304,31 +325,35 @@ export async function POST(request: Request) {
     await admin.rpc("add_fit_check_credits", { p_user: userId, p_amount: tokenCredits });
   }
 
-  // Registra a venda na tabela sales
-  try {
-    const amountRaw = data.amount ?? data.price ?? data.value ?? 0;
-    let amountCents = 0;
-    if (typeof amountRaw === "number") {
-      amountCents = Math.round(amountRaw * 100);
-    } else if (typeof amountRaw === "string") {
-      amountCents = Math.round(parseFloat(amountRaw) * 100);
+  // Registra cada venda do lote individualmente na tabela sales
+  for (const item of dataList) {
+    try {
+      const amountRaw = item.amount ?? item.price ?? item.value ?? 0;
+      let amountCents = 0;
+      if (typeof amountRaw === "number") {
+        amountCents = Math.round(amountRaw * 100);
+      } else if (typeof amountRaw === "string") {
+        amountCents = Math.round(parseFloat(amountRaw) * 100);
+      }
+
+      const paymentMethod = String(
+        item.paymentMethod ?? item.payment_method ?? item.payment_type ?? "cakto"
+      ).toLowerCase();
+      const caktoSaleId = String(item.id ?? item.purchase_id ?? payload.id ?? "");
+
+      await admin.from("sales").insert({
+        user_id: userId,
+        email,
+        name: name || existingProfile?.name || "Aluno",
+        amount_cents: amountCents,
+        status: "approved",
+        payment_method: paymentMethod,
+        cakto_id: caktoSaleId,
+        created_at: new Date().toISOString()
+      });
+    } catch (err) {
+      // Ignora falha de gravação financeira para não quebrar a liberação do aluno
     }
-
-    const paymentMethod = String(data.payment_method ?? data.payment_type ?? "cakto").toLowerCase();
-    const caktoSaleId = String(data.id ?? data.purchase_id ?? payload.id ?? "");
-
-    await admin.from("sales").insert({
-      user_id: userId,
-      email,
-      name: name || existingProfile?.name || "Aluno",
-      amount_cents: amountCents,
-      status: "approved",
-      payment_method: paymentMethod,
-      cakto_id: caktoSaleId,
-      created_at: new Date().toISOString()
-    });
-  } catch (err) {
-    // Ignora falha de gravação financeira para não quebrar a liberação do aluno
   }
 
   // E-mail (pacotes de tokens não contam como bônus permanente)
