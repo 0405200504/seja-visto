@@ -92,6 +92,48 @@ async function sendViaResend(to: string, subject: string, html: string) {
   return { sent: true, via: "resend" };
 }
 
+async function sendWhatsApp(number: string, text: string) {
+  const apiUrl = process.env.UAZAPI_URL;
+  const token = process.env.UAZAPI_TOKEN;
+
+  if (!apiUrl || !token) {
+    console.warn("Disparo de WhatsApp ignorado: UAZAPI_URL ou UAZAPI_TOKEN ausentes.");
+    return { sent: false, reason: "credenciais ausentes" };
+  }
+
+  // Limpa o número para conter apenas dígitos
+  let cleaned = number.replace(/\D/g, "");
+  if (!cleaned) return { sent: false, reason: "número inválido" };
+
+  // Garante DDI do Brasil se começar sem
+  if (cleaned.length === 10 || cleaned.length === 11) {
+    cleaned = "55" + cleaned;
+  }
+
+  try {
+    const res = await fetch(`${apiUrl}/send/text`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        token: token,
+      },
+      body: JSON.stringify({
+        number: cleaned,
+        text: text,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      return { sent: false, reason: `UAZAPI error ${res.status}: ${errText.slice(0, 150)}` };
+    }
+
+    return { sent: true };
+  } catch (err) {
+    return { sent: false, reason: err instanceof Error ? err.message : String(err) };
+  }
+}
+
 function emailLayout(content: string, siteUrl: string): string {
   return `
   <div style="background:#06080c;padding:32px 16px;font-family:Arial,Helvetica,sans-serif">
@@ -406,11 +448,26 @@ export async function POST(request: Request) {
     emailResult = { sent: false, reason: "usuário já existia; sem bônus novo" };
   }
 
+  // Disparo do WhatsApp se houver telefone do cliente
+  const phone = customer.phone ?? customer.telephone ?? customer.mobile ?? "";
+  let whatsResult: { sent: boolean; reason?: string } | undefined = undefined;
+
+  if (phone) {
+    if (createdNow && password) {
+      const whatsMsg = `Olá, *${name}*! Seu acesso ao *Manual Prático do Outfit* chegou! 🎉\n\nSua compra foi aprovada e seu acesso à plataforma já está liberado.\n\nAqui estão seus dados de login:\n📧 *E-mail:* ${email}\n🔑 *Senha:* ${password}\n\nAcesse a plataforma em:\n${siteUrl}/login\n\nDica: você pode trocar sua senha a qualquer momento em Perfil depois de entrar. No primeiro acesso, responda o quiz de estilo — ele personaliza toda a sua experiência.`;
+      whatsResult = await sendWhatsApp(phone, whatsMsg);
+    } else if (bonusLabels.length > 0) {
+      const whatsMsg = `Olá, *${existingProfile?.name ?? name}*! Bônus liberado na sua conta! 🔓\n\nSua compra foi aprovada e os bônus abaixo já estão desbloqueados na sua conta:\n*${bonusLabels.join(", ")}*\n\nVer meus bônus em:\n${siteUrl}/bonus`;
+      whatsResult = await sendWhatsApp(phone, whatsMsg);
+    }
+  }
+
   return NextResponse.json({
     ok: true,
     user: userId,
     created: createdNow,
     granted: grants.map((g) => g.entitlement),
     email: emailResult,
+    whatsapp: whatsResult,
   });
 }
