@@ -5,7 +5,6 @@ import {
   Camera,
   Luggage,
   Palette,
-  Infinity as InfinityIcon,
   MessageCircle,
   Globe,
   TrendingUp,
@@ -387,13 +386,7 @@ export const BONUSES: Bonus[] = [
       },
     ],
   },
-  {
-    key: "acesso-vitalicio",
-    title: "Acesso vitalício",
-    short: "Seu acesso à plataforma e a todas as futuras atualizações — para sempre.",
-    icon: InfinityIcon,
-    type: "badge",
-  },
+
   {
     key: "grupo-whatsapp",
     title: "Grupo no WhatsApp",
