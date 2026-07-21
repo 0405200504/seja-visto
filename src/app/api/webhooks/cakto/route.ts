@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { BASE_ENTITLEMENT } from "@/lib/bonuses";
+import { BASE_ENTITLEMENT, BONUSES } from "@/lib/bonuses";
 
 /**
  * Webhook da Cakto.
@@ -238,7 +238,13 @@ export async function POST(request: Request) {
 
   // Separa pacotes de tokens (consumíveis) dos entitlements permanentes.
   const tokenCredits = allEntitlements.reduce((sum, e) => sum + (parseTokenGrant(e) ?? 0), 0);
-  const entitlements = allEntitlements.filter((e) => parseTokenGrant(e) === null);
+  let entitlements = allEntitlements.filter((e) => parseTokenGrant(e) === null);
+
+  // Se comprou ou reembolsou o compre tudo com 58% off, expande a ação para todos os bônus
+  if (entitlements.includes("economize-58")) {
+    const bonusKeys = BONUSES.map((b) => b.key);
+    entitlements = Array.from(new Set([...entitlements, ...bonusKeys]));
+  }
 
   /* ---------- Revogação (reembolso/chargeback) ---------- */
   if (REVOKE_EVENTS.has(event)) {
