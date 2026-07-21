@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Camera, Coins, History, Plus, Search, Send, Sparkles, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -90,6 +91,9 @@ function FormattedReply({ text }: { text: string }) {
 }
 
 export function FitCheckChat() {
+  const searchParams = useSearchParams();
+  const simularTokens = searchParams.get("simular_tokens") === "true";
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [pendingImage, setPendingImage] = useState<{ full: string; thumb: string } | null>(null);
@@ -121,15 +125,30 @@ export function FitCheckChat() {
     const supabase = createClient();
     const { data } = await supabase
       .from("fit_check_credits")
-      .select("balance")
-      .maybeSingle<{ balance: number }>();
-    if (data) setCredits(data.balance);
+      .select("balance, expires_at")
+      .maybeSingle<{ balance: number; expires_at: string | null }>();
+    
+    if (data) {
+      const expiry = data.expires_at ? new Date(data.expires_at) : null;
+      if (expiry && expiry < new Date()) {
+        setCredits(0);
+      } else {
+        setCredits(data.balance);
+      }
+    }
   }, []);
 
   useEffect(() => {
     loadConversations();
     loadCredits();
   }, [loadConversations, loadCredits]);
+
+  useEffect(() => {
+    if (simularTokens) {
+      setCredits(0);
+      setBuyStep(1);
+    }
+  }, [simularTokens]);
 
   async function deleteConversation(id: string) {
     if (!window.confirm("Excluir esta conversa? Isso não tem como desfazer.")) return;
@@ -534,18 +553,18 @@ function TokenModal({
         <h3 className="text-lg font-semibold text-foreground">
           {isMain ? "Seus tokens acabaram" : "Que tal um pacote menor?"}
         </h3>
-        <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted">
+        <p className="mx-auto mt-1.5 max-w-xs text-xs text-muted">
           {isMain
-            ? "Cada imagem analisada usa 1 token. Recarregue e continue mandando seus fits pra IA analisar."
-            : "Sem problema. Pega um pacote de entrada e continue de onde parou."}
+            ? "Cada imagem analisada usa 1 token. Os tokens têm validade de 30 dias a partir da data de compra."
+            : "Sem problema. Os tokens têm validade de 30 dias a partir da data de compra."}
         </p>
 
         <div className="mt-5 rounded-xl border border-border bg-surface-2 p-4">
           <p className="text-3xl font-bold text-foreground">
             {amount} <span className="text-base font-medium text-muted">tokens</span>
           </p>
-          <p className="mt-1 text-sm text-muted">
-            {amount} imagens · <span className="font-semibold text-foreground">R$ {price}</span>
+          <p className="mt-1 text-[11px] text-muted">
+            {amount} imagens (válido por 30 dias) · <span className="font-semibold text-foreground">R$ {price}</span>
           </p>
         </div>
 
