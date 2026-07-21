@@ -279,8 +279,9 @@ export async function grantStudentEntitlementAction(userId: string, entitlement:
   }
 
   if (entitlement === "economize-58") {
-    // Concede TODOS os bônus
+    // Concede MPO Base + TODOS os bônus
     const entitlementsToGrant = [
+      { user_id: userId, entitlement: "base", source: "admin:manual:pack-58" },
       { user_id: userId, entitlement: "economize-58", source: "admin:manual" },
       ...BONUSES.map((b) => ({
         user_id: userId,

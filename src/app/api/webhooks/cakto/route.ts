@@ -282,10 +282,10 @@ export async function POST(request: Request) {
   const tokenCredits = allEntitlements.reduce((sum, e) => sum + (parseTokenGrant(e) ?? 0), 0);
   let entitlements = allEntitlements.filter((e) => parseTokenGrant(e) === null);
 
-  // Se comprou ou reembolsou o compre tudo com 58% off, expande a ação para todos os bônus
+  // Se comprou ou reembolsou o compre tudo com 58% off, expande a ação para MPO Base + todos os bônus
   if (entitlements.includes("economize-58")) {
     const bonusKeys = BONUSES.map((b) => b.key);
-    entitlements = Array.from(new Set([...entitlements, ...bonusKeys]));
+    entitlements = Array.from(new Set([...entitlements, "base", ...bonusKeys]));
   }
 
   /* ---------- Revogação (reembolso/chargeback) ---------- */
