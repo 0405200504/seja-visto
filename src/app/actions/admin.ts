@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import nodemailer from "nodemailer";
 import { requireAdmin } from "@/lib/auth";
-import { ALL_ENTITLEMENT_KEYS } from "@/lib/bonuses";
+import { ALL_ENTITLEMENT_KEYS, BONUSES } from "@/lib/bonuses";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   OCCASIONS,
@@ -278,18 +278,60 @@ export async function grantStudentEntitlementAction(userId: string, entitlement:
     throw new Error("Produto ou bônus inválido.");
   }
 
-  const { error } = await supabase
-    .from("user_entitlements")
-    .upsert(
-      { user_id: userId, entitlement, source: "admin:manual" },
-      { onConflict: "user_id,entitlement", ignoreDuplicates: true }
-    );
+  if (entitlement === "economize-58") {
+    // Concede TODOS os bônus
+    const entitlementsToGrant = [
+      { user_id: userId, entitlement: "economize-58", source: "admin:manual" },
+      ...BONUSES.map((b) => ({
+        user_id: userId,
+        entitlement: b.key,
+        source: "admin:manual:pack-58"
+      }))
+    ];
 
-  if (error) {
-    throw new Error(`Erro ao liberar acesso: ${error.message}`);
+    const { error } = await supabase
+      .from("user_entitlements")
+      .upsert(entitlementsToGrant, {
+        onConflict: "user_id,entitlement",
+        ignoreDuplicates: true
+      });
+
+    if (error) {
+      throw new Error(`Erro ao liberar bônus em lote: ${error.message}`);
+    }
+  } else {
+    const { error } = await supabase
+      .from("user_entitlements")
+      .upsert(
+        { user_id: userId, entitlement, source: "admin:manual" },
+        { onConflict: "user_id,entitlement", ignoreDuplicates: true }
+      );
+
+    if (error) {
+      throw new Error(`Erro ao liberar acesso: ${error.message}`);
+    }
   }
 
   revalidatePath("/admin/alunos");
+}
+
+export async function addStudentTokensAction(userId: string, amount: number) {
+  await requireAdmin();
+
+  const adminClient = createAdminClient();
+  
+  // Executa a RPC do banco de dados remoto
+  const { data, error } = await adminClient.rpc("add_fit_check_credits", {
+    p_user: userId,
+    p_amount: amount
+  });
+
+  if (error) {
+    throw new Error(`Erro ao adicionar tokens de IA: ${error.message}`);
+  }
+
+  revalidatePath("/admin/alunos");
+  return data;
 }
 
 export async function revokeStudentEntitlementAction(userId: string, entitlement: string) {

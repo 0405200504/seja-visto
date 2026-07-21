@@ -15,7 +15,8 @@ export default async function AdminAlunosPage() {
     { data: progressRows },
     { count: totalLessons },
     { data: aiLogs },
-    { data: aiMessages }
+    { data: aiMessages },
+    { data: fitCredits }
   ] = await Promise.all([
     supabase
       .from("users_profile")
@@ -26,6 +27,7 @@ export default async function AdminAlunosPage() {
     supabase.from("lessons").select("*", { count: "exact", head: true }),
     supabase.from("fit_check_logs").select("user_id, prompt_tokens, completion_tokens, total_tokens, kind"),
     supabase.from("fit_check_messages").select("user_id, role, content, thumb"),
+    supabase.from("fit_check_credits").select("user_id, balance, expires_at")
   ]);
 
   // Busca o último acesso na API de Admin (opcional - sem service key falha silenciosamente)
@@ -44,6 +46,12 @@ export default async function AdminAlunosPage() {
   const entitlementsByUser = new Map<string, string[]>();
   for (const e of entitlements ?? []) {
     entitlementsByUser.set(e.user_id, [...(entitlementsByUser.get(e.user_id) ?? []), e.entitlement]);
+  }
+
+  // Agrupa créditos de IA por usuário
+  const creditsByUser = new Map<string, { balance: number; expires_at: string | null }>();
+  for (const c of fitCredits ?? []) {
+    creditsByUser.set(c.user_id, { balance: c.balance, expires_at: c.expires_at });
   }
 
   // Agrupa progresso de aulas concluídas por usuário
@@ -104,6 +112,7 @@ export default async function AdminAlunosPage() {
     completedLessonsCount: progressByUser.get(p.user_id) ?? 0,
     aiMessagesCount: aiMessagesByUser.get(p.user_id) ?? 0,
     aiTokensCount: aiTokensByUser.get(p.user_id) ?? 0,
+    fitCheckCredits: creditsByUser.get(p.user_id) ?? { balance: 5, expires_at: null }
   }));
 
   return (

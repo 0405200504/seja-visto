@@ -26,7 +26,8 @@ import {
   deleteStudentAction, 
   grantStudentEntitlementAction, 
   revokeStudentEntitlementAction, 
-  toggleAdminStatusAction 
+  toggleAdminStatusAction,
+  addStudentTokensAction
 } from "@/app/actions/admin";
 import { StudentChatModal } from "@/components/admin/student-chat-modal";
 
@@ -48,6 +49,10 @@ interface StudentCardProps {
   totalLessonsCount: number;
   aiMessagesCount: number;
   aiTokensCount: number;
+  fitCheckCredits: {
+    balance: number;
+    expires_at: string | null;
+  };
 }
 
 export function StudentCard({
@@ -57,7 +62,8 @@ export function StudentCard({
   completedLessonsCount,
   totalLessonsCount,
   aiMessagesCount,
-  aiTokensCount
+  aiTokensCount,
+  fitCheckCredits
 }: StudentCardProps) {
   const [isPending, startTransition] = useTransition();
   const [showDetails, setShowDetails] = useState(false);
@@ -117,6 +123,10 @@ export function StudentCard({
       await deleteStudentAction(student.user_id);
       setShowDeleteConfirm(false);
     });
+  };
+
+  const handleAddTokens = (amount: number) => {
+    handleAction(() => addStudentTokensAction(student.user_id, amount));
   };
 
   return (
@@ -192,15 +202,14 @@ export function StudentCard({
       </div>
 
       {/* Uso de IA (Mensagens e Tokens) */}
-      <div className="mt-2.5 rounded-xl bg-surface-2/40 border border-border/40 p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <span className="text-muted flex items-center gap-1.5">
-          <Sparkles className="size-3.5 text-accent" /> Chat IA (Fit Check)
-        </span>
-        <div className="flex items-center gap-4 text-muted-2">
-          <span>Mensagens: <strong className="text-foreground">{aiMessagesCount}</strong></span>
-          <span>Tokens: <strong className="text-foreground">{aiTokensCount.toLocaleString("pt-BR")}</strong></span>
+      <div className="mt-2.5 rounded-xl bg-surface-2/40 border border-border/40 p-3.5 flex flex-col gap-3 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/20 pb-2">
+          <span className="text-muted flex items-center gap-1.5 font-semibold">
+            <Sparkles className="size-3.5 text-accent" /> Chat IA & Saldo de Tokens (Fit Check)
+          </span>
           
           <Button
+            type="button"
             size="sm"
             variant="outline"
             className="h-7 text-[11px] font-semibold gap-1"
@@ -208,6 +217,58 @@ export function StudentCard({
           >
             <MessageSquare className="size-3 text-accent" /> Ver Chat
           </Button>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4 text-muted-2">
+            <span>Mensagens: <strong className="text-foreground">{aiMessagesCount}</strong></span>
+            <span>Uso Total: <strong className="text-foreground">{aiTokensCount.toLocaleString("pt-BR")} tks</strong></span>
+            <span>
+              Saldo Atual: <strong className="text-foreground">{fitCheckCredits.balance} tokens</strong>
+              {fitCheckCredits.expires_at && (() => {
+                const exp = new Date(fitCheckCredits.expires_at);
+                if (exp > new Date()) {
+                  return (
+                    <span className="text-[10px] text-success ml-1.5 bg-success/5 border border-success/15 px-1.5 py-0.5 rounded-md">
+                      Vence em {exp.toLocaleDateString("pt-BR")}
+                    </span>
+                  );
+                } else if (fitCheckCredits.balance > 0) {
+                  return (
+                    <span className="text-[10px] text-danger ml-1.5 bg-danger/5 border border-danger/15 px-1.5 py-0.5 rounded-md">
+                      Expirou em {exp.toLocaleDateString("pt-BR")}
+                    </span>
+                  );
+                }
+                return null;
+              })()}
+            </span>
+          </div>
+
+          {/* Ações de Crédito (Liberação de Tokens) */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-muted mr-1">Adicionar:</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={isPending}
+              className="h-7 text-[10px] font-semibold gap-1 hover:bg-accent/5 hover:text-accent border-accent/20"
+              onClick={() => handleAddTokens(50)}
+            >
+              {isPending ? <Loader2 className="size-3 animate-spin" /> : "+50 tks"}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={isPending}
+              className="h-7 text-[10px] font-semibold gap-1 hover:bg-accent/5 hover:text-accent border-accent/20"
+              onClick={() => handleAddTokens(200)}
+            >
+              {isPending ? <Loader2 className="size-3 animate-spin" /> : "+200 tks"}
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -21,6 +21,10 @@ interface StudentData {
   completedLessonsCount: number;
   aiMessagesCount: number;
   aiTokensCount: number;
+  fitCheckCredits: {
+    balance: number;
+    expires_at: string | null;
+  };
 }
 
 interface StudentListProps {
@@ -88,6 +92,7 @@ export function StudentList({ initialStudents, totalLessonsCount }: StudentListP
             totalLessonsCount={totalLessonsCount}
             aiMessagesCount={item.aiMessagesCount}
             aiTokensCount={item.aiTokensCount}
+            fitCheckCredits={item.fitCheckCredits}
           />
         ))}
 
