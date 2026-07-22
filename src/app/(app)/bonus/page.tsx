@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { ArrowUpRight, BadgeCheck, Gift, Lock } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
@@ -42,84 +43,75 @@ export default async function BonusPage() {
           const card = (
             <div
               className={cn(
-                "relative flex h-full flex-col overflow-hidden rounded-2xl border p-6 shadow-card transition-all duration-300",
+                "flex h-full flex-col overflow-hidden rounded-2xl border shadow-card transition-all duration-300",
                 unlocked
                   ? "border-border bg-surface hover:border-border-strong hover:shadow-glow"
                   : buyHref
-                    ? "border-border bg-surface hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-glow"
-                    : "border-dashed border-border bg-surface/40"
+                    ? "border-border bg-surface/50 hover:border-border-strong hover:bg-surface hover:shadow-glow"
+                    : "border-border bg-surface/50"
               )}
             >
-              {/* Brilho decorativo no topo */}
-              <div
-                className={cn(
-                  "pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent to-transparent transition-opacity duration-300",
-                  unlocked ? "via-success/40" : "via-accent/40",
-                  buyHref ? "opacity-0 group-hover:opacity-100" : unlocked ? "opacity-100" : "opacity-0"
-                )}
-              />
-
-              <div className="mb-5 flex items-start justify-between">
-                <span
+              <div className="relative aspect-[2/3] overflow-hidden bg-surface-3">
+                <Image
+                  src={`/bonus/${bonus.key}.jpg`}
+                  alt={bonus.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className={cn(
-                    "flex size-12 items-center justify-center rounded-xl ring-1 transition-colors duration-300",
-                    unlocked
-                      ? "bg-accent-soft text-accent ring-accent/20"
-                      : buyHref
-                        ? "bg-surface-2 text-muted ring-border group-hover:bg-accent-soft group-hover:text-accent group-hover:ring-accent/30"
-                        : "bg-surface-2 text-muted-2 ring-border"
+                    "object-cover transition-transform duration-500 group-hover:scale-[1.03]",
+                    !unlocked && "opacity-70 grayscale group-hover:opacity-100 group-hover:grayscale-0"
+                  )}
+                />
+                <div className="absolute right-3 top-3">
+                  {unlocked ? (
+                    <Badge variant="success" className="backdrop-blur-md">
+                      <BadgeCheck className="size-3" />
+                      Liberado
+                    </Badge>
+                  ) : (
+                    <Badge className="backdrop-blur-md">
+                      <Lock className="size-3" />
+                      Bloqueado
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-1 flex-col p-5 sm:p-6">
+                <h3
+                  className={cn(
+                    "font-display text-base font-semibold leading-snug",
+                    !unlocked && "text-muted"
                   )}
                 >
-                  <bonus.icon className="size-5.5" />
-                </span>
-                {unlocked ? (
-                  <Badge variant="success">
-                    <BadgeCheck className="size-3" />
-                    Liberado
-                  </Badge>
-                ) : (
-                  <Badge>
-                    <Lock className="size-3" />
-                    Bloqueado
-                  </Badge>
-                )}
-              </div>
-
-              <h3
-                className={cn(
-                  "font-display text-lg font-semibold leading-snug",
-                  unlocked ? "text-foreground" : "text-foreground/90"
-                )}
-              >
-                {bonus.title}
-              </h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">
-                {bonus.short}
-              </p>
-
-              <div className="mt-6">
+                  {bonus.title}
+                </h3>
+                <p className={cn("mt-1.5 flex-1 text-sm leading-relaxed", unlocked ? "text-muted" : "text-muted-2")}>
+                  {bonus.short}
+                </p>
+                <div className="mt-4 border-t border-border pt-3.5">
                 {unlocked ? (
                   isBadge ? (
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-success">
-                      <BadgeCheck className="size-4" />
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-success">
+                      <BadgeCheck className="size-3.5" />
                       Ativo na sua conta — para sempre
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-accent">
                       Acessar bônus
-                      <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      <ArrowUpRight className="size-3.5" />
                     </span>
                   )
                 ) : buyHref ? (
-                  <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground shadow-[0_4px_20px_-6px_rgb(47_107_255/0.5)] transition-colors duration-200 group-hover:bg-accent-hover">
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent">
                     Desbloquear agora
-                    <ArrowUpRight className="size-4" />
+                    <ArrowUpRight className="size-3.5" />
                   </span>
                 ) : (
-                  <span className="block rounded-xl border border-border bg-surface-2/60 px-4 py-3 text-center text-xs font-medium text-muted-2">
-                    Liberado automaticamente na compra
+                  <span className="text-xs text-muted-2">
+                    Liberado automaticamente na compra deste bônus
                   </span>
                 )}
+                </div>
               </div>
             </div>
           );
