@@ -23,6 +23,8 @@ export type Bonus = {
   type: "content" | "link" | "badge";
   /** Link de checkout da Cakto — usado no card bloqueado para a pessoa comprar o bônus avulso. */
   checkoutUrl?: string;
+  /** Componente interativo e após qual seção ele entra (índice). */
+  interactive?: { kind: "roda-cromatica"; after: number };
   sections?: GuideSection[];
 };
 
@@ -50,9 +52,52 @@ export const BONUSES: Bonus[] = [
         title: "Fase 1 — Auditoria brutal (fim de semana 1)",
         items: [
           { t: "Esvazie tudo", d: "Tire TODAS as peças do armário e coloque na cama. Ver o volume total de uma vez muda sua relação com as próximas compras. A maioria descobre que tem 3x mais roupa do que imaginava." },
-          { t: "As 4 pilhas", d: "AMO E USO (volta pro armário) · USO MAS NÃO AMO (volta em observação por 30 dias) · AMO MAS NÃO USO (por quê? tamanho errado → costureiro; sem combinação → anote a peça-ponte que falta) · NEM AMO NEM USO (doa hoje, sem dó)." },
+          { t: "As 4 pilhas", d: "AMO E USO (volta pro armário) · USO MAS NÃO AMO (volta em observação por 30 dias) · AMO MAS NÃO USO (por quê? tamanho errado → costureiro; sem combinação → anote a peça-ponte que falta) · NEM AMO NEM USO (a saída: VENDA se tiver valor, doe o resto — veja a Fase 1.5)." },
           { t: "O teste do cabide invertido", d: "Pendure tudo com o gancho ao contrário. Usou a peça? Vira o cabide. Em 60 dias, os cabides que continuarem invertidos revelam a verdade que você evita." },
           { t: "Fotografe o resultado", d: "Armário limpo, foto no celular. É sua linha de base — e seu freio nas compras por impulso ('já tenho algo igual?')." },
+        ],
+      },
+      {
+        kind: "text",
+        title: "Fase 1.5 — Transforme peça parada em dinheiro",
+        body: [
+          "Aquela pilha do 'nem amo nem uso' não é lixo — para boa parte dela é DINHEIRO parado. Antes de doar tudo no impulso, separe o que tem valor de revenda: peça de marca, pouco uso, sem defeito e ainda atual vende rápido. O que é sem marca, desgastado ou fora de moda, aí sim, doe (não vale seu tempo anunciar).",
+          "A meta é esperta: alguns desapegos bem-feitos costumam pagar 2 ou 3 peças-ponte novas — aquelas que destravam dezenas de combinações. Você limpa o armário E financia a próxima compra certa, sem tirar do bolso.",
+        ],
+      },
+      {
+        kind: "steps",
+        title: "Como vender (e vender rápido)",
+        items: [
+          { t: "Separe o que VENDE do que DOA", d: "Regra de 5 segundos por peça: marca desejada + bom estado + ainda na moda = anuncia. Qualquer 'não' nos três = doa. Não empate energia tentando vender camiseta básica surrada." },
+          { t: "Fotografe pra vender", d: "Luz natural (perto da janela), fundo neutro, peça no cabide + uma foto vestida ou em superfície plana. 4 a 5 fotos por anúncio, incluindo etiqueta e qualquer defeito. Foto boa vende até 2x mais rápido." },
+          { t: "Precifique pela regra do terço", d: "Peça usada em bom estado vale ~1/3 do preço de nova; item de marca muito desejada segura ~50%. Coloque um preço redondo com uma pequena margem pra aceitar proposta — todo mundo gosta de 'ganhar' um desconto." },
+          { t: "Descrição que fecha a venda", d: "Marca, tamanho COM as medidas reais (ombro, peito, comprimento), estado honesto e motivo da venda. Medidas eliminam 90% das desistências e das trocas." },
+          { t: "Anuncie no canal certo", d: "Cada tipo de peça vende melhor em um lugar (veja a tabela). Postar o mesmo anúncio em 2–3 canais ao mesmo tempo acelera a venda." },
+        ],
+      },
+      {
+        kind: "table",
+        title: "Onde vender cada tipo de peça",
+        note: "Comissões e regras mudam — confira no app de cada canal antes de anunciar.",
+        head: ["Canal", "Melhor para", "Custo"],
+        rows: [
+          ["Enjoei", "Marcas populares, streetwear e hype", "~20% + frete pago pelo comprador"],
+          ["OLX / Facebook Marketplace", "Venda local com retirada, sem comissão", "Grátis (combine em local público)"],
+          ["Grupos de WhatsApp/Telegram de brechó", "Giro rápido de streetwear e peças de marca", "Grátis"],
+          ["Instagram próprio (modo bazar)", "Quem já tem audiência e quer margem cheia", "Grátis"],
+          ["Brechó físico de consignação", "Quem não quer o trabalho de anunciar", "30–50% fica com o brechó"],
+        ],
+      },
+      {
+        kind: "tips",
+        title: "Regras pra vender mais rápido (e por mais)",
+        items: [
+          "Desapegou muita coisa? Monte lotes ('kit 5 camisetas') — giram mais que 5 anúncios avulsos",
+          "Peça de estação vende melhor NA estação: casaco no começo do frio, não no fim",
+          "Responda rápido: quem some perde a venda pro próximo anúncio parecido",
+          "Segurança primeiro: entrega em local movimentado, e só envie com Pix confirmado ANTES",
+          "O que não vender em 30 dias, baixe o preço ou doe — cabide ocupado com peça parada também é prejuízo",
         ],
       },
       {
@@ -339,6 +384,7 @@ export const BONUSES: Bonus[] = [
     short: "A teoria por trás dos looks memoráveis: complementares, análogas e tríades aplicadas à moda masculina.",
     icon: Palette,
     type: "content",
+    interactive: { kind: "roda-cromatica", after: 1 },
     sections: [
       {
         kind: "text",

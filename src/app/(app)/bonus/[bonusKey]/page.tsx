@@ -5,6 +5,7 @@ import { requireProfile } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/app/guide-sections";
+import { ColorWheel } from "@/components/app/color-wheel";
 import { getBonus } from "@/lib/bonuses";
 
 export default async function BonusDetailPage({
@@ -115,7 +116,12 @@ export default async function BonusDetailPage({
 
       <div className="space-y-10">
         {(bonus.sections ?? []).map((section, i) => (
-          <Section key={i} section={section} />
+          <div key={i} className="space-y-10">
+            <Section section={section} />
+            {bonus.interactive?.kind === "roda-cromatica" && bonus.interactive.after === i && (
+              <ColorWheel />
+            )}
+          </div>
         ))}
       </div>
     </div>
