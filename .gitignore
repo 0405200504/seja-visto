@@ -57,3 +57,6 @@ next-env.d.ts
 /artistas rapha/
 /imagem rapha.jpg
 /mais procurados 2.0/
+
+# Material de origem (capas dos bonus em alta resolucao - versao otimizada esta em public/bonus)
+/capa bonus/

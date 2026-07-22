@@ -21,6 +21,8 @@ export type Bonus = {
   icon: LucideIcon;
   /** content = página de conteúdo · link = página com botão (WhatsApp) · badge = só status (vitalício) */
   type: "content" | "link" | "badge";
+  /** Link de checkout da Cakto — usado no card bloqueado para a pessoa comprar o bônus avulso. */
+  checkoutUrl?: string;
   sections?: GuideSection[];
 };
 
@@ -30,6 +32,7 @@ export const BASE_ENTITLEMENT = "base";
 export const BONUSES: Bonus[] = [
   {
     key: "guarda-roupa-funcional",
+    checkoutUrl: "https://pay.cakto.com.br/3dq47z7",
     title: "Monte um guarda-roupa funcional",
     short: "O sistema completo para transformar seu armário em uma máquina de looks.",
     icon: DoorOpen,
@@ -91,6 +94,7 @@ export const BONUSES: Bonus[] = [
   },
   {
     key: "vista-se-como-artista",
+    checkoutUrl: "https://pay.cakto.com.br/36uhro4",
     title: "Vista-se como artista",
     short: "Decodifique o estilo dos seus ídolos e adapte para a vida real — sem fantasia.",
     icon: Mic2,
@@ -144,6 +148,7 @@ export const BONUSES: Bonus[] = [
   },
   {
     key: "corte-ideal-rosto",
+    checkoutUrl: "https://pay.cakto.com.br/5miqksx",
     title: "Corte ideal para seu rosto",
     short: "Cabelo e barba calculados para o formato do seu rosto — com o script pro barbeiro.",
     icon: Scissors,
@@ -206,6 +211,7 @@ export const BONUSES: Bonus[] = [
   },
   {
     key: "bonito-nas-fotos",
+    checkoutUrl: "https://pay.cakto.com.br/3fe95o3",
     title: "Fique bonito em todas as fotos",
     short: "Ângulo, postura, luz e expressão: o manual do homem fotogênico.",
     icon: Camera,
@@ -262,6 +268,7 @@ export const BONUSES: Bonus[] = [
   },
   {
     key: "mala-10x-mais-rapido",
+    checkoutUrl: "https://pay.cakto.com.br/t6t85jf",
     title: "Monte sua mala 10x mais rápido",
     short: "O método 5-4-3-2-1 e a cápsula de viagem que rende 2 semanas de looks em uma mochila.",
     icon: Luggage,
@@ -327,6 +334,7 @@ export const BONUSES: Bonus[] = [
   },
   {
     key: "circulo-cromatico",
+    checkoutUrl: "https://pay.cakto.com.br/a9hm3yg",
     title: "Aprenda a combinar cores (círculo cromático)",
     short: "A teoria por trás dos looks memoráveis: complementares, análogas e tríades aplicadas à moda masculina.",
     icon: Palette,
@@ -389,6 +397,7 @@ export const BONUSES: Bonus[] = [
 
   {
     key: "grupo-whatsapp",
+    checkoutUrl: "https://pay.cakto.com.br/nw7rcfk",
     title: "Grupo no WhatsApp",
     short: "A comunidade fechada: dúvidas respondidas, looks avaliados e drops de conteúdo.",
     icon: MessageCircle,
@@ -396,6 +405,7 @@ export const BONUSES: Bonus[] = [
   },
   {
     key: "comprar-pela-internet",
+    checkoutUrl: "https://pay.cakto.com.br/qrvbvb7",
     title: "Aprenda a comprar roupa pela internet",
     short: "Compre online sem medo: tamanho certo, tecido certo e zero arrependimento.",
     icon: Globe,
@@ -449,6 +459,7 @@ export const BONUSES: Bonus[] = [
   },
   {
     key: "tendencias-do-ano",
+    checkoutUrl: "https://pay.cakto.com.br/6agtgyv",
     title: "Saiba as tendências do ano",
     short: "O radar 2026: o que está subindo, o que consolida e o que está saindo — e como adotar sem virar vítima.",
     icon: TrendingUp,
@@ -503,6 +514,7 @@ export const BONUSES: Bonus[] = [
   },
   {
     key: "economize-58",
+    checkoutUrl: "https://pay.cakto.com.br/6sbgnt3",
     title: "Compre tudo economizando 58%",
     short: "O stack de descontos: como pagar quase metade do preço em tudo, sem cair em pegadinha.",
     icon: Percent,
