@@ -1,20 +1,22 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Heart, ShoppingBag } from "lucide-react";
+import { Bookmark, Heart, ShoppingBag } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
+import { fetchFitsSocial } from "@/lib/community";
 import { PageHeader } from "@/components/app/page-header";
 import { LookCard } from "@/components/app/look-card";
+import { FitCard } from "@/components/app/fit-card";
 import { WardrobeItemCard } from "@/components/app/wardrobe-item-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
-import type { Look, WardrobeItem } from "@/lib/types";
+import type { CommunityFit, Look, WardrobeItem } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Favoritos" };
 
 export default async function FavoritosPage() {
   const { supabase, user } = await requireProfile();
 
-  const [{ data: marks }, { data: wanted }] = await Promise.all([
+  const [{ data: marks }, { data: wanted }, { data: savedFitRows }] = await Promise.all([
     supabase
       .from("user_favorites")
       .select("kind, looks(*)")
@@ -24,6 +26,12 @@ export default async function FavoritosPage() {
       .select("wardrobe_items(*)")
       .eq("user_id", user.id)
       .eq("status", "quero_comprar"),
+    supabase
+      .from("fit_reactions")
+      .select("community_fits(*)")
+      .eq("user_id", user.id)
+      .eq("kind", "save")
+      .not("fit_id", "is", null),
   ]);
 
   const favoriteLooks = (marks ?? [])
@@ -35,10 +43,21 @@ export default async function FavoritosPage() {
   const wantedItems = (wanted ?? [])
     .map((w) => w.wardrobe_items as unknown as WardrobeItem)
     .filter(Boolean);
+  const savedFits = (savedFitRows ?? [])
+    .map((r) => r.community_fits as unknown as CommunityFit)
+    .filter((f) => f && f.status === "approved");
+  const savedFitsSocial = await fetchFitsSocial(
+    supabase,
+    savedFits.map((f) => f.id),
+    user.id
+  );
 
   const favoriteIds = new Set(favoriteLooks.map((l) => l.id));
   const isEmpty =
-    favoriteLooks.length === 0 && planLooks.length === 0 && wantedItems.length === 0;
+    favoriteLooks.length === 0 &&
+    planLooks.length === 0 &&
+    wantedItems.length === 0 &&
+    savedFits.length === 0;
 
   return (
     <div className="animate-fade-up">
@@ -83,6 +102,23 @@ export default async function FavoritosPage() {
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 {planLooks.map((look) => (
                   <LookCard key={look.id} look={look} isFavorite={favoriteIds.has(look.id)} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {savedFits.length > 0 && (
+            <section>
+              <h2 className="mb-1 flex items-center gap-2 text-lg font-semibold sm:text-xl">
+                <Bookmark className="size-5 text-accent" />
+                Fits salvos da comunidade
+              </h2>
+              <p className="mb-4 text-sm text-muted">
+                Looks reais de outros alunos que você salvou para se inspirar.
+              </p>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+                {savedFits.map((fit) => (
+                  <FitCard key={fit.id} fit={fit} social={savedFitsSocial.get(fit.id)!} />
                 ))}
               </div>
             </section>

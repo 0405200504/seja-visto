@@ -87,3 +87,23 @@ export type ActionPlanProgress = {
   notes: string | null;
   created_at: string;
 };
+
+export type CommunityFit = {
+  id: string;
+  user_id: string;
+  author_name: string | null;
+  image_path: string;
+  caption: string | null;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+};
+
+export type FitComment = {
+  id: string;
+  user_id: string;
+  author_name: string | null;
+  look_id: string | null;
+  fit_id: string | null;
+  content: string;
+  created_at: string;
+};

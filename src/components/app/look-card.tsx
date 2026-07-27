@@ -3,10 +3,20 @@ import { ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { FavoriteButton } from "@/components/app/favorite-button";
 import { LookImage } from "@/components/app/look-image";
+import { ReactionButtons } from "@/components/app/reaction-buttons";
 import { OCCASIONS, LEVELS, STYLES } from "@/lib/constants";
+import type { LookSocial } from "@/lib/community";
 import type { Look } from "@/lib/types";
 
-export function LookCard({ look, isFavorite }: { look: Look; isFavorite: boolean }) {
+export function LookCard({
+  look,
+  isFavorite,
+  social,
+}: {
+  look: Look;
+  isFavorite: boolean;
+  social?: LookSocial;
+}) {
   return (
     <Link
       href={`/combinacoes/${look.id}`}
@@ -33,6 +43,16 @@ export function LookCard({ look, isFavorite }: { look: Look; isFavorite: boolean
           {look.title}
         </h3>
         <p className="text-xs text-muted">{STYLES[look.style] ?? look.style}</p>
+        {social && (
+          <ReactionButtons
+            target={{ lookId: look.id }}
+            likes={social.likes}
+            liked={social.liked}
+            comments={social.comments}
+            showSave={false}
+            className="pt-1"
+          />
+        )}
         <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-accent opacity-80 transition-opacity group-hover:opacity-100">
           Ver detalhes
           <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

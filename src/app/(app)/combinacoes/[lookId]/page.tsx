@@ -2,13 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Lightbulb, Repeat, Shirt } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
+import { fetchLooksSocial } from "@/lib/community";
 import { LookImage } from "@/components/app/look-image";
 import { LookActions } from "@/components/app/look-actions";
+import { ReactionButtons } from "@/components/app/reaction-buttons";
+import { CommentsSection } from "@/components/app/comments-section";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OCCASIONS, STYLES, CLIMATES, LEVELS, BASE_COLORS, COLOR_SWATCHES } from "@/lib/constants";
 import type { FavoriteKind } from "@/app/actions/user";
-import type { Look } from "@/lib/types";
+import type { FitComment, Look } from "@/lib/types";
 
 export default async function LookDetailPage({
   params,
@@ -16,18 +19,26 @@ export default async function LookDetailPage({
   params: Promise<{ lookId: string }>;
 }) {
   const { lookId } = await params;
-  const { supabase, user } = await requireProfile();
+  const { supabase, user, profile } = await requireProfile();
 
-  const [{ data: look }, { data: marks }] = await Promise.all([
+  const [{ data: look }, { data: marks }, { data: comments }] = await Promise.all([
     supabase.from("looks").select("*").eq("id", lookId).single<Look>(),
     supabase
       .from("user_favorites")
       .select("kind")
       .eq("user_id", user.id)
       .eq("look_id", lookId),
+    supabase
+      .from("fit_comments")
+      .select("*")
+      .eq("look_id", lookId)
+      .order("created_at")
+      .returns<FitComment[]>(),
   ]);
 
   if (!look) notFound();
+
+  const social = (await fetchLooksSocial(supabase, [lookId], user.id)).get(lookId)!;
 
   const kinds = new Set((marks ?? []).map((m) => m.kind));
   const states: Record<FavoriteKind, boolean> = {
@@ -83,6 +94,14 @@ export default async function LookDetailPage({
               />
               <span className="text-foreground">{BASE_COLORS[look.base_color] ?? look.base_color}</span>
             </div>
+            <ReactionButtons
+              target={{ lookId: look.id }}
+              likes={social.likes}
+              liked={social.liked}
+              showSave={false}
+              size="md"
+              className="mt-5"
+            />
           </div>
 
           <LookActions lookId={look.id} states={states} />
@@ -148,6 +167,13 @@ export default async function LookDetailPage({
               </CardContent>
             </Card>
           )}
+
+          <CommentsSection
+            target={{ lookId: look.id }}
+            comments={comments ?? []}
+            currentUserId={user.id}
+            isAdmin={profile.is_admin}
+          />
         </div>
       </div>
     </div>

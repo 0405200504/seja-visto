@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Layers } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
+import { fetchLooksSocial } from "@/lib/community";
 import { PageHeader } from "@/components/app/page-header";
+import { CombinacoesTabs } from "@/components/app/combinacoes-tabs";
 import { LookFilters, type LookFacet } from "@/components/app/look-filters";
 import { LookCard } from "@/components/app/look-card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -46,6 +48,11 @@ export default async function CombinacoesPage({
   ]);
 
   const favoriteIds = new Set((favorites ?? []).map((f) => f.look_id));
+  const social = await fetchLooksSocial(
+    supabase,
+    (looks ?? []).map((l) => l.id),
+    user.id
+  );
 
   return (
     <div className="animate-fade-up">
@@ -54,6 +61,8 @@ export default async function CombinacoesPage({
         title="Combinações"
         description="Looks prontos para copiar. Filtre por ocasião, estilo, clima e cor base."
       />
+
+      <CombinacoesTabs />
 
       <div className="mb-8 rounded-2xl border border-border bg-surface/60 p-4 sm:p-5">
         <LookFilters facets={facets ?? []} />
@@ -66,7 +75,12 @@ export default async function CombinacoesPage({
           </p>
           <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {looks.map((look) => (
-              <LookCard key={look.id} look={look} isFavorite={favoriteIds.has(look.id)} />
+              <LookCard
+                key={look.id}
+                look={look}
+                isFavorite={favoriteIds.has(look.id)}
+                social={social.get(look.id)}
+              />
             ))}
           </div>
         </>
