@@ -398,107 +398,109 @@ export function FitCheckChat() {
   }
 
   return (
-    <div className="relative flex h-[calc(100dvh-16rem)] min-h-[26rem] flex-col overflow-hidden rounded-3xl border border-border bg-surface/70 shadow-card">
-      {/* Ambiência: glow suave no topo */}
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-accent/10 blur-[100px]" />
+    <div className="relative flex h-[calc(100dvh-8rem)] min-h-[28rem] flex-col lg:h-[calc(100dvh-6rem)]">
+      {/* Ambiência: glow suave no topo, sutil o bastante pra não competir com o conteúdo */}
+      <div className="pointer-events-none absolute -top-16 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-accent/[0.06] blur-[110px]" />
 
-      <div className="relative z-10 flex h-full flex-col">
-        {/* Barra do topo: novo chat + créditos + histórico */}
-        <div className="flex items-center justify-between gap-2 border-b border-border/80 bg-surface/40 px-3 py-2.5 backdrop-blur-sm sm:px-4">
-          <button
-            type="button"
-            onClick={newChat}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs font-medium text-muted transition hover:border-border-strong hover:text-foreground"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Novo chat
-          </button>
-          <div className="flex items-center gap-2">
-            {credits !== null && (
-              <button
-                type="button"
-                onClick={() => setBuyStep(1)}
-                title="Cada imagem analisada usa 1 token. Clique para comprar mais."
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition",
-                  credits <= 0
-                    ? "border-danger/50 bg-danger/10 text-danger hover:border-danger"
-                    : "border-border bg-surface-2 text-muted hover:border-border-strong hover:text-foreground"
-                )}
-              >
-                <Coins className="h-3.5 w-3.5" />
-                {credits} {credits === 1 ? "token" : "tokens"}
-              </button>
-            )}
+      {/* Barra do topo: minimalista, sem caixa — só os controles */}
+      <div className="relative z-30 mx-auto flex w-full max-w-2xl items-center justify-between gap-2 pb-4">
+        <button
+          type="button"
+          onClick={newChat}
+          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium text-muted transition hover:bg-surface-2 hover:text-foreground"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Novo chat
+        </button>
+        <div className="flex items-center gap-1.5">
+          {credits !== null && (
+            <button
+              type="button"
+              onClick={() => setBuyStep(1)}
+              title="Cada imagem analisada usa 1 token. Clique para comprar mais."
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium transition",
+                credits <= 0
+                  ? "bg-danger/10 text-danger hover:bg-danger/15"
+                  : "text-muted hover:bg-surface-2 hover:text-foreground"
+              )}
+            >
+              <Coins className="h-3.5 w-3.5" />
+              {credits} {credits === 1 ? "token" : "tokens"}
+            </button>
+          )}
+          <div className="relative">
             <button
               type="button"
               onClick={() => setShowHistory((v) => !v)}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition",
-                showHistory
-                  ? "border-accent bg-accent-soft text-accent"
-                  : "border-border bg-surface-2 text-muted hover:border-border-strong hover:text-foreground"
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium transition",
+                showHistory ? "bg-accent-soft text-accent" : "text-muted hover:bg-surface-2 hover:text-foreground"
               )}
             >
               <History className="h-3.5 w-3.5" />
               Histórico
             </button>
-          </div>
-        </div>
 
-        {/* Painel de histórico */}
-        {showHistory && (
-          <div className="border-b border-border/80 bg-surface/40 px-3 py-3 backdrop-blur-sm sm:px-4">
-            {/* Busca */}
-            <div className="relative mb-2">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-2" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar conversa…"
-                className="w-full rounded-lg border border-border bg-surface-2 py-1.5 pl-8 pr-3 text-xs outline-none transition placeholder:text-muted-2 focus:border-accent"
-              />
-            </div>
+            {/* Painel de histórico: dropdown flutuante, não empurra o layout */}
+            {showHistory && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setShowHistory(false)} />
+                <div className="absolute right-0 top-full z-40 mt-2 w-72 rounded-2xl border border-border bg-surface p-3 shadow-2xl">
+                  <div className="relative mb-2">
+                    <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-2" />
+                    <input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Buscar conversa…"
+                      className="w-full rounded-lg border border-border bg-surface-2 py-1.5 pl-8 pr-3 text-xs outline-none transition placeholder:text-muted-2 focus:border-accent"
+                    />
+                  </div>
 
-            {conversations.length === 0 ? (
-              <p className="py-2 text-xs text-muted">Nenhuma conversa ainda.</p>
-            ) : filteredConversations.length === 0 ? (
-              <p className="py-2 text-xs text-muted">Nenhuma conversa encontrada.</p>
-            ) : (
-              <ul className="max-h-64 space-y-0.5 overflow-y-auto">
-                {filteredConversations.map((conv) => (
-                  <li key={conv.id} className="group flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => openConversation(conv.id)}
-                      className={cn(
-                        "flex min-w-0 flex-1 items-center justify-between gap-3 rounded-lg px-2 py-2 text-left text-sm transition hover:bg-surface-2 hover:text-foreground",
-                        conv.id === conversationId ? "bg-accent-soft text-accent" : "text-muted"
-                      )}
-                    >
-                      <span className="truncate">{conv.title}</span>
-                      <span className="shrink-0 text-xs text-muted-2">{formatDay(conv.updated_at)}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => deleteConversation(conv.id)}
-                      className="shrink-0 rounded-md p-1.5 text-muted-2 opacity-60 transition hover:bg-danger/10 hover:text-danger group-hover:opacity-100"
-                      aria-label="Excluir conversa"
-                      title="Excluir conversa"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                  {conversations.length === 0 ? (
+                    <p className="py-2 text-xs text-muted">Nenhuma conversa ainda.</p>
+                  ) : filteredConversations.length === 0 ? (
+                    <p className="py-2 text-xs text-muted">Nenhuma conversa encontrada.</p>
+                  ) : (
+                    <ul className="max-h-72 space-y-0.5 overflow-y-auto text-left">
+                      {filteredConversations.map((conv) => (
+                        <li key={conv.id} className="group flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => openConversation(conv.id)}
+                            className={cn(
+                              "flex min-w-0 flex-1 items-center justify-between gap-3 rounded-lg px-2 py-2 text-left text-sm transition hover:bg-surface-2 hover:text-foreground",
+                              conv.id === conversationId ? "bg-accent-soft text-accent" : "text-muted"
+                            )}
+                          >
+                            <span className="truncate">{conv.title}</span>
+                            <span className="shrink-0 text-xs text-muted-2">{formatDay(conv.updated_at)}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteConversation(conv.id)}
+                            className="shrink-0 rounded-md p-1.5 text-muted-2 opacity-60 transition hover:bg-danger/10 hover:text-danger group-hover:opacity-100"
+                            aria-label="Excluir conversa"
+                            title="Excluir conversa"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </>
             )}
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* Mensagens */}
-        <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
+      {/* Mensagens: coluna centralizada, sem caixa — o conteúdo respira na própria página */}
+      <div className="relative z-10 flex-1 overflow-y-auto">
+        <div className="mx-auto flex h-full w-full max-w-2xl flex-col gap-4 px-1 pb-2">
           {messages.length === 0 && (
-            <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
               <div className="relative flex h-16 w-16 items-center justify-center">
                 <span className="absolute inset-0 rounded-full bg-accent/15 blur-xl" />
                 <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-soft to-surface-2 ring-1 ring-inset ring-accent/20">
@@ -566,15 +568,14 @@ export function FitCheckChat() {
           {loading && <ThinkingBubble />}
           <div ref={bottomRef} />
         </div>
+      </div>
 
-        {/* Erro */}
-        {error && (
-          <p className="border-t border-border px-4 py-2 text-xs text-danger sm:px-5">{error}</p>
-        )}
+      {/* Zona inferior: erro, prévia da foto e input flutuante — tudo na mesma coluna centralizada */}
+      <div className="relative z-20 mx-auto w-full max-w-2xl pt-2">
+        {error && <p className="px-1 pb-2 text-xs text-danger">{error}</p>}
 
-        {/* Prévia da foto pendente */}
         {pendingImage && (
-          <div className="border-t border-border px-4 py-3 sm:px-5">
+          <div className="px-1 pb-3">
             <div className="relative inline-block">
               <Image
                 src={pendingImage.thumb}
@@ -596,52 +597,49 @@ export function FitCheckChat() {
           </div>
         )}
 
-        {/* Input */}
-        <div className="border-t border-border/80 bg-surface/40 p-3 backdrop-blur-sm sm:p-4">
-          <div className="flex items-end gap-2 rounded-2xl border border-border bg-surface-2 p-1.5 transition focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                handleFile(e.target.files?.[0]);
-                e.target.value = "";
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              disabled={loading}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted transition hover:bg-surface-3 hover:text-foreground disabled:opacity-50"
-              aria-label="Enviar foto do fit"
-            >
-              <Camera className="h-5 w-5" />
-            </button>
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  send();
-                }
-              }}
-              rows={1}
-              placeholder="Pergunta algo ou só manda a foto…"
-              className="max-h-32 min-h-9 flex-1 resize-none bg-transparent py-1.5 text-sm outline-none placeholder:text-muted-2"
-            />
-            <button
-              type="button"
-              onClick={send}
-              disabled={loading || (!input.trim() && !pendingImage)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-hover text-accent-foreground transition hover:brightness-110 disabled:opacity-40 disabled:hover:brightness-100"
-              aria-label="Enviar"
-            >
-              <Send className="h-4 w-4" />
-            </button>
-          </div>
+        <div className="flex items-end gap-2 rounded-2xl border border-border bg-surface-2 p-1.5 shadow-card transition focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              handleFile(e.target.files?.[0]);
+              e.target.value = "";
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={loading}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted transition hover:bg-surface-3 hover:text-foreground disabled:opacity-50"
+            aria-label="Enviar foto do fit"
+          >
+            <Camera className="h-5 w-5" />
+          </button>
+          <textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+            }}
+            rows={1}
+            placeholder="Pergunta algo ou só manda a foto…"
+            className="max-h-32 min-h-9 flex-1 resize-none bg-transparent py-1.5 text-sm outline-none placeholder:text-muted-2"
+          />
+          <button
+            type="button"
+            onClick={send}
+            disabled={loading || (!input.trim() && !pendingImage)}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-hover text-accent-foreground transition hover:brightness-110 disabled:opacity-40 disabled:hover:brightness-100"
+            aria-label="Enviar"
+          >
+            <Send className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
