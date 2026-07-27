@@ -11,6 +11,7 @@ import {
   Plus,
   Search,
   Send,
+  Shirt,
   Sparkles,
   Star,
   Trash2,
@@ -40,11 +41,11 @@ const JPEG_QUALITY = 0.82;
 const SUGGESTIONS = [
   "Como fico pra sair à noite?",
   "Isso combina com tênis branco?",
-  "O que eu troco nesse outfit?",
+  "Me ajuda a combinar essa peça",
 ];
 
 const THINKING_PHRASES = [
-  "Olhando seu fit…",
+  "Olhando a foto…",
   "Avaliando cores e caimento…",
   "Comparando com o que combina…",
   "Fechando o veredito…",
@@ -143,6 +144,19 @@ function FormattedReply({ text }: { text: string }) {
         const scoreMatch = stripped.match(/^Nota:\s*(\d{1,2}(?:[.,]\d)?)\s*\/\s*10\b/i);
         if (scoreMatch) return <ScoreBadge key={i} score={scoreMatch[1]} />;
 
+        // Títulos "Combinação 1 — vibe" do modo monta-comigo
+        if (/^combina[çc][ãa]o\s*\d/i.test(stripped) && stripped.length < 70) {
+          return (
+            <p
+              key={i}
+              className="mt-4 flex items-center gap-1.5 text-[13px] font-semibold text-accent first:mt-0"
+            >
+              <Shirt className="h-3.5 w-3.5" />
+              {stripped.replace(/:$/, "")}
+            </p>
+          );
+        }
+
         if (stripped.length < 60) {
           const headerKey = stripped.toLowerCase().replace(/:$/, "");
           const header = Object.entries(SECTION_HEADERS).find(([k]) => headerKey.startsWith(k));
@@ -158,6 +172,17 @@ function FormattedReply({ text }: { text: string }) {
               </p>
             );
           }
+        }
+
+        // Itens de lista "- peça" (modo monta-comigo)
+        const listMatch = trimmed.match(/^[-•]\s+(.*)/);
+        if (listMatch) {
+          return (
+            <p key={i} className="flex items-start gap-2 pl-1 leading-relaxed">
+              <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-accent/70" />
+              <span>{parseBoldParts(listMatch[1])}</span>
+            </p>
+          );
         }
 
         return (
@@ -508,10 +533,10 @@ export function FitCheckChat() {
                 </div>
               </div>
               <div>
-                <p className="font-display text-lg font-semibold">Manda a foto do seu fit</p>
+                <p className="font-display text-lg font-semibold">Manda a foto do fit ou de uma peça</p>
                 <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted">
-                  De preferência corpo inteiro e com boa luz. A IA fala o que tá
-                  funcionando, o que dá pra melhorar e solta a nota.
+                  Foto do outfit completo? A IA avalia e solta a nota. Foto de
+                  uma peça solta? Ela monta 3 combinações pra você usar.
                 </p>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
