@@ -174,6 +174,15 @@ function FormattedReply({ text }: { text: string }) {
           }
         }
 
+        // Citação da combinação-base da plataforma (modo monta-comigo)
+        if (/^inspirada em\b/i.test(stripped)) {
+          return (
+            <p key={i} className="pl-1 text-xs italic leading-relaxed text-muted">
+              {parseBoldParts(line.trim())}
+            </p>
+          );
+        }
+
         // Itens de lista "- peça" (modo monta-comigo)
         const listMatch = trimmed.match(/^[-•]\s+(.*)/);
         if (listMatch) {
