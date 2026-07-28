@@ -9,7 +9,7 @@ import { LookCard } from "@/components/app/look-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { Look } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Combinações" };
+export const metadata: Metadata = { title: "Refs" };
 
 const PARAM_TO_COLUMN: Record<string, string> = {
   ocasiao: "occasion",
@@ -58,7 +58,7 @@ export default async function CombinacoesPage({
     <div className="animate-fade-up">
       <PageHeader
         eyebrow="Lookbook"
-        title="Combinações"
+        title="Refs"
         description="Looks prontos para copiar. Filtre por ocasião, estilo, clima e cor base."
       />
 

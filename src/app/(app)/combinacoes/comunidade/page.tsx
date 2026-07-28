@@ -38,7 +38,7 @@ export default async function ComunidadePage() {
     <div className="animate-fade-up">
       <PageHeader
         eyebrow="Lookbook"
-        title="Combinações"
+        title="Refs"
         description="Fits reais enviados pelos alunos. Publique o seu, curta, salve e comente os looks da comunidade."
         action={<FitUpload />}
       />

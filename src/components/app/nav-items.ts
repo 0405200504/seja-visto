@@ -21,9 +21,9 @@ export type NavItem = {
 };
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Início", icon: LayoutDashboard },
   { href: "/metodo", label: "Método", icon: BookOpen },
-  { href: "/combinacoes", label: "Combinações", icon: Layers },
+  { href: "/combinacoes", label: "Refs", icon: Layers },
   { href: "/fit-check", label: "Fit Check", icon: Sparkles },
   { href: "/guias", label: "Guias", icon: BookMarked },
   { href: "/bonus", label: "Bônus", icon: Gift },

@@ -22,7 +22,7 @@ import { LookCard } from "@/components/app/look-card";
 import { STYLE_GOALS, STYLES } from "@/lib/constants";
 import type { Look, Module } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Dashboard" };
+export const metadata: Metadata = { title: "Início" };
 
 const GOAL_TO_OCCASION: Record<string, string> = {
   "dia-a-dia": "dia-a-dia",
@@ -33,15 +33,28 @@ const GOAL_TO_OCCASION: Record<string, string> = {
 };
 
 const SHORTCUTS = [
-  { href: "/metodo", label: "Começar o método", icon: BookOpen },
-  { href: "/combinacoes", label: "Ver combinações", icon: Layers },
-  { href: "/guias", label: "Guias de estilo", icon: BookMarked },
-  { href: "/estilos", label: `Os ${Object.keys(STYLES).length} estilos`, icon: Palette },
-  { href: "/mais-procurados", label: "Mais procurados", icon: Tag },
-  { href: "/guarda-roupa", label: "Guarda-roupa essencial", icon: Shirt },
+  { href: "/metodo", label: "Método", icon: BookOpen },
+  { href: "/combinacoes", label: "Refs", icon: Layers },
+  { href: "/guias", label: "Guias", icon: BookMarked },
+  { href: "/estilos", label: "Estilos", icon: Palette },
+  { href: "/mais-procurados", label: "Mais Procurados", icon: Tag },
+  { href: "/guarda-roupa", label: "Guarda-Roupa", icon: Shirt },
   { href: "/favoritos", label: "Favoritos", icon: Heart },
-  { href: "/plano-de-acao", label: "Plano de 7 dias", icon: CalendarCheck },
+  { href: "/plano-de-acao", label: "Plano de Ação", icon: CalendarCheck },
 ];
+
+function getGreeting() {
+  const hour = Number(
+    new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      hour: "numeric",
+      hour12: false,
+    }).format(new Date())
+  );
+  if (hour >= 5 && hour < 12) return "Bom dia";
+  if (hour >= 12 && hour < 18) return "Boa tarde";
+  return "Boa noite";
+}
 
 export default async function DashboardPage() {
   const { supabase, user, profile } = await requireProfile();
@@ -116,7 +129,7 @@ export default async function DashboardPage() {
           Sua central de estilo
         </p>
         <h1 className="text-2xl font-bold sm:text-4xl">
-          Fala, {firstName}.
+          {getGreeting()}, {firstName}.
         </h1>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
           Objetivo: <span className="text-foreground">{STYLE_GOALS[profile.style_goal ?? ""] ?? "definir seu estilo"}</span>
