@@ -81,10 +81,10 @@ export function Hero() {
           <Reveal delay={360}>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <a
-                href="#planos"
+                href="#como-funciona"
                 className="inline-flex h-[52px] items-center justify-center rounded-xl bg-[#146CFF] px-8 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)]"
               >
-                COMEÇAR AGORA
+                DESCOBRIR MEU ESTILO
               </a>
               <a
                 href="#como-funciona"
