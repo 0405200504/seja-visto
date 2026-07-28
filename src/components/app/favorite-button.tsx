@@ -1,7 +1,7 @@
 "use client";
 
 import { useOptimistic, useTransition } from "react";
-import { Heart } from "lucide-react";
+import { Bookmark } from "lucide-react";
 import { toggleFavorite } from "@/app/actions/user";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +37,7 @@ export function FavoriteButton({
         className
       )}
     >
-      <Heart className={cn("size-4", optimistic && "fill-accent")} />
+      <Bookmark className={cn("size-4", optimistic && "fill-accent")} />
     </button>
   );
 }

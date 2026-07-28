@@ -1,7 +1,7 @@
 "use client";
 
 import { useOptimistic, useTransition } from "react";
-import { CalendarPlus, Check, Heart, PackageCheck } from "lucide-react";
+import { Bookmark, CalendarPlus, Check, PackageCheck } from "lucide-react";
 import { toggleFavorite, type FavoriteKind } from "@/app/actions/user";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ function ActionToggle({
   lookId: string;
   kind: FavoriteKind;
   active: boolean;
-  icon: typeof Heart;
+  icon: typeof Bookmark;
   label: string;
   activeLabel: string;
 }) {
@@ -55,9 +55,9 @@ export function LookActions({
         lookId={lookId}
         kind="favorite"
         active={states.favorite}
-        icon={Heart}
-        label="Favoritar look"
-        activeLabel="Nos favoritos"
+        icon={Bookmark}
+        label="Salvar look"
+        activeLabel="Salvo nos favoritos"
       />
       <ActionToggle
         lookId={lookId}
