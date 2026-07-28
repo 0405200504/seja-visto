@@ -13,10 +13,14 @@ export const metadata: Metadata = { title: "Refs" };
 
 const PARAM_TO_COLUMN: Record<string, string> = {
   ocasiao: "occasion",
+  nivel: "level",
   estilo: "style",
   clima: "climate",
   cor: "base_color",
 };
+
+/** Looks fáceis primeiro: a listagem abre com o que qualquer um usaria. */
+const LEVEL_ORDER: Record<string, number> = { facil: 0, intermediario: 1, avancado: 2 };
 
 export default async function CombinacoesPage({
   searchParams,
@@ -47,6 +51,8 @@ export default async function CombinacoesPage({
       .returns<LookFacet[]>(),
   ]);
 
+  looks?.sort((a, b) => (LEVEL_ORDER[a.level] ?? 1) - (LEVEL_ORDER[b.level] ?? 1));
+
   const favoriteIds = new Set((favorites ?? []).map((f) => f.look_id));
   const social = await fetchLooksSocial(
     supabase,
@@ -59,7 +65,7 @@ export default async function CombinacoesPage({
       <PageHeader
         eyebrow="Lookbook"
         title="Refs"
-        description="Looks prontos para copiar. Filtre por ocasião, estilo, clima e cor base."
+        description="Looks prontos para copiar. Filtre por ocasião, nível, estilo, clima e cor base."
       />
 
       <CombinacoesTabs />

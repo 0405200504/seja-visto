@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
-import { OCCASIONS, STYLES, CLIMATES, BASE_COLORS, COLOR_SWATCHES } from "@/lib/constants";
+import { OCCASIONS, STYLES, CLIMATES, LEVELS, BASE_COLORS, COLOR_SWATCHES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 /** Meia-estação fica fora do filtro (os looks continuam aparecendo sem filtro de clima). */
@@ -13,6 +13,7 @@ const CLIMATE_OPTIONS = Object.fromEntries(
 
 const FILTER_GROUPS: { param: string; field: keyof LookFacet; label: string; options: Record<string, string> }[] = [
   { param: "ocasiao", field: "occasion", label: "Ocasião", options: OCCASIONS },
+  { param: "nivel", field: "level", label: "Nível", options: LEVELS },
   { param: "estilo", field: "style", label: "Estilo", options: STYLES },
   { param: "clima", field: "climate", label: "Clima", options: CLIMATE_OPTIONS },
   { param: "cor", field: "base_color", label: "Cor base", options: BASE_COLORS },
