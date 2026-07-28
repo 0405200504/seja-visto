@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
-import { X } from "lucide-react";
+import { useState, useTransition } from "react";
+import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { OCCASIONS, STYLES, CLIMATES, BASE_COLORS, COLOR_SWATCHES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -30,8 +30,11 @@ export function LookFilters({ facets }: { facets: LookFacet[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
+  // No mobile os filtros ficam recolhidos para a lista de looks aparecer logo.
+  const [open, setOpen] = useState(false);
 
-  const hasFilters = FILTER_GROUPS.some((g) => searchParams.get(g.param));
+  const activeCount = FILTER_GROUPS.filter((g) => searchParams.get(g.param)).length;
+  const hasFilters = activeCount > 0;
 
   function setFilter(param: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -57,7 +60,31 @@ export function LookFilters({ facets }: { facets: LookFacet[] }) {
   }
 
   return (
-    <div className={cn("space-y-4", pending && "opacity-70")}>
+    <div className={cn(pending && "opacity-70")}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full cursor-pointer items-center justify-between md:hidden"
+      >
+        <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <SlidersHorizontal className="size-4 text-accent" />
+          Filtros
+          {hasFilters && (
+            <span className="flex size-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
+              {activeCount}
+            </span>
+          )}
+        </span>
+        <span className="flex items-center gap-1.5 text-xs text-muted">
+          {open ? "Fechar" : "Abrir"}
+          <ChevronDown
+            className={cn("size-4 transition-transform duration-200", open && "rotate-180")}
+          />
+        </span>
+      </button>
+
+      <div className={cn("space-y-4 md:mt-0", open ? "mt-5" : "hidden md:block")}>
       {FILTER_GROUPS.map((group) => {
         const active = searchParams.get(group.param);
         return (
@@ -119,6 +146,7 @@ export function LookFilters({ facets }: { facets: LookFacet[] }) {
           Limpar filtros
         </button>
       )}
+      </div>
     </div>
   );
 }
