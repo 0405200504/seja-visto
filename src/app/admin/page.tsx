@@ -1,204 +1,187 @@
-import type { Metadata } from "next";
+import Link from "next/link";
+import {
+  AlertCircle,
+  ArrowRight,
+  BookOpen,
+  Camera,
+  GraduationCap,
+  KeyRound,
+  Receipt,
+  UserPlus,
+} from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
-import { PageHeader } from "@/components/app/page-header";
-import { Card, CardContent } from "@/components/ui/card";
-import { STYLE_GOALS, STYLES } from "@/lib/constants";
-import type { Profile } from "@/lib/types";
-import { AiStatsCard } from "@/components/admin/ai-stats-card";
+import { getPeriod } from "@/lib/admin/period";
+import { getDashboardData } from "@/lib/admin/metrics";
+import { brl, delta, num, pct, relTime } from "@/lib/admin/format";
+import { KpiCard } from "@/components/admin/ui/kpi-card";
+import { RevenueChart, FunnelChart } from "@/components/admin/ui/charts";
 
-export const metadata: Metadata = { title: "Admin" };
+export const dynamic = "force-dynamic";
 
-export default async function AdminOverviewPage() {
-  const { supabase } = await requireAdmin();
+const TIMELINE_ICONS = {
+  venda: Receipt,
+  cadastro: UserPlus,
+  aula: BookOpen,
+  fit: Camera,
+  token: GraduationCap,
+  acesso: KeyRound,
+};
 
-  // Executa todas as consultas agregadas e de amostragem em paralelo
-  const [
-    { count: users },
-    { count: onboardingCompletedCount },
-    { count: looks },
-    { count: modules },
-    { count: lessons },
-    { count: items },
-    { data: salesRows },
-    { data: profiles },
-    { data: progressRows },
-    { count: totalLessons },
-    { data: aiLogs },
-    { data: aiMessages }
-  ] = await Promise.all([
-    supabase.from("users_profile").select("*", { count: "exact", head: true }),
-    supabase.from("users_profile").select("*", { count: "exact", head: true }).eq("onboarding_completed", true),
-    supabase.from("looks").select("*", { count: "exact", head: true }),
-    supabase.from("modules").select("*", { count: "exact", head: true }),
-    supabase.from("lessons").select("*", { count: "exact", head: true }),
-    supabase.from("wardrobe_items").select("*", { count: "exact", head: true }),
-    supabase.from("sales").select("amount_cents, status"),
-    supabase
-      .from("users_profile")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(50)
-      .returns<Profile[]>(),
-    supabase.from("user_progress").select("user_id").eq("completed", true),
-    supabase.from("lessons").select("*", { count: "exact", head: true }),
-    supabase.from("fit_check_logs").select("prompt_tokens, completion_tokens, total_tokens, kind"),
-    supabase.from("fit_check_messages").select("role, content, thumb")
-  ]);
+function TopList({ title, items, unit }: { title: string; items: { label: string; count: number; href: string }[]; unit: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-surface p-4">
+      <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-2">{title}</h3>
+      {items.length === 0 ? (
+        <p className="py-3 text-xs text-muted-2">Sem dados ainda.</p>
+      ) : (
+        <ol className="space-y-1">
+          {items.map((item, i) => (
+            <li key={i}>
+              <Link
+                href={item.href}
+                className="flex items-center gap-2 rounded-lg px-1.5 py-1 text-[13px] transition-colors hover:bg-surface-2"
+              >
+                <span className="w-4 shrink-0 text-[11px] tabular-nums text-muted-2">{i + 1}.</span>
+                <span className="min-w-0 flex-1 truncate text-muted">{item.label}</span>
+                <span className="shrink-0 text-xs font-semibold tabular-nums text-foreground">
+                  {num(item.count)} <span className="font-normal text-muted-2">{unit}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
 
-  // Agrupa progresso
-  const doneByUser = new Map<string, number>();
-  for (const row of progressRows ?? []) {
-    doneByUser.set(row.user_id, (doneByUser.get(row.user_id) ?? 0) + 1);
-  }
+export default async function AdminDashboard(props: {
+  searchParams: Promise<{ periodo?: string }>;
+}) {
+  await requireAdmin();
+  const sp = await props.searchParams;
+  const period = await getPeriod(sp.periodo);
+  const data = await getDashboardData(period);
 
-  // Métricas financeiras e de conversão
-  const approvedSales = salesRows?.filter((s) => s.status === "approved") ?? [];
-  const refundedSales = salesRows?.filter((s) => s.status === "refunded") ?? [];
-  const netRevenueCents = 
-    approvedSales.reduce((acc, s) => acc + s.amount_cents, 0) - 
-    refundedSales.reduce((acc, s) => acc + s.amount_cents, 0);
-  const netRevenue = netRevenueCents / 100;
-
-  const totalUsers = users ?? 0;
-  const onboardingPct = totalUsers 
-    ? Math.round(((onboardingCompletedCount ?? 0) / totalUsers) * 100) 
-    : 0;
-
-  const stats = [
-    { label: "Receita Líquida", value: netRevenue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) },
-    { label: "Alunos Totais", value: totalUsers },
-    { label: "Conversão Onboarding", value: `${onboardingPct}%` },
-    { label: "Aulas Concluídas", value: progressRows?.length ?? 0 },
-    { label: "Looks Cadastrados", value: looks ?? 0 },
-  ];
-
-  // Agrega métricas globais de consumo de IA de forma combinada (dados reais da API + retroativo estimado)
-  const logsHasTokens = (aiLogs ?? []).some((l) => (l.total_tokens ?? 0) > 0);
-
-  let totalPromptTokens = 0;
-  let totalCompletionTokens = 0;
-  let totalTokens = 0;
-  let totalPhotos = 0;
-  let totalTexts = 0;
-
-  if (logsHasTokens) {
-    const safeAiLogs = aiLogs ?? [];
-    totalPromptTokens = safeAiLogs.reduce((acc, log) => {
-      const val = log.prompt_tokens || (log.kind === "photo" ? 1200 : 600);
-      return acc + val;
-    }, 0);
-    totalCompletionTokens = safeAiLogs.reduce((acc, log) => {
-      const val = log.completion_tokens || 400;
-      return acc + val;
-    }, 0);
-    totalTokens = safeAiLogs.reduce((acc, log) => {
-      const promptEst = log.prompt_tokens || (log.kind === "photo" ? 1200 : 600);
-      const compEst = log.completion_tokens || 400;
-      return acc + (log.total_tokens || (promptEst + compEst));
-    }, 0);
-    totalPhotos = safeAiLogs.filter((log) => log.kind === "photo").length;
-    totalTexts = safeAiLogs.filter((log) => log.kind === "text").length;
-  } else {
-    // Estimativa retroativa a partir de todas as mensagens de fit_check_messages (se logs estiverem vazios/nulos)
-    const messages = aiMessages ?? [];
-    totalPhotos = messages.filter((m) => m.role === "user" && m.thumb).length;
-    totalTexts = messages.filter((m) => m.role === "user" && !m.thumb).length;
-
-    for (const msg of messages) {
-      const wordCount = (msg.content ?? "").split(/\s+/).filter(Boolean).length;
-      const tokensEst = Math.round(wordCount * 1.35); // tokens por palavra aproximado
-
-      if (msg.role === "user") {
-        const photoBonus = msg.thumb ? 1500 : 0;
-        totalPromptTokens += tokensEst + photoBonus + 800; // prompt de sistema
-      } else {
-        totalCompletionTokens += tokensEst;
-      }
-    }
-    totalTokens = totalPromptTokens + totalCompletionTokens;
-  }
+  const fmtValue = (k: (typeof data.kpis)[number]) =>
+    k.format === "brl" ? brl(k.value) : k.format === "pct" ? pct(k.value) : num(k.value);
+  const fmtDeltaAbs = (k: (typeof data.kpis)[number]) => {
+    const diff = k.value - k.prev;
+    const sign = diff > 0 ? "+" : "";
+    if (k.format === "brl") return sign + brl(diff);
+    if (k.format === "pct") return `${sign}${diff.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} p.p.`;
+    return sign + num(diff);
+  };
 
   return (
-    <div className="animate-fade-up">
-      <PageHeader
-        title="Visão geral"
-        description="Conteúdo cadastrado, faturamento e engajamento dos alunos."
-      />
+    <div className="space-y-5">
+      <div>
+        <h1 className="font-display text-xl font-bold text-foreground">Dashboard</h1>
+        <p className="mt-0.5 text-xs text-muted">
+          {period.label} · comparando com o período anterior de mesma duração · vendas de teste excluídas
+        </p>
+      </div>
 
-      {/* Grid de KPIs no topo da visão geral */}
-      <div className="mb-8 grid grid-cols-2 gap-3.5 sm:grid-cols-5">
-        {stats.map((s) => (
-          <Card key={s.label}>
-            <CardContent className="p-5">
-              <p className="font-display text-lg sm:text-xl font-bold text-accent truncate">{s.value}</p>
-              <p className="mt-1 text-xs text-muted">{s.label}</p>
-            </CardContent>
-          </Card>
+      {/* KPIs */}
+      <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 xl:grid-cols-5">
+        {data.kpis.map((k) => (
+          <KpiCard
+            key={k.id}
+            label={k.label}
+            value={fmtValue(k)}
+            previousLabel="período anterior"
+            deltaPct={delta(k.value, k.prev)}
+            deltaAbs={fmtDeltaAbs(k)}
+            goodWhenUp={k.goodWhenUp}
+            spark={k.spark}
+            href={k.href}
+            hint={k.hint}
+          />
         ))}
       </div>
 
-      {/* Painel Consumido de IA & Controle de Tokens */}
-      <div className="mb-10">
-        <AiStatsCard
-          totalPromptTokens={totalPromptTokens}
-          totalCompletionTokens={totalCompletionTokens}
-          totalTokens={totalTokens}
-          totalPhotos={totalPhotos}
-          totalTexts={totalTexts}
-        />
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Receita por dia */}
+        <div className="rounded-xl border border-border bg-surface p-4 lg:col-span-2">
+          <RevenueChart days={data.chartDays} />
+        </div>
+
+        {/* Precisa da sua atenção */}
+        <div className="rounded-xl border border-border bg-surface p-4">
+          <h3 className="mb-2.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-2">
+            <AlertCircle className="size-3.5 text-[#e5a83b]" />
+            Precisa da sua atenção
+          </h3>
+          {data.attention.length === 0 ? (
+            <p className="py-4 text-xs text-muted-2">Tudo em dia — nada pendente. 🎉</p>
+          ) : (
+            <ul className="space-y-1">
+              {data.attention.map((a) => (
+                <li key={a.label}>
+                  <Link
+                    href={a.href}
+                    className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-2"
+                  >
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#e5a83b]/10 text-[11px] font-bold tabular-nums text-[#e5a83b]">
+                      {a.count > 99 ? "99+" : a.count}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-[13px] text-muted">{a.label}</span>
+                    <span className="flex shrink-0 items-center gap-0.5 text-[11px] font-semibold text-[#7ea2ff]">
+                      {a.action}
+                      <ArrowRight className="size-3" />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
-      <h2 className="mb-4 text-lg font-semibold">Alunos Recentes</h2>
-      <div className="overflow-x-auto rounded-2xl border border-border">
-        <table className="w-full min-w-[720px] text-left text-sm">
-          <thead>
-            <tr className="border-b border-border bg-surface-2 text-xs uppercase tracking-wider text-muted font-semibold">
-              <th className="px-5 py-3.5 font-medium">Nome</th>
-              <th className="px-5 py-3.5 font-medium">Objetivo</th>
-              <th className="px-5 py-3.5 font-medium">Estilo</th>
-              <th className="px-5 py-3.5 font-medium">Onboarding</th>
-              <th className="px-5 py-3.5 font-medium">Progresso</th>
-              <th className="px-5 py-3.5 font-medium">Desde</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(profiles ?? []).map((p) => {
-              const done = doneByUser.get(p.user_id) ?? 0;
-              const pct = totalLessons ? Math.round((done / totalLessons) * 100) : 0;
-              return (
-                <tr key={p.id} className="border-b border-border last:border-0 hover:bg-surface-2/50">
-                  <td className="px-5 py-3.5 font-medium text-foreground">
-                    {p.name ?? "—"}
-                    {p.is_admin && (
-                      <span className="ml-2 inline-flex items-center rounded bg-accent-soft px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#7ea2ff]">
-                        admin
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Funil */}
+        <div className="rounded-xl border border-border bg-surface p-4 lg:col-span-2">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">Funil do período</h3>
+            <Link href="/admin/crescimento/funil" className="flex items-center gap-1 text-[11px] font-semibold text-[#7ea2ff] hover:underline">
+              Ver funil completo <ArrowRight className="size-3" />
+            </Link>
+          </div>
+          <FunnelChart stages={data.funnel} />
+        </div>
+
+        {/* Atividade recente */}
+        <div className="rounded-xl border border-border bg-surface p-4">
+          <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-2">Atividade recente</h3>
+          {data.timeline.length === 0 ? (
+            <p className="py-4 text-xs text-muted-2">Nenhuma atividade ainda.</p>
+          ) : (
+            <ul className="max-h-80 space-y-0.5 overflow-y-auto pr-1">
+              {data.timeline.map((e, i) => {
+                const Icon = TIMELINE_ICONS[e.kind] ?? Receipt;
+                return (
+                  <li key={i}>
+                    <Link href={e.href} className="flex items-start gap-2.5 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-surface-2">
+                      <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-2" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs text-muted">{e.title}</span>
+                        <span className="block text-[10px] text-muted-2">{relTime(e.at)}</span>
                       </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5 text-muted">
-                    {STYLE_GOALS[p.style_goal ?? ""] ?? "—"}
-                  </td>
-                  <td className="px-5 py-3.5 text-muted">
-                    {STYLES[p.preferred_style ?? ""] ?? "—"}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    {p.onboarding_completed ? (
-                      <span className="text-success font-medium">Completo</span>
-                    ) : (
-                      <span className="text-muted">Pendente</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5 text-muted">
-                    {done} aulas · {pct}%
-                  </td>
-                  <td className="px-5 py-3.5 text-muted">
-                    {new Date(p.created_at).toLocaleDateString("pt-BR")}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Top listas */}
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+        <TopList title="Looks mais curtidos" items={data.topLooks} unit="curtidas" />
+        <TopList title="Aulas mais concluídas" items={data.topAulas} unit="alunos" />
+        <TopList title="Aulas menos concluídas" items={data.bottomAulas} unit="alunos" />
+        <TopList title="Links com mais cliques no período" items={data.topLinks} unit="cliques" />
       </div>
     </div>
   );

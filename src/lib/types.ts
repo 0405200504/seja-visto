@@ -2,11 +2,15 @@ export type Profile = {
   id: string;
   user_id: string;
   name: string | null;
+  email: string | null;
   style_goal: string | null;
   preferred_style: string | null;
   main_difficulty: string | null;
   onboarding_completed: boolean;
   is_admin: boolean;
+  tags: string[];
+  admin_notes: string | null;
+  last_seen_at: string | null;
   created_at: string;
 };
 

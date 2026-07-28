@@ -1,35 +1,70 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
-import { AdminTabs } from "@/components/admin/admin-tabs";
-import { Logo } from "@/components/app/logo";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { signOut } from "@/app/actions/auth";
+import { getPeriod } from "@/lib/admin/period";
+import { AdminSidebar, AdminContent, type SavedViewLink } from "@/components/admin/shell/admin-sidebar";
+import { AdminTopbar } from "@/components/admin/shell/admin-topbar";
+import { AdminShortcuts } from "@/components/admin/shell/admin-shortcuts";
+import { CommandPalette } from "@/components/admin/shell/command-palette";
+import { ToastProvider } from "@/components/admin/ui/toast";
+import { ConfirmProvider } from "@/components/admin/ui/confirm";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireAdmin();
+  const { profile } = await requireAdmin();
+  const db = createAdminClient();
+  const period = await getPeriod();
+
+  const in7days = new Date(Date.now() + 7 * 86_400_000).toISOString();
+  const now = new Date().toISOString();
+
+  // Badges de pendências da sidebar + views salvas fixadas
+  const [fitsPendentes, acessosVencendo, looksSemImagem, viewsRes] = await Promise.all([
+    db.from("community_fits").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    db
+      .from("user_entitlements")
+      .select("*", { count: "exact", head: true })
+      .eq("entitlement", "base")
+      .not("expires_at", "is", null)
+      .gt("expires_at", now)
+      .lt("expires_at", in7days),
+    db
+      .from("looks")
+      .select("*", { count: "exact", head: true })
+      .is("deleted_at", null)
+      .is("image_url", null),
+    db
+      .from("admin_saved_views")
+      .select("id, page, name, params")
+      .eq("user_id", profile.user_id)
+      .order("created_at"),
+  ]);
+
+  const badges: Record<string, number> = {
+    fits_pendentes: fitsPendentes.count ?? 0,
+    acessos_vencendo: acessosVencendo.count ?? 0,
+    looks_sem_imagem: looksSemImagem.count ?? 0,
+  };
 
   return (
-    <div className="min-h-dvh">
-      <header className="sticky top-0 z-40 border-b border-border bg-surface/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-4">
-            <Logo />
-            <span className="rounded-full border border-accent/30 bg-accent-soft px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#7ea2ff]">
-              Admin
-            </span>
-          </div>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" />
-            Voltar ao app
-          </Link>
+    <ToastProvider>
+      <ConfirmProvider>
+        <div className="min-h-dvh bg-background">
+          <AdminSidebar badges={badges} views={(viewsRes.data ?? []) as SavedViewLink[]} />
+          <AdminContent>
+            <AdminTopbar
+              periodKey={period.key}
+              periodLabel={period.label}
+              name={profile.name}
+              signOutAction={signOut}
+            />
+            <main className="flex-1 px-4 py-6 sm:px-6">
+              <div className="mx-auto w-full max-w-[1400px]">{children}</div>
+            </main>
+          </AdminContent>
+          <AdminShortcuts />
+          <CommandPalette />
         </div>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <AdminTabs />
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</main>
-    </div>
+      </ConfirmProvider>
+    </ToastProvider>
   );
 }
