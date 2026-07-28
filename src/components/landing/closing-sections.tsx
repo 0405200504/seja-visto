@@ -411,24 +411,29 @@ export function PricingSection() {
           </Reveal>
         </div>
 
-        {/* Anual sempre primeiro — desktop e mobile */}
-        <div className="mt-12 grid gap-6 md:grid-cols-[1.15fr_1fr] md:items-start">
+        {/* Anual sempre primeiro — lado a lado no mobile e no desktop */}
+        <div className="mt-12 grid grid-cols-2 gap-3 md:grid-cols-[1.15fr_1fr] md:items-start md:gap-6">
           {/* PLANO ANUAL */}
-          <Reveal delay={150}>
-            <div className="relative overflow-hidden rounded-2xl border border-[#146CFF]/60 bg-gradient-to-b from-[#146CFF]/[0.1] to-[#0c0e14] p-7 shadow-[0_0_60px_-18px_rgb(20_108_255/0.45)] md:p-9">
-              <span className="absolute right-6 top-6 rounded-full bg-[#146CFF] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white">
+          <Reveal delay={150} className="h-full">
+            <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#146CFF]/60 bg-gradient-to-b from-[#146CFF]/[0.1] to-[#0c0e14] p-4 shadow-[0_0_60px_-18px_rgb(20_108_255/0.45)] md:p-9">
+              <span className="mb-3 w-fit rounded-full bg-[#146CFF] px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-white md:absolute md:right-6 md:top-6 md:mb-0 md:px-3.5 md:py-1.5 md:text-[10px]">
                 Mais vantajoso
               </span>
-              <p className="font-display text-lg font-bold text-[#F5F7FA]">MPO Anual</p>
-              <p className="mt-5 font-display text-5xl font-bold tracking-tight text-[#F5F7FA]">
+              <p className="font-display text-sm font-bold text-[#F5F7FA] md:text-lg">MPO Anual</p>
+              <p className="mt-2 font-display text-[26px] font-bold tracking-tight text-[#F5F7FA] md:mt-5 md:text-5xl">
                 12x <span className="text-[#78A9FF]">de R$17</span>
               </p>
-              <p className="mt-2 text-sm text-[#A4AAB5]">Total de R$204 por ano.</p>
-              <p className="mt-3 inline-block rounded-lg bg-[#146CFF]/[0.14] px-3.5 py-2 text-xs font-semibold text-[#78A9FF]">
-                Economize R$120 em comparação com 12 meses no plano mensal.
+              <p className="mt-1.5 text-[11px] text-[#A4AAB5] md:mt-2 md:text-sm">
+                Total de R$204 por ano.
+              </p>
+              <p className="mt-2.5 inline-block w-fit rounded-lg bg-[#146CFF]/[0.14] px-2.5 py-1.5 text-[10px] font-semibold leading-snug text-[#78A9FF] md:mt-3 md:px-3.5 md:py-2 md:text-xs">
+                <span className="md:hidden">Economize R$120 no ano.</span>
+                <span className="hidden md:inline">
+                  Economize R$120 em comparação com 12 meses no plano mensal.
+                </span>
               </p>
 
-              <ul className="mt-7 space-y-2.5">
+              <ul className="mt-7 hidden space-y-2.5 md:block">
                 {PLAN_BENEFITS.map((b) => (
                   <li key={b} className="flex items-start gap-3 text-sm text-[#F5F7FA]/90">
                     <Check className="mt-0.5 size-4 shrink-0 text-[#78A9FF]" aria-hidden />
@@ -439,33 +444,59 @@ export function PricingSection() {
 
               <a
                 href={checkoutHref(ANNUAL_CHECKOUT_URL)}
-                className="mt-8 flex h-[54px] items-center justify-center rounded-xl bg-[#146CFF] text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)]"
+                className="mt-4 flex h-11 items-center justify-center rounded-xl bg-[#146CFF] text-[11px] font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)] md:mt-8 md:h-[54px] md:text-sm"
               >
-                QUERO O PLANO ANUAL
+                <span className="md:hidden">QUERO O ANUAL</span>
+                <span className="hidden md:inline">QUERO O PLANO ANUAL</span>
               </a>
             </div>
           </Reveal>
 
           {/* PLANO MENSAL */}
-          <Reveal delay={250}>
-            <div className="rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-7 md:p-9">
-              <p className="font-display text-lg font-bold text-[#F5F7FA]">MPO Mensal</p>
-              <p className="mt-5 font-display text-4xl font-bold tracking-tight text-[#F5F7FA]">
-                R$27 <span className="text-lg font-semibold text-[#A4AAB5]">por mês</span>
+          <Reveal delay={250} className="h-full">
+            <div className="flex h-full flex-col rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-4 md:p-9">
+              <span className="mb-3 w-fit rounded-full border border-[#20242C] px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-[#A4AAB5] md:hidden">
+                Flexível
+              </span>
+              <p className="font-display text-sm font-bold text-[#F5F7FA] md:text-lg">MPO Mensal</p>
+              <p className="mt-2 font-display text-[26px] font-bold tracking-tight text-[#F5F7FA] md:mt-5 md:text-4xl">
+                R$27{" "}
+                <span className="text-xs font-semibold text-[#A4AAB5] md:text-lg">por mês</span>
               </p>
-              <p className="mt-6 text-sm leading-relaxed text-[#A4AAB5]">
-                Os mesmos recursos disponíveis no plano anual durante o período
-                contratado.
+              <p className="mt-1.5 text-[11px] leading-relaxed text-[#A4AAB5] md:mt-6 md:text-sm">
+                <span className="md:hidden">Mesmos recursos do anual.</span>
+                <span className="hidden md:inline">
+                  Os mesmos recursos disponíveis no plano anual durante o
+                  período contratado.
+                </span>
               </p>
               <a
                 href={checkoutHref(MONTHLY_CHECKOUT_URL)}
-                className="mt-8 flex h-[54px] items-center justify-center rounded-xl border border-[#20242C] bg-white/[0.03] text-sm font-bold tracking-wide text-[#F5F7FA] transition-all hover:border-[#146CFF]/60 hover:bg-[#146CFF]/[0.08]"
+                className="mt-4 flex h-11 items-center justify-center rounded-xl border border-[#20242C] bg-white/[0.03] text-[11px] font-bold tracking-wide text-[#F5F7FA] transition-all hover:border-[#146CFF]/60 hover:bg-[#146CFF]/[0.08] max-md:mt-auto md:mt-8 md:h-[54px] md:text-sm"
               >
-                QUERO O PLANO MENSAL
+                <span className="md:hidden">QUERO O MENSAL</span>
+                <span className="hidden md:inline">QUERO O PLANO MENSAL</span>
               </a>
             </div>
           </Reveal>
         </div>
+
+        {/* Mobile: benefícios compartilhados pelos dois planos */}
+        <Reveal delay={300}>
+          <div className="mt-3 rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-5 md:hidden">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#78A9FF]">
+              Os dois planos incluem
+            </p>
+            <ul className="mt-3.5 space-y-2.5">
+              {PLAN_BENEFITS.map((b) => (
+                <li key={b} className="flex items-start gap-2.5 text-xs text-[#F5F7FA]/90">
+                  <Check className="mt-0.5 size-3.5 shrink-0 text-[#78A9FF]" aria-hidden />
+                  {b}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
 
         <Reveal delay={300}>
           <p className="mt-8 text-center text-xs text-[#A4AAB5]/70">
@@ -615,7 +646,7 @@ export function FinalCtaSection() {
         </Reveal>
         <Reveal delay={360}>
           <a
-            href={checkoutHref(ANNUAL_CHECKOUT_URL)}
+            href="#planos"
             className="mt-10 inline-flex h-14 items-center justify-center rounded-xl bg-[#146CFF] px-10 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_50px_-8px_rgb(20_108_255/1)]"
           >
             DESCOBRIR MEU ESTILO

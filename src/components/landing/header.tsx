@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ANNUAL_CHECKOUT_URL, checkoutHref } from "./checkout";
 
 const NAV_LINKS = [
   { href: "#como-funciona", label: "Como funciona" },
@@ -73,7 +72,7 @@ export function LandingHeader() {
             Já sou membro
           </Link>
           <a
-            href={checkoutHref(ANNUAL_CHECKOUT_URL)}
+            href="#planos"
             className="hidden rounded-lg bg-[#146CFF] px-4 py-2.5 text-[13px] font-semibold text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_28px_-6px_rgb(20_108_255/0.8)] sm:inline-flex"
           >
             QUERO ACESSAR O MPO
@@ -154,7 +153,7 @@ export function StickyCta() {
       )}
     >
       <a
-        href={checkoutHref(ANNUAL_CHECKOUT_URL)}
+        href="#planos"
         tabIndex={visible ? 0 : -1}
         className="flex h-12 items-center justify-center rounded-xl bg-[#146CFF] text-sm font-bold tracking-wide text-white shadow-[0_0_30px_-8px_rgb(20_108_255/0.9)]"
       >
