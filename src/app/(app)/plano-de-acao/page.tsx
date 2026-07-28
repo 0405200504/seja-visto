@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { ActionDayCard } from "@/components/app/action-day-card";
 import { Progress } from "@/components/ui/progress";
 import { ACTION_PLAN_DAYS } from "@/lib/constants";
+import { applyOverrides, getOverrides } from "@/lib/content-overrides";
 import type { ActionPlanProgress } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Plano de Ação" };
@@ -18,6 +19,7 @@ export default async function PlanoDeAcaoPage() {
     .eq("user_id", user.id)
     .returns<ActionPlanProgress[]>();
 
+  const planDays = applyOverrides(ACTION_PLAN_DAYS, await getOverrides("plano"), (d) => `dia-${d.day}`);
   const byDay = new Map((progress ?? []).map((p) => [p.day, p]));
   const completedCount = (progress ?? []).filter((p) => p.completed).length;
   const pct = Math.round((completedCount / ACTION_PLAN_DAYS.length) * 100);
@@ -51,7 +53,7 @@ export default async function PlanoDeAcaoPage() {
       </div>
 
       <div className="space-y-3">
-        {ACTION_PLAN_DAYS.map((day) => {
+        {planDays.map((day) => {
           const row = byDay.get(day.day);
           return (
             <ActionDayCard

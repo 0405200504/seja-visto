@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { saveOnboarding } from "@/app/actions/onboarding";
-import { STYLE_QUIZ, STYLE_PROFILES, QUIZ_TIEBREAK } from "@/lib/constants";
+import { STYLE_QUIZ, STYLE_PROFILES, QUIZ_TIEBREAK, type QuizQuestion } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 function computeStyle(answers: Record<string, string>): string {
@@ -30,7 +30,7 @@ function computeStyle(answers: Record<string, string>): string {
   return winner;
 }
 
-export function OnboardingFlow({ name }: { name: string | null }) {
+export function OnboardingFlow({ name, quiz = STYLE_QUIZ }: { name: string | null; quiz?: QuizQuestion[] }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResult, setShowResult] = useState(false);
@@ -115,22 +115,22 @@ export function OnboardingFlow({ name }: { name: string | null }) {
   }
 
   /* ---------- Perguntas ---------- */
-  const current = STYLE_QUIZ[step];
+  const current = quiz[step];
   const selected = answers[current.field];
-  const isLast = step === STYLE_QUIZ.length - 1;
+  const isLast = step === quiz.length - 1;
 
   return (
     <div className="w-full max-w-lg animate-fade-up">
       <div className="mb-10">
         <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-accent">
-          Passo {step + 1} de {STYLE_QUIZ.length}
+          Passo {step + 1} de {quiz.length}
         </p>
         <h1 className="text-2xl font-bold sm:text-3xl">
           {step === 0 && firstName ? `${firstName}, ` : ""}
           {current.title}
         </h1>
         <p className="mt-2 text-sm text-muted sm:text-base">{current.subtitle}</p>
-        <Progress value={((step + 1) / STYLE_QUIZ.length) * 100} className="mt-6" />
+        <Progress value={((step + 1) / quiz.length) * 100} className="mt-6" />
       </div>
 
       <div className="space-y-3" key={current.field}>

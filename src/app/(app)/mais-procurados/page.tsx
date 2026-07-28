@@ -3,11 +3,13 @@ import type { Metadata } from "next";
 import { requireProfile } from "@/lib/auth";
 import { PageHeader } from "@/components/app/page-header";
 import { MOST_WANTED } from "@/lib/constants";
+import { applyOverrides, getOverrides } from "@/lib/content-overrides";
 
 export const metadata: Metadata = { title: "Mais Procurados" };
 
 export default async function MaisProcuradosPage() {
   await requireProfile();
+  const mostWanted = applyOverrides(MOST_WANTED, await getOverrides("glossario"), (m) => m.slug);
 
   return (
     <div className="animate-fade-up">
@@ -18,7 +20,7 @@ export default async function MaisProcuradosPage() {
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-        {MOST_WANTED.map((item, i) => (
+        {mostWanted.map((item, i) => (
           <div
             key={item.slug}
             className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-card transition-all duration-300 hover:border-border-strong"

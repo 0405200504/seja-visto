@@ -6,6 +6,7 @@ import { requireProfile } from "@/lib/auth";
 import { PageHeader } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
 import { BONUSES } from "@/lib/bonuses";
+import { applyOverrides, getOverrides } from "@/lib/content-overrides";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Bônus" };
@@ -19,7 +20,8 @@ export default async function BonusPage() {
     .eq("user_id", user.id);
 
   const owned = new Set((rows ?? []).map((r) => r.entitlement));
-  const unlockedCount = BONUSES.filter((b) => owned.has(b.key)).length;
+  const bonuses = applyOverrides(BONUSES, await getOverrides("bonus"), (b) => b.key);
+  const unlockedCount = bonuses.filter((b) => owned.has(b.key)).length;
 
   return (
     <div className="animate-fade-up">
@@ -28,13 +30,13 @@ export default async function BonusPage() {
         title="Seus bônus"
         description={
           unlockedCount > 0
-            ? `Você desbloqueou ${unlockedCount} de ${BONUSES.length} bônus. Clique nos itens bloqueados para desbloquear na hora.`
+            ? `Você desbloqueou ${unlockedCount} de ${bonuses.length} bônus. Clique nos itens bloqueados para desbloquear na hora.`
             : "Bônus exclusivos liberados conforme a sua compra. Clique em qualquer item com cadeado para desbloquear na hora."
         }
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {BONUSES.map((bonus) => {
+        {bonuses.map((bonus) => {
           const unlocked = owned.has(bonus.key);
           const isBadge = bonus.type === "badge";
           const internalHref = unlocked && !isBadge ? `/bonus/${bonus.key}` : undefined;

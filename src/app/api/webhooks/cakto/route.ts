@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { BASE_ENTITLEMENT, BONUSES } from "@/lib/bonuses";
+import { getSetting, GATEWAY_DEFAULTS, type GatewaySettings } from "@/lib/admin/settings";
 
 /**
  * Webhook da Cakto.
@@ -310,7 +311,7 @@ export async function POST(request: Request) {
       if (caktoSaleId) {
         await admin
           .from("sales")
-          .update({ status: "refunded" })
+          .update({ status: "refunded", refunded_at: new Date().toISOString() })
           .eq("cakto_id", caktoSaleId);
       }
     }
@@ -396,6 +397,8 @@ export async function POST(request: Request) {
   }
 
   // Registra cada venda do lote individualmente na tabela sales
+  const gateway = await getSetting<GatewaySettings>("gateway", GATEWAY_DEFAULTS).catch(() => GATEWAY_DEFAULTS);
+  const primaryMapping = mappings[0];
   for (const item of dataList) {
     try {
       const amountRaw = item.amount ?? item.price ?? item.value ?? 0;
@@ -411,14 +414,24 @@ export async function POST(request: Request) {
       ).toLowerCase();
       const caktoSaleId = String(item.id ?? item.purchase_id ?? payload.id ?? "");
 
+      // Taxa: usa a informada pela Cakto quando vier; senão estima pela config do admin
+      const feeRaw = item.fee ?? item.fees ?? item.gateway_fee ?? null;
+      const feeCents =
+        typeof feeRaw === "number"
+          ? Math.round(feeRaw * 100)
+          : Math.round((amountCents * gateway.fee_percent) / 100) + gateway.fee_fixed_cents;
+
       await admin.from("sales").insert({
         user_id: userId,
         email,
         name: name || existingProfile?.name || "Aluno",
         amount_cents: amountCents,
+        gateway_fee_cents: Math.max(0, Math.min(feeCents, amountCents)),
         status: "approved",
         payment_method: paymentMethod,
         cakto_id: caktoSaleId,
+        entitlement: primaryMapping?.entitlement ?? null,
+        offer_name: primaryMapping?.label ?? primaryMapping?.entitlement ?? null,
         created_at: new Date().toISOString()
       });
     } catch (err) {

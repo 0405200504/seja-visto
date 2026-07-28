@@ -6,6 +6,7 @@ import { requireProfile } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { STYLE_PROFILES, styleImages } from "@/lib/constants";
+import { applyOverride, getOverrides } from "@/lib/content-overrides";
 
 export function generateStaticParams() {
   return Object.keys(STYLE_PROFILES).map((styleSlug) => ({ styleSlug }));
@@ -17,7 +18,7 @@ export default async function EstiloDetailPage({
   params: Promise<{ styleSlug: string }>;
 }) {
   const { styleSlug } = await params;
-  const style = STYLE_PROFILES[styleSlug];
+  const style = applyOverride(STYLE_PROFILES[styleSlug], await getOverrides("estilo"), styleSlug);
   if (!style) notFound();
 
   const { profile } = await requireProfile();

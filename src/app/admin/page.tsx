@@ -10,7 +10,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
-import { getPeriod } from "@/lib/admin/period";
+import { getPeriod } from "@/lib/admin/period-server";
 import { getDashboardData } from "@/lib/admin/metrics";
 import { brl, delta, num, pct, relTime } from "@/lib/admin/format";
 import { KpiCard } from "@/components/admin/ui/kpi-card";

@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getPeriod } from "@/lib/admin/period";
+import { getPeriod } from "@/lib/admin/period-server";
 import { brl, dateShort, num } from "@/lib/admin/format";
 import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/admin/copy-button";

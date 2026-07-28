@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { signOut } from "@/app/actions/auth";
-import { getPeriod } from "@/lib/admin/period";
+import { getPeriod } from "@/lib/admin/period-server";
 import { AdminSidebar, AdminContent, type SavedViewLink } from "@/components/admin/shell/admin-sidebar";
 import { AdminTopbar } from "@/components/admin/shell/admin-topbar";
 import { AdminShortcuts } from "@/components/admin/shell/admin-shortcuts";

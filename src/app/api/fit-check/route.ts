@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { STYLES, OCCASIONS } from "@/lib/constants";
 import { GUIDES } from "@/lib/guides";
+import { getSetting, FIT_CHECK_DEFAULTS, type FitCheckSettings } from "@/lib/admin/settings";
 
 /**
  * Fit Check — análise de outfit por IA (OpenAI, gpt-4o-mini).
@@ -13,13 +14,22 @@ import { GUIDES } from "@/lib/guides";
  * citar looks reais da plataforma nas sugestões.
  */
 
-const MODEL = "gpt-5.5";
+const MODEL = FIT_CHECK_DEFAULTS.model;
 // gpt-5.x usa parte do orçamento de saída para "raciocínio" interno — dar folga
-const MAX_OUTPUT_TOKENS = 1500;
+const MAX_OUTPUT_TOKENS = FIT_CHECK_DEFAULTS.max_output_tokens;
 // Cada conta nova ganha 5 imagens grátis; depois precisa comprar tokens.
-const FREE_CREDITS = 5;
+const FREE_CREDITS = FIT_CHECK_DEFAULTS.free_credits;
 // Trava de segurança contra abuso de mensagens de texto (texto é grátis).
-const DAILY_TEXT_LIMIT = 60;
+const DAILY_TEXT_LIMIT = FIT_CHECK_DEFAULTS.daily_text_limit;
+
+// Configurações editáveis no admin (Sistema → Fit Check), com cache de 60s
+let settingsCache: { value: FitCheckSettings; at: number } | null = null;
+async function getFitCheckSettings(): Promise<FitCheckSettings> {
+  if (settingsCache && Date.now() - settingsCache.at < 60_000) return settingsCache.value;
+  const value = await getSetting<FitCheckSettings>("fit_check", FIT_CHECK_DEFAULTS);
+  settingsCache = { value, at: Date.now() };
+  return value;
+}
 // ~2,8 MB de data URL ≈ foto de 1024px em JPEG com folga
 const MAX_IMAGE_CHARS = 2_800_000;
 
@@ -138,7 +148,8 @@ ${digest}`;
 /** Trava de abuso só para mensagens de texto — fotos são governadas por tokens. */
 async function checkTextRateLimit(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string
+  userId: string,
+  dailyLimit = DAILY_TEXT_LIMIT
 ): Promise<{ ok: boolean; message?: string }> {
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
@@ -153,7 +164,7 @@ async function checkTextRateLimit(
   // Tabela ainda não criada (migração pendente) — segue sem limite
   if (error) return { ok: true };
 
-  if (data.length >= DAILY_TEXT_LIMIT) {
+  if (data.length >= dailyLimit) {
     return {
       ok: false,
       message: "Limite de mensagens de hoje atingido. Amanhã tem mais!",
@@ -164,8 +175,8 @@ async function checkTextRateLimit(
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 
-/** Lê o saldo de tokens, criando a linha com os 5 grátis se ainda não existir. */
-async function getCredits(admin: AdminClient, userId: string): Promise<number> {
+/** Lê o saldo de tokens, criando a linha com os grátis se ainda não existir. */
+async function getCredits(admin: AdminClient, userId: string, freeCredits = FREE_CREDITS): Promise<number> {
   const { data } = await admin
     .from("fit_check_credits")
     .select("balance")
@@ -175,10 +186,10 @@ async function getCredits(admin: AdminClient, userId: string): Promise<number> {
 
   const { data: created } = await admin
     .from("fit_check_credits")
-    .insert({ user_id: userId, balance: FREE_CREDITS })
+    .insert({ user_id: userId, balance: freeCredits })
     .select("balance")
     .maybeSingle<{ balance: number }>();
-  return created?.balance ?? FREE_CREDITS;
+  return created?.balance ?? freeCredits;
 }
 
 /** Desconta 1 token de forma atômica. Retorna o novo saldo ou null se zerou. */
@@ -282,9 +293,11 @@ export async function POST(request: Request) {
     .maybeSingle<{ is_admin: boolean }>();
   const isAdmin = profileRow?.is_admin === true;
 
+  const settings = await getFitCheckSettings();
+
   if (image && !isAdmin) {
     // Fotos consomem tokens: bloqueia antes de chamar a IA se o saldo zerou.
-    const balance = await getCredits(admin, user.id);
+    const balance = await getCredits(admin, user.id, settings.free_credits);
     if (balance <= 0) {
       return NextResponse.json({
         error: "Seus tokens de análise de imagem acabaram.",
@@ -293,17 +306,21 @@ export async function POST(request: Request) {
       });
     }
   } else if (!image) {
-    const limit = await checkTextRateLimit(supabase, user.id);
+    const limit = await checkTextRateLimit(supabase, user.id, settings.daily_text_limit);
     if (!limit.ok) {
       return NextResponse.json({ reply: limit.message, limited: true });
     }
   }
 
   const digest = await getPlatformDigest();
+  const systemPrompt = settings.system_prompt_override.trim()
+    ? `${settings.system_prompt_override.trim()}\n\nÍNDICE DA PLATAFORMA:\n${digest}`
+    : buildSystemPrompt(digest) +
+      (settings.prompt_extra.trim() ? `\n\nINSTRUÇÕES EXTRAS DO ADMINISTRADOR:\n${settings.prompt_extra.trim()}` : "");
 
   // Histórico antigo vai só como texto; a imagem entra apenas na mensagem atual
   const messages: object[] = [
-    { role: "system", content: buildSystemPrompt(digest) },
+    { role: "system", content: systemPrompt },
     ...history.map((h) => ({
       role: h.role,
       content: String(h.content).slice(0, 1500),
@@ -326,8 +343,8 @@ export async function POST(request: Request) {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: MODEL,
-      max_completion_tokens: MAX_OUTPUT_TOKENS,
+      model: settings.model || MODEL,
+      max_completion_tokens: settings.max_output_tokens || MAX_OUTPUT_TOKENS,
       reasoning_effort: "low",
       messages,
     }),

@@ -8,6 +8,7 @@ import { ColorMixer } from "@/components/app/color-mixer";
 import { MeasureForm } from "@/components/app/measure-form";
 import { Section } from "@/components/app/guide-sections";
 import { GUIDES, getGuide } from "@/lib/guides";
+import { applyOverride, getOverrides } from "@/lib/content-overrides";
 
 export function generateStaticParams() {
   return GUIDES.map((g) => ({ guideSlug: g.slug }));
@@ -19,7 +20,7 @@ export default async function GuiaPage({
   params: Promise<{ guideSlug: string }>;
 }) {
   const { guideSlug } = await params;
-  const guide = getGuide(guideSlug);
+  const guide = applyOverride(getGuide(guideSlug), await getOverrides("guia"), guideSlug);
   if (!guide) notFound();
 
   const { supabase, user } = await requireProfile();

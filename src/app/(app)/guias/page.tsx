@@ -5,11 +5,13 @@ import { requireProfile } from "@/lib/auth";
 import { PageHeader } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
 import { GUIDES } from "@/lib/guides";
+import { applyOverrides, getOverrides } from "@/lib/content-overrides";
 
 export const metadata: Metadata = { title: "Guias" };
 
 export default async function GuiasPage() {
   await requireProfile();
+  const guides = applyOverrides(GUIDES, await getOverrides("guia"), (g) => g.slug);
 
   return (
     <div className="animate-fade-up">
@@ -20,7 +22,7 @@ export default async function GuiasPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {GUIDES.map((guide) => (
+        {guides.map((guide) => (
           <Link
             key={guide.slug}
             href={`/guias/${guide.slug}`}

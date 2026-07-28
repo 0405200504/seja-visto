@@ -1,5 +1,3 @@
-import { cookies } from "next/headers";
-
 /**
  * Seletor GLOBAL de período do admin. A escolha vive em um cookie
  * (persiste entre páginas) e pode ser sobrescrita por ?periodo= na URL.
@@ -94,13 +92,6 @@ export function resolvePeriod(raw: string | undefined): Period {
     prevFrom: daysAgo(from, days), prevTo: from,
     days,
   };
-}
-
-/** Lê o período global no servidor (cookie, com override por searchParam). */
-export async function getPeriod(searchParamValue?: string): Promise<Period> {
-  if (searchParamValue) return resolvePeriod(searchParamValue);
-  const store = await cookies();
-  return resolvePeriod(store.get(PERIOD_COOKIE)?.value);
 }
 
 /** Chaves de dia (YYYY-MM-DD em BRT) para montar séries diárias. */

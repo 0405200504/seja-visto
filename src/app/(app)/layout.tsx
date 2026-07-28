@@ -12,6 +12,16 @@ export default async function AppLayout({
 }) {
   const { supabase, profile } = await requireProfile();
 
+  // Marca o último acesso (no máx. 1x a cada 30 min) — alimenta "Ativos" e a
+  // coluna "Última atividade" do admin.
+  const lastSeen = profile.last_seen_at ? new Date(profile.last_seen_at).getTime() : 0;
+  if (Date.now() - lastSeen > 30 * 60 * 1000) {
+    await supabase
+      .from("users_profile")
+      .update({ last_seen_at: new Date().toISOString() })
+      .eq("user_id", profile.user_id);
+  }
+
   // Verifica se a assinatura está expirada (base entitlement)
   let isExpired = false;
   let expiresAtStr = "";

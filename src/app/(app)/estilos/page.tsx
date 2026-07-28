@@ -6,6 +6,7 @@ import { requireProfile } from "@/lib/auth";
 import { PageHeader } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
 import { STYLE_PROFILES, STYLE_MIXING } from "@/lib/constants";
+import { applyOverrides, getOverrides } from "@/lib/content-overrides";
 
 export const metadata: Metadata = { title: "Estilos" };
 
@@ -13,7 +14,12 @@ export default async function EstilosPage() {
   const { profile } = await requireProfile();
   const userStyle = profile.preferred_style;
 
-  const ordered = Object.values(STYLE_PROFILES).sort((a, b) =>
+  const styles = applyOverrides(
+    Object.values(STYLE_PROFILES),
+    await getOverrides("estilo"),
+    (s) => s.slug
+  );
+  const ordered = styles.sort((a, b) =>
     a.slug === userStyle ? -1 : b.slug === userStyle ? 1 : 0
   );
 
@@ -21,7 +27,7 @@ export default async function EstilosPage() {
     <div className="animate-fade-up">
       <PageHeader
         eyebrow="Referências"
-        title={`Os ${Object.keys(STYLE_PROFILES).length} estilos`}
+        title={`Os ${styles.length} estilos`}
         description="Explore cada universo de estilo com referências visuais. O seu resultado do quiz é só o ponto de partida — todos estão liberados."
       />
 

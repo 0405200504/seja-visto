@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Section } from "@/components/app/guide-sections";
 import { ColorWheel } from "@/components/app/color-wheel";
 import { getBonus } from "@/lib/bonuses";
+import { applyOverride, getOverrides } from "@/lib/content-overrides";
 
 export default async function BonusDetailPage({
   params,
@@ -14,7 +15,7 @@ export default async function BonusDetailPage({
   params: Promise<{ bonusKey: string }>;
 }) {
   const { bonusKey } = await params;
-  const bonus = getBonus(bonusKey);
+  const bonus = applyOverride(getBonus(bonusKey), await getOverrides("bonus"), bonusKey);
   if (!bonus || bonus.type === "badge") notFound();
 
   const { supabase, user } = await requireProfile();

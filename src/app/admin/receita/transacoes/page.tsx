@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { parseListParams, type SearchParams } from "@/lib/admin/list";
 import { fetchSales } from "@/lib/admin/queries/sales";
-import { getPeriod } from "@/lib/admin/period";
+import { getPeriod } from "@/lib/admin/period-server";
 import { getSetting, GATEWAY_DEFAULTS, type GatewaySettings } from "@/lib/admin/settings";
 import { brl, dateTime, num } from "@/lib/admin/format";
 import { Badge } from "@/components/ui/badge";
