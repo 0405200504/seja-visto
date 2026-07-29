@@ -201,13 +201,18 @@ async function gastoDoMes(admin: AdminClient, settings: FitCheckSettings): Promi
 
   const { data } = await admin
     .from("fit_check_logs")
-    .select("prompt_tokens, completion_tokens")
+    .select("kind, prompt_tokens, completion_tokens")
     .gte("created_at", inicioDoMes.toISOString())
     .limit(50_000);
 
   const cents = (data ?? []).reduce(
     (soma, l) =>
-      soma + custoChamadaCents(settings.model, l.prompt_tokens ?? 0, l.completion_tokens ?? 0),
+      soma +
+      custoChamadaCents(
+        l.kind === "photo" ? settings.model : settings.model_text,
+        l.prompt_tokens ?? 0,
+        l.completion_tokens ?? 0
+      ),
     0
   );
 
@@ -507,7 +512,10 @@ export async function POST(request: Request) {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: settings.model || MODEL,
+      // Foto usa o modelo bom (o aluno pagou por ela com tokens).
+      // Texto é grátis, então usa o modelo barato — senão a conversa
+      // custa mais que a assinatura mensal.
+      model: image ? settings.model || MODEL : settings.model_text || settings.model || MODEL,
       max_completion_tokens: settings.max_output_tokens || MAX_OUTPUT_TOKENS,
       reasoning_effort: "low",
       messages,

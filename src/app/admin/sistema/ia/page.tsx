@@ -58,7 +58,8 @@ export default async function FitCheckAdminPage() {
         <section className="space-y-3 rounded-xl border border-border bg-surface p-4">
           <h2 className="text-sm font-semibold text-foreground">Modelo e limites</h2>
           <div className="grid grid-cols-2 gap-3">
-            <AutosaveInput name="model" label="Modelo (OpenAI)" initial={settings.model} hint="Ex: gpt-5.5, gpt-4o-mini" />
+            <AutosaveInput name="model" label="Modelo da análise de FOTO" initial={settings.model} hint="O aluno paga com tokens. Ex: gpt-5.5" />
+            <AutosaveInput name="model_text" label="Modelo das mensagens de TEXTO" initial={settings.model_text} hint="Grátis para o aluno, então use um barato. Ex: gpt-5-mini" />
             <AutosaveInput
               name="max_output_tokens"
               label="Máx. tokens de resposta"

@@ -3,7 +3,16 @@ import { createAdminClient } from "@/lib/supabase/admin";
 /** Leitura/escrita tipada da tabela app_settings. */
 
 export type FitCheckSettings = {
+  /** modelo usado na análise de FOTO — é o que o aluno paga com tokens */
   model: string;
+  /**
+   * Modelo das mensagens de TEXTO, que são grátis para o aluno.
+   * Precisa ser barato: cada mensagem carrega o índice da plataforma
+   * (~10.600 tokens de entrada). No gpt-5.5 dá ~R$ 0,31 por mensagem,
+   * contra ~R$ 0,02 no gpt-5-mini — 18x mais barato, para uma conversa
+   * de estilo em que a diferença de qualidade quase não aparece.
+   */
+  model_text: string;
   max_output_tokens: number;
   free_credits: number;
   daily_text_limit: number;
@@ -23,6 +32,7 @@ export type FitCheckSettings = {
 
 export const FIT_CHECK_DEFAULTS: FitCheckSettings = {
   model: "gpt-5.5",
+  model_text: "gpt-5-mini",
   max_output_tokens: 1500,
   free_credits: 5,
   /**

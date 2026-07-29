@@ -12,7 +12,7 @@ type Result = { ok: boolean; message: string };
 export async function saveSettingFieldAction(key: string, field: string, value: string): Promise<Result> {
   const { profile } = await requireAdmin();
   const allowed: Record<string, Set<string>> = {
-    fit_check: new Set(["model", "max_output_tokens", "free_credits", "daily_text_limit", "prompt_extra", "system_prompt_override", "token_price_per_1k_cents", "monthly_budget_reais"]),
+    fit_check: new Set(["model", "model_text", "max_output_tokens", "free_credits", "daily_text_limit", "prompt_extra", "system_prompt_override", "token_price_per_1k_cents", "monthly_budget_reais"]),
     gateway: new Set(["fee_percent", "fee_fixed_cents"]),
   };
   if (!allowed[key]?.has(field)) return { ok: false, message: "Configuração desconhecida." };
