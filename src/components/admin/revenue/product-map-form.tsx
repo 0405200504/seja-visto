@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { BONUSES } from "@/lib/bonuses";
 
 export function ProductMapForm() {
-  const [form, setForm] = useState({ caktoId: "", entitlement: "base", label: "", validityDays: "" });
+  const [form, setForm] = useState({ caktoId: "", entitlement: "base", label: "", validityDays: "", precoReais: "" });
   const [busy, setBusy] = useState(false);
   const toast = useToast();
   const router = useRouter();
@@ -20,8 +20,19 @@ export function ProductMapForm() {
     <div className="rounded-xl border border-border bg-surface p-4">
       <h2 className="text-sm font-semibold text-foreground">Mapear produto da Cakto</h2>
       <p className="mt-1 text-[11px] leading-relaxed text-muted">
-        Cole o ID do produto/oferta da Cakto e escolha o que ele libera na plataforma. Para pacotes de
-        tokens de IA, use a chave <code className="rounded bg-surface-3 px-1">tokens-50</code>, <code className="rounded bg-surface-3 px-1">tokens-200</code> etc.
+        Cole o ID do produto da Cakto e escolha o que ele libera aqui. Sem o mapeamento, a
+        compra chega e <strong className="text-foreground">nada é liberado</strong>.
+      </p>
+      <p className="mt-1.5 rounded-lg border border-border bg-surface-2 px-2.5 py-2 text-[11px] leading-relaxed text-muted">
+        <strong className="text-foreground">Onde achar o ID:</strong> no painel da Cakto, menu{" "}
+        <strong className="text-foreground">Produtos</strong> → clique no produto. O ID é o código
+        que aparece na barra de endereço do navegador, depois de{" "}
+        <code className="rounded bg-surface-3 px-1">/dashboard/products/</code>
+        <br />
+        <span className="text-muted-2">
+          Exemplo: app.cakto.com.br/dashboard/products/
+          <strong className="text-foreground">28f9b358-743b-4fd4-a57a-f7d3ffce71f1</strong>
+        </span>
       </p>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <Input
@@ -49,11 +60,17 @@ export function ProductMapForm() {
           <option value="tokens-50">Tokens de IA: 50</option>
           <option value="tokens-200">Tokens de IA: 200</option>
         </select>
+        <Input
+          value={form.validityDays}
+          onChange={(e) => setForm((f) => ({ ...f, validityDays: e.target.value.replace(/\D/g, "") }))}
+          placeholder="Validade em dias (vazio = vitalício)"
+          className="h-10"
+        />
         <div className="flex gap-2">
           <Input
-            value={form.validityDays}
-            onChange={(e) => setForm((f) => ({ ...f, validityDays: e.target.value.replace(/\D/g, "") }))}
-            placeholder="Validade em dias (vazio = vitalício)"
+            value={form.precoReais}
+            onChange={(e) => setForm((f) => ({ ...f, precoReais: e.target.value.replace(/[^\d,.]/g, "") }))}
+            placeholder="Preço em R$ (opcional)"
             className="h-10"
           />
           <Button
@@ -66,7 +83,7 @@ export function ProductMapForm() {
               setBusy(false);
               toast({ title: res.message, kind: res.ok ? "success" : "error" });
               if (res.ok) {
-                setForm({ caktoId: "", entitlement: "base", label: "", validityDays: "" });
+                setForm({ caktoId: "", entitlement: "base", label: "", validityDays: "", precoReais: "" });
                 router.refresh();
               }
             }}

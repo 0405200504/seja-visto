@@ -252,9 +252,12 @@ export async function upsertProductMapAction(input: {
   entitlement: string;
   label: string;
   validityDays: string;
+  precoReais?: string;
 }): Promise<Result> {
   const { profile } = await requireAdmin();
-  const caktoId = input.caktoId.trim();
+  // Aceita a URL inteira do painel da Cakto colada por engano — o ID é a
+  // última parte dela, e é isso que a maioria das pessoas copia.
+  const caktoId = input.caktoId.trim().replace(/^.*\/dashboard\/products\//, "").replace(/[/?#].*$/, "");
   const entitlement = input.entitlement.trim();
   const isTokens = /^tokens[-:_]?\d+$/i.test(entitlement);
   if (!caktoId) return { ok: false, message: "Informe o ID do produto na Cakto." };
@@ -263,12 +266,17 @@ export async function upsertProductMapAction(input: {
   }
   const validityDays = input.validityDays ? parseInt(input.validityDays, 10) : null;
 
+  // "197", "197,00" e "197.00" viram 19700 centavos.
+  const precoLimpo = (input.precoReais ?? "").trim().replace(/\./g, "").replace(",", ".");
+  const precoCents = precoLimpo ? Math.round(parseFloat(precoLimpo) * 100) : null;
+
   const db = createAdminClient();
   const { error } = await db.from("cakto_product_map").upsert({
     cakto_id: caktoId,
     entitlement,
     label: input.label.trim() || null,
     validity_days: Number.isFinite(validityDays) ? validityDays : null,
+    expected_amount_cents: Number.isFinite(precoCents) ? precoCents : null,
   });
   if (error) return { ok: false, message: error.message };
 
