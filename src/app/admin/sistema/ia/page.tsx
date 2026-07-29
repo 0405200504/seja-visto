@@ -78,6 +78,13 @@ export default async function FitCheckAdminPage() {
               validate={(v) => (parseInt(v, 10) > 0 ? null : "Número inválido.")}
             />
             <AutosaveInput
+              name="monthly_budget_reais"
+              label="Teto de gasto do mês (R$)"
+              initial={String(settings.monthly_budget_reais)}
+              hint="Ao estourar, o Fit Check para de atender e você é avisado. 0 desliga a trava."
+              validate={(v) => (Number.isFinite(parseFloat(v)) ? null : "Número inválido.")}
+            />
+            <AutosaveInput
               name="token_price_per_1k_cents"
               label="Custo por 1.000 tokens (centavos de R$)"
               initial={String(settings.token_price_per_1k_cents)}

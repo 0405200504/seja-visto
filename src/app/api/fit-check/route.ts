@@ -5,7 +5,12 @@ import { alertaAdmin } from "@/lib/alerts";
 import { checarRateLimit, ipDaRequisicao } from "@/lib/rate-limit";
 import { STYLES, OCCASIONS } from "@/lib/constants";
 import { GUIDES } from "@/lib/guides";
-import { getSetting, FIT_CHECK_DEFAULTS, type FitCheckSettings } from "@/lib/admin/settings";
+import {
+  getSetting,
+  FIT_CHECK_DEFAULTS,
+  custoChamadaCents,
+  type FitCheckSettings,
+} from "@/lib/admin/settings";
 
 /**
  * Fit Check — análise de outfit por IA (OpenAI, gpt-4o-mini).
@@ -179,6 +184,36 @@ async function checkTextRateLimit(
 }
 
 type AdminClient = ReturnType<typeof createAdminClient>;
+
+/**
+ * Quanto o Fit Check já custou este mês, em centavos de real. Soma os tokens
+ * gravados em fit_check_logs pelo preço do modelo ativo.
+ * Cache de 2 min — não vale consultar isso a cada mensagem.
+ */
+let gastoCache: { cents: number; at: number } | null = null;
+
+async function gastoDoMes(admin: AdminClient, settings: FitCheckSettings): Promise<number> {
+  if (gastoCache && Date.now() - gastoCache.at < 120_000) return gastoCache.cents;
+
+  const inicioDoMes = new Date();
+  inicioDoMes.setDate(1);
+  inicioDoMes.setHours(0, 0, 0, 0);
+
+  const { data } = await admin
+    .from("fit_check_logs")
+    .select("prompt_tokens, completion_tokens")
+    .gte("created_at", inicioDoMes.toISOString())
+    .limit(50_000);
+
+  const cents = (data ?? []).reduce(
+    (soma, l) =>
+      soma + custoChamadaCents(settings.model, l.prompt_tokens ?? 0, l.completion_tokens ?? 0),
+    0
+  );
+
+  gastoCache = { cents, at: Date.now() };
+  return cents;
+}
 
 /** Lê o saldo de tokens, criando a linha com os grátis se ainda não existir. */
 async function getCredits(admin: AdminClient, userId: string, freeCredits = FREE_CREDITS): Promise<number> {
@@ -383,6 +418,41 @@ export async function POST(request: Request) {
   }
 
   const settings = await getFitCheckSettings();
+
+  /* Teto de gasto do mês. Sem isto, um bug ou um aluno insistente queima o
+   * cartão em silêncio: cada mensagem carrega ~10 mil tokens de entrada, e
+   * no gpt-5.5 isso é ~R$ 0,31 por mensagem. */
+  if (settings.monthly_budget_reais > 0 && !isAdmin) {
+    const gastoCents = await gastoDoMes(admin, settings);
+    const tetoCents = settings.monthly_budget_reais * 100;
+
+    if (gastoCents >= tetoCents) {
+      await alertaAdmin(
+        `Fit Check PAROU: o gasto do mês chegou a ` +
+          `R$ ${(gastoCents / 100).toFixed(2)}, no teto de ` +
+          `R$ ${settings.monthly_budget_reais}. Ninguém mais consegue usar. ` +
+          `Aumente o teto em /admin/sistema/ia ou espere virar o mês.`,
+        { severidade: "critico", chave: "teto-ia" }
+      );
+      return NextResponse.json(
+        {
+          error:
+            "O consultor de IA atingiu o limite de uso deste mês. " +
+            "Já avisamos a equipe — tenta de novo mais tarde.",
+        },
+        { status: 503 }
+      );
+    }
+
+    // Avisa em 80% para você reagir antes de travar os alunos.
+    if (gastoCents >= tetoCents * 0.8) {
+      await alertaAdmin(
+        `Fit Check já gastou R$ ${(gastoCents / 100).toFixed(2)} de ` +
+          `R$ ${settings.monthly_budget_reais} este mês (80% do teto).`,
+        { severidade: "aviso", chave: "teto-ia-80" }
+      );
+    }
+  }
 
   /* Reserva o token ANTES de chamar a IA. Antes o débito acontecia depois da
    * resposta: entre a leitura do saldo e o débito havia uma janela de vários

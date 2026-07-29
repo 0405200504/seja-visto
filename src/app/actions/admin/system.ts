@@ -12,13 +12,13 @@ type Result = { ok: boolean; message: string };
 export async function saveSettingFieldAction(key: string, field: string, value: string): Promise<Result> {
   const { profile } = await requireAdmin();
   const allowed: Record<string, Set<string>> = {
-    fit_check: new Set(["model", "max_output_tokens", "free_credits", "daily_text_limit", "prompt_extra", "system_prompt_override", "token_price_per_1k_cents"]),
+    fit_check: new Set(["model", "max_output_tokens", "free_credits", "daily_text_limit", "prompt_extra", "system_prompt_override", "token_price_per_1k_cents", "monthly_budget_reais"]),
     gateway: new Set(["fee_percent", "fee_fixed_cents"]),
   };
   if (!allowed[key]?.has(field)) return { ok: false, message: "Configuração desconhecida." };
 
   const current = await getSetting<Record<string, unknown>>(key, {});
-  const numeric = ["max_output_tokens", "free_credits", "daily_text_limit", "token_price_per_1k_cents", "fee_fixed_cents", "fee_percent"];
+  const numeric = ["max_output_tokens", "free_credits", "daily_text_limit", "token_price_per_1k_cents", "fee_fixed_cents", "fee_percent", "monthly_budget_reais"];
   const parsed = numeric.includes(field) ? parseFloat(value.replace(",", ".")) : value;
   if (numeric.includes(field) && !Number.isFinite(parsed)) return { ok: false, message: "Valor numérico inválido." };
 

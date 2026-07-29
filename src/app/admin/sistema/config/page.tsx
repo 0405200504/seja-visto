@@ -1,6 +1,12 @@
 import { requireAdmin } from "@/lib/auth";
 import { getOverrides } from "@/lib/content-overrides";
-import { getSetting, GATEWAY_DEFAULTS, type GatewaySettings } from "@/lib/admin/settings";
+import {
+  getSetting,
+  GATEWAY_DEFAULTS,
+  CAKTO_FEES,
+  TAXA_3DS_PERCENT,
+  type GatewaySettings,
+} from "@/lib/admin/settings";
 import { STYLE_QUIZ } from "@/lib/constants";
 import { AutosaveForm, AutosaveInput } from "@/components/admin/ui/autosave";
 import { OverridesManager, type OverrideItem } from "@/components/admin/content/overrides-manager";
@@ -41,8 +47,50 @@ export default async function ConfigPage() {
         <section className="space-y-3 rounded-xl border border-border bg-surface p-4">
           <h2 className="text-sm font-semibold text-foreground">Taxas do gateway (Cakto)</h2>
           <p className="text-[11px] leading-relaxed text-muted-2">
-            Usadas para calcular a receita líquida quando a Cakto não informa a taxa exata da transação, e
-            como sugestão nas vendas manuais.
+            Quando a Cakto informa a taxa exata da transação, é ela que vale. Sem essa informação, o
+            sistema estima pela tabela do seu plano, abaixo.
+          </p>
+
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <table className="w-full min-w-[420px] text-xs">
+              <thead>
+                <tr className="border-b border-border bg-surface-2 text-left text-[10px] uppercase tracking-wider text-muted-2">
+                  <th className="px-3 py-2 font-semibold">Método</th>
+                  <th className="px-3 py-2 font-semibold">Taxa</th>
+                  <th className="px-3 py-2 font-semibold">Numa venda de R$ 17</th>
+                  <th className="px-3 py-2 font-semibold">Cai em</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(CAKTO_FEES).map(([chave, t]) => {
+                  const taxa17 = Math.round((1700 * t.percent) / 100) + t.fixed_cents;
+                  return (
+                    <tr key={chave} className="border-b border-border last:border-0">
+                      <td className="px-3 py-2 text-foreground">{t.label}</td>
+                      <td className="px-3 py-2 tabular-nums text-muted">
+                        {t.percent.toFixed(2).replace(".", ",")}% + R$ {(t.fixed_cents / 100).toFixed(2).replace(".", ",")}
+                      </td>
+                      <td className="px-3 py-2 tabular-nums text-muted">
+                        fica R$ {((1700 - taxa17) / 100).toFixed(2).replace(".", ",")}{" "}
+                        <span className="text-muted-2">({((taxa17 / 1700) * 100).toFixed(0)}% de taxa)</span>
+                      </td>
+                      <td className="px-3 py-2 tabular-nums text-muted-2">{t.days}d</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-[11px] leading-relaxed text-muted-2">
+            A autenticação 3DS, quando ativa, soma {TAXA_3DS_PERCENT.toFixed(2).replace(".", ",")}% em cima
+            do cartão. A tabela vive no código — se você mudar de plano na Cakto, me avise para atualizar.
+          </p>
+
+          <h3 className="pt-1 text-xs font-semibold text-foreground">
+            Reserva para método desconhecido
+          </h3>
+          <p className="text-[11px] leading-relaxed text-muted-2">
+            Só entra em ação se a Cakto mandar um método que não está na tabela acima.
           </p>
           <div className="grid grid-cols-2 gap-3">
             <AutosaveInput

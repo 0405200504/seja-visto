@@ -3,7 +3,12 @@ import { timingSafeEqual } from "node:crypto";
 import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { BASE_ENTITLEMENT, BONUSES } from "@/lib/bonuses";
-import { getSetting, GATEWAY_DEFAULTS, type GatewaySettings } from "@/lib/admin/settings";
+import {
+  getSetting,
+  GATEWAY_DEFAULTS,
+  estimarTaxaCakto,
+  type GatewaySettings,
+} from "@/lib/admin/settings";
 import { alertaAdmin } from "@/lib/alerts";
 import { checarRateLimit, ipDaRequisicao } from "@/lib/rate-limit";
 
@@ -653,17 +658,23 @@ export async function POST(request: Request) {
         amountCents = Math.round(parseFloat(amountRaw) * 100);
       }
 
-      /* Confere o valor contra o preço cadastrado no admin. Antes o sistema
-       * gravava o que viesse no payload, sem questionar. Só avisa: não
-       * bloqueia a liberação, porque cupom e promoção mudam o valor
-       * legitimamente — quem julga é você, com o alerta na mão. */
+      /* Confere o valor contra o preço mínimo cadastrado no admin. Antes o
+       * sistema gravava o que viesse no payload, sem questionar.
+       *
+       * Só alerta quando vem ABAIXO do esperado, que é o caso que custa
+       * dinheiro. Vir acima é normal e legítimo: parcelamento com juros
+       * (o anual à vista é R$ 164,59 e em 12x passa de R$ 200).
+       *
+       * É aviso, não bloqueio — cupom de lançamento baixa o valor de
+       * propósito, e quem julga isso é você, com o alerta na mão. */
       const esperado = primaryMapping?.expected_amount_cents;
-      if (esperado && amountCents > 0 && Math.abs(amountCents - esperado) > 100) {
+      if (esperado && amountCents > 0 && amountCents < esperado - 100) {
         await alertaAdmin(
-          `Valor divergente na compra de ${email}: recebi ` +
-            `R$ ${(amountCents / 100).toFixed(2)} mas o cadastro do produto ` +
-            `"${primaryMapping?.label ?? primaryMapping?.entitlement}" diz ` +
-            `R$ ${(esperado / 100).toFixed(2)}. Confira antes de contabilizar.`,
+          `Valor ABAIXO do esperado na compra de ${email}: recebi ` +
+            `R$ ${(amountCents / 100).toFixed(2)} mas o produto ` +
+            `"${primaryMapping?.label ?? primaryMapping?.entitlement}" custa ` +
+            `R$ ${(esperado / 100).toFixed(2)}. ` +
+            `Se não foi cupom seu, confira antes de contabilizar.`,
           { severidade: "aviso", chave: `valor:${eventId}` }
         );
       }
@@ -673,12 +684,13 @@ export async function POST(request: Request) {
       ).toLowerCase();
       const caktoSaleId = String(item.id ?? item.purchase_id ?? payload.id ?? "");
 
-      // Taxa: usa a informada pela Cakto quando vier; senão estima pela config do admin
+      // Taxa: a informada pela Cakto sempre vence. Sem ela, estimamos pela
+      // tabela real do plano, que muda conforme o método de pagamento.
       const feeRaw = item.fee ?? item.fees ?? item.gateway_fee ?? null;
       const feeCents =
         typeof feeRaw === "number"
           ? Math.round(feeRaw * 100)
-          : Math.round((amountCents * gateway.fee_percent) / 100) + gateway.fee_fixed_cents;
+          : estimarTaxaCakto(amountCents, paymentMethod, gateway);
 
       /* O client do Supabase NÃO lança exceção em erro de banco: devolve
        * { error }. O catch abaixo, sozinho, nunca via falha de constraint. */
