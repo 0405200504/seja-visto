@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -53,17 +53,19 @@ const RESULT_MS = 4600;
 
 export function OnboardingDemo() {
   const [step, setStep] = useState(0);
-  const [reduced, setReduced] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
 
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
+  // Lê a media query direto da fonte, sem setState dentro de efeito.
+  const reduced = useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false
+  );
 
   useEffect(() => {
     const el = ref.current;

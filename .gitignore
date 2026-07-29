@@ -60,3 +60,4 @@ next-env.d.ts
 
 # Material de origem (capas dos bonus em alta resolucao - versao otimizada esta em public/bonus)
 /capa bonus/
+backups/

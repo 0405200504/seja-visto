@@ -48,9 +48,16 @@ export async function deleteFit(formData: FormData) {
     .maybeSingle();
   if (!fit) return;
 
-  // RLS garante que só o dono ou o admin conseguem apagar.
-  const { error } = await supabase.from("community_fits").delete().eq("id", id);
+  // A RLS garante que só o dono ou o admin apagam. Mas quando ela bloqueia,
+  // o delete devolve 0 linhas SEM erro — antes o código seguia adiante
+  // achando que tinha dado certo.
+  const { data: apagados, error } = await supabase
+    .from("community_fits")
+    .delete()
+    .eq("id", id)
+    .select("id");
   if (error) throw new Error(`Erro ao excluir o fit: ${error.message}`);
+  if (!apagados?.length) throw new Error("Você não pode excluir este fit.");
 
   await supabase.storage.from("fits").remove([fit.image_path]);
 

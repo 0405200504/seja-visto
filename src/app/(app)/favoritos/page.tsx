@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Bookmark, Heart, ShoppingBag } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
-import { fetchFitsSocial } from "@/lib/community";
+import { fetchFitsSocial, signFitImageUrls } from "@/lib/community";
 import { PageHeader } from "@/components/app/page-header";
 import { LookCard } from "@/components/app/look-card";
 import { FitCard } from "@/components/app/fit-card";
@@ -50,6 +50,11 @@ export default async function FavoritosPage() {
     supabase,
     savedFits.map((f) => f.id),
     user.id
+  );
+  // Bucket privado: assina todas as fotos numa chamada só.
+  const fitImagens = await signFitImageUrls(
+    supabase,
+    savedFits.map((f) => f.image_path)
   );
 
   const favoriteIds = new Set(favoriteLooks.map((l) => l.id));
@@ -118,7 +123,12 @@ export default async function FavoritosPage() {
               </p>
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 {savedFits.map((fit) => (
-                  <FitCard key={fit.id} fit={fit} social={savedFitsSocial.get(fit.id)!} />
+                  <FitCard
+                    key={fit.id}
+                    fit={fit}
+                    social={savedFitsSocial.get(fit.id)!}
+                    imageUrl={fitImagens.get(fit.image_path) ?? null}
+                  />
                 ))}
               </div>
             </section>

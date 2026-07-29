@@ -1,8 +1,45 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-/** URL pública de uma foto enviada para o bucket `fits` do Supabase Storage. */
-export function fitImageUrl(path: string): string {
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/fits/${path}`;
+/**
+ * O bucket `fits` é PRIVADO: são fotos pessoais dos alunos, incluindo as
+ * recusadas na moderação. A leitura passa por URL assinada com validade,
+ * nunca por URL pública — link público é uma senha que nunca expira.
+ */
+const FIT_URL_TTL_SECONDS = 60 * 60; // 1 hora
+
+/** Assina as fotos de vários fits de uma vez (uma chamada só, não N). */
+export async function signFitImageUrls(
+  supabase: SupabaseClient,
+  paths: string[],
+  expiresIn = FIT_URL_TTL_SECONDS
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const unicos = [...new Set(paths.filter(Boolean))];
+  if (unicos.length === 0) return map;
+
+  const { data, error } = await supabase.storage
+    .from("fits")
+    .createSignedUrls(unicos, expiresIn);
+
+  if (error || !data) return map;
+
+  for (const item of data) {
+    if (item.signedUrl && item.path) map.set(item.path, item.signedUrl);
+  }
+  return map;
+}
+
+/** Assina a foto de um fit só. */
+export async function signFitImageUrl(
+  supabase: SupabaseClient,
+  path: string,
+  expiresIn = FIT_URL_TTL_SECONDS
+): Promise<string | null> {
+  if (!path) return null;
+  const { data } = await supabase.storage
+    .from("fits")
+    .createSignedUrl(path, expiresIn);
+  return data?.signedUrl ?? null;
 }
 
 export type FitSocial = {

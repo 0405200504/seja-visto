@@ -379,12 +379,9 @@ export function FitCheckChat() {
       image: image?.thumb,
     };
 
-    // Histórico enxuto: só texto das últimas trocas (a foto vai apenas na mensagem atual)
-    const history = messages.slice(-6).map((m) => ({
-      role: m.role,
-      content: m.role === "user" && m.image ? `${m.content} [foto enviada]` : m.content,
-    }));
-
+    // O histórico não é mais enviado daqui: o servidor o reconstrói a partir
+    // do banco, pelo conversationId. Histórico vindo do navegador podia ser
+    // forjado para reescrever o papel do modelo.
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setPendingImage(null);
@@ -399,7 +396,6 @@ export function FitCheckChat() {
           message: text,
           image: image?.full,
           thumb: image?.thumb,
-          history,
           conversationId,
         }),
       });
@@ -411,6 +407,11 @@ export function FitCheckChat() {
         setInput(text);
         setPendingImage(image);
         setBuyStep(1);
+        return;
+      }
+      if (data?.semAcesso) {
+        setMessages((prev) => prev.slice(0, -1));
+        setError("O Fit Check faz parte do acesso à plataforma. Renove para continuar usando.");
         return;
       }
       if (!res.ok) throw new Error(data?.error ?? "Erro na análise.");

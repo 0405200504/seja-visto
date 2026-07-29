@@ -1,4 +1,5 @@
 import {
+  Webhook,
   LayoutDashboard,
   Users,
   Tags,
@@ -87,6 +88,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     items: [
       { href: "/admin/sistema/ia", label: "Fit Check (IA)", icon: Sparkles },
       { href: "/admin/sistema/integracoes", label: "Integrações", icon: Plug },
+      { href: "/admin/sistema/webhooks", label: "Webhooks", icon: Webhook },
       { href: "/admin/sistema/config", label: "Configurações", icon: Settings },
       { href: "/admin/sistema/auditoria", label: "Log de auditoria", icon: ScrollText },
       { href: "/admin/sistema/lixeira", label: "Lixeira", icon: Trash2 },

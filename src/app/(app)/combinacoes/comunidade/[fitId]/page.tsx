@@ -3,7 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
-import { fetchFitsSocial, fitImageUrl } from "@/lib/community";
+import { fetchFitsSocial, signFitImageUrl } from "@/lib/community";
 import { deleteFit } from "@/app/actions/community";
 import { ReactionButtons } from "@/components/app/reaction-buttons";
 import { CommentsSection } from "@/components/app/comments-section";
@@ -44,6 +44,7 @@ export default async function FitDetailPage({
   if (!fit) notFound();
 
   const social = (await fetchFitsSocial(supabase, [fit.id], user.id)).get(fit.id)!;
+  const imageUrl = await signFitImageUrl(supabase, fit.image_path);
   const isOwn = fit.user_id === user.id;
 
   return (
@@ -60,14 +61,16 @@ export default async function FitDetailPage({
         {/* Foto */}
         <div className="overflow-hidden rounded-2xl border border-border shadow-card lg:sticky lg:top-10 lg:self-start">
           <div className="relative aspect-[4/5]">
-            <Image
-              src={fitImageUrl(fit.image_path)}
-              alt={fit.caption ?? `Fit de ${fit.author_name ?? "aluno"}`}
-              fill
-              sizes="(max-width: 1024px) 100vw, 45vw"
-              priority
-              className="object-cover object-top"
-            />
+            {imageUrl && (
+              <Image
+                src={imageUrl}
+                alt={fit.caption ?? `Fit de ${fit.author_name ?? "aluno"}`}
+                fill
+                sizes="(max-width: 1024px) 100vw, 45vw"
+                priority
+                className="object-cover object-top"
+              />
+            )}
           </div>
         </div>
 

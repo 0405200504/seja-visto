@@ -667,9 +667,10 @@ export function FinalCtaSection() {
 // PLACEHOLDERS — troque o "#" pelas URLs reais quando as páginas existirem
 // (ex.: "/termos", "/privacidade", "mailto:suporte@...").
 const FOOTER_LINKS = [
-  { label: "Termos de uso", href: "#" },
-  { label: "Política de privacidade", href: "#" },
-  { label: "Suporte", href: "#" },
+  { label: "Termos de uso", href: "/termos" },
+  { label: "Política de privacidade", href: "/privacidade" },
+  { label: "Reembolso", href: "/reembolso" },
+  { label: "Suporte", href: "mailto:equipe@manualpraticodooutfit.com.br" },
 ];
 
 export function LandingFooter() {
