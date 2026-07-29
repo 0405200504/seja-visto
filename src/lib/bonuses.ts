@@ -624,6 +624,6 @@ export function getBonus(key: string): Bonus | undefined {
 export const ALL_ENTITLEMENT_KEYS = [
   BASE_ENTITLEMENT, 
   ...BONUSES.map((b) => b.key),
-  "tokens-25",
-  "tokens-100"
+  "tokens-50",
+  "tokens-200"
 ];

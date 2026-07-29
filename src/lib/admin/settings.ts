@@ -25,6 +25,10 @@ export type FitCheckSettings = {
   /**
    * Teto de gasto do mês, em reais. Ao estourar, o Fit Check para de
    * atender e avisa você — em vez de queimar o cartão em silêncio.
+   *
+   * É detector de anomalia, não orçamento: com 100 alunos em uso normal
+   * (2 a 3 mensagens por dia) o gasto real fica perto de R$ 100/mês, então
+   * R$ 800 dá folga de sobra e só dispara se algo estiver muito errado.
    * 0 desliga a trava (não recomendado).
    */
   monthly_budget_reais: number;
@@ -36,17 +40,19 @@ export const FIT_CHECK_DEFAULTS: FitCheckSettings = {
   max_output_tokens: 1500,
   free_credits: 5,
   /**
-   * Mensagem de texto é grátis para o aluno mas custa para você: cada uma
-   * carrega o índice da plataforma (~10 mil tokens de entrada).
-   * No gpt-5.5 isso dá ~R$ 0,31 por mensagem, e o plano mensal rende
-   * R$ 24,51 líquidos — ou seja, o ponto de virada fica em ~2,6 mensagens
-   * por dia. Com 60/dia, um único aluno consumia mais de R$ 500 no mês.
+   * Mensagem de texto é grátis para o aluno mas custa para você.
+   *
+   * Com o índice enxuto e o gpt-5-mini, cada mensagem sai por R$ 0,011.
+   * O plano mensal rende R$ 24,51 líquidos, então o ponto de virada fica
+   * em 76 mensagens por dia. Em 20 você fica com 74% de margem mesmo no
+   * caso extremo de alguém estourar o limite todo santo dia do mês —
+   * e 20 é muito acima do que qualquer pessoa manda falando de roupa.
    */
-  daily_text_limit: 8,
+  daily_text_limit: 20,
   prompt_extra: "",
   system_prompt_override: "",
   token_price_per_1k_cents: 3,
-  monthly_budget_reais: 300,
+  monthly_budget_reais: 800,
 };
 
 /** Preço do modelo, em dólar por milhão de tokens. */

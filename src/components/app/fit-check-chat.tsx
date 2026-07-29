@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { TOKENS_100_CHECKOUT_URL, TOKENS_25_CHECKOUT_URL } from "@/components/landing/checkout";
+import { TOKENS_200_CHECKOUT_URL, TOKENS_50_CHECKOUT_URL } from "@/components/landing/checkout";
 import { cn } from "@/lib/utils";
 
 type ChatMessage = {
@@ -690,7 +690,7 @@ export function FitCheckChat() {
   );
 }
 
-/** Oferta principal (100 tokens) e, se recusar, oferta de saída (25 tokens). */
+/** Oferta principal (200 tokens) e, se recusar, oferta de saída (50 tokens). */
 function TokenModal({
   step,
   onDecline,
@@ -701,9 +701,9 @@ function TokenModal({
   onClose: () => void;
 }) {
   const isMain = step === 1;
-  const amount = isMain ? 100 : 25;
+  const amount = isMain ? 200 : 50;
   const price = isMain ? "97" : "27";
-  const url = isMain ? TOKENS_100_CHECKOUT_URL : TOKENS_25_CHECKOUT_URL;
+  const url = isMain ? TOKENS_200_CHECKOUT_URL : TOKENS_50_CHECKOUT_URL;
 
   return (
     <div

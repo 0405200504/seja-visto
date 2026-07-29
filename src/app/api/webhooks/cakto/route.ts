@@ -29,7 +29,7 @@ const REVOKE_EVENTS = new Set(["refund", "chargeback", "purchase_refunded", "sub
 
 /**
  * Pacotes de tokens do Fit Check: mapeie o produto da Cakto (em /admin/vendas)
- * para um entitlement no formato "tokens-100" ou "tokens-25" e o webhook credita
+ * para um entitlement no formato "tokens-200" ou "tokens-50" e o webhook credita
  * essa quantidade de imagens em vez de liberar um bônus permanente.
  */
 function parseTokenGrant(entitlement: string): number | null {

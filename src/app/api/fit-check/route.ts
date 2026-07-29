@@ -213,7 +213,11 @@ async function checkTextRateLimit(
   if (data.length >= dailyLimit) {
     return {
       ok: false,
-      message: "Limite de mensagens de hoje atingido. Amanhã tem mais!",
+      // Deixa claro que a foto continua funcionando: o limite é só do
+      // bate-papo por texto, e a análise de imagem corre por tokens.
+      message:
+        "Você bateu o limite de mensagens de hoje. Zera à meia-noite. " +
+        "Se quiser, manda uma foto que a análise de imagem continua liberada.",
     };
   }
   return { ok: true };
