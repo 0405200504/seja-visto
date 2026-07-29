@@ -57,8 +57,8 @@ export function ProductMapForm() {
           {BONUSES.map((b) => (
             <option key={b.key} value={b.key}>Bônus: {b.title}</option>
           ))}
-          <option value="tokens-50">Tokens de IA: 50</option>
-          <option value="tokens-200">Tokens de IA: 200</option>
+          <option value="tokens-25">Tokens de IA: 25</option>
+          <option value="tokens-100">Tokens de IA: 100</option>
         </select>
         <Input
           value={form.validityDays}

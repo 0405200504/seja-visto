@@ -9,12 +9,12 @@ export const MONTHLY_CHECKOUT_URL = "https://pay.cakto.com.br/zkkrorx_973168";
 
 // ============================================================
 // PACOTES DE TOKENS DO FIT CHECK — COLE OS LINKS DA CAKTO
-// 200 tokens por R$97 (oferta principal) · 50 tokens por R$27 (oferta de saída).
+// 100 tokens por R$97 (oferta principal) · 25 tokens por R$27 (oferta de saída).
 // Lembre de mapear cada produto em /admin/vendas para o entitlement
-// "tokens-200" e "tokens-50" para o webhook creditar as imagens.
+// "tokens-100" e "tokens-25" para o webhook creditar as imagens.
 // ============================================================
-export const TOKENS_200_CHECKOUT_URL = "https://pay.cakto.com.br/397p8mc";
-export const TOKENS_50_CHECKOUT_URL = "https://pay.cakto.com.br/38doary";
+export const TOKENS_100_CHECKOUT_URL = "https://pay.cakto.com.br/397p8mc";
+export const TOKENS_25_CHECKOUT_URL = "https://pay.cakto.com.br/38doary";
 
 /** Resolve o destino de um CTA: checkout real quando existir, senão a seção de planos. */
 export function checkoutHref(url: string): string {

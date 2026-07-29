@@ -67,7 +67,43 @@ async function getPlatformDigest(): Promise<string> {
       .returns<{ title: string; lessons: { title: string }[] }[]>(),
   ]);
 
-  const lookLines = (looks ?? []).map((look) => {
+  /* O índice inteiro (190 combinações) custava 7.476 tokens de ENTRADA em
+   * cada mensagem — 66% do custo de toda chamada, inclusive nas análises de
+   * foto, em que a foto em si é só 7%.
+   *
+   * Em vez de mandar tudo, mandamos uma amostra que cobre todos os estilos
+   * e ocasiões por igual. A IA continua citando combinação real da
+   * plataforma; só não vê as 190 de uma vez.
+   *
+   * Rodízio diário: a amostra muda a cada dia, então ao longo da semana
+   * todas as combinações aparecem em alguma conversa. */
+  const MAX_LOOKS_NO_INDICE = 60;
+
+  const porEstilo = new Map<string, LookRow[]>();
+  for (const look of looks ?? []) {
+    const chave = `${look.style}|${look.occasion}`;
+    if (!porEstilo.has(chave)) porEstilo.set(chave, []);
+    porEstilo.get(chave)!.push(look);
+  }
+
+  // gira a amostra conforme o dia do ano
+  const diaDoAno = Math.floor(Date.now() / 86_400_000);
+  const amostra: LookRow[] = [];
+  const grupos = [...porEstilo.values()];
+  for (let volta = 0; amostra.length < MAX_LOOKS_NO_INDICE; volta++) {
+    let adicionou = false;
+    for (const grupo of grupos) {
+      if (amostra.length >= MAX_LOOKS_NO_INDICE) break;
+      const item = grupo[(diaDoAno + volta) % grupo.length];
+      if (volta < grupo.length && item && !amostra.includes(item)) {
+        amostra.push(item);
+        adicionou = true;
+      }
+    }
+    if (!adicionou) break;
+  }
+
+  const lookLines = amostra.map((look) => {
     const pieces = (look.pieces ?? [])
       .map((p) => (typeof p === "string" ? p : p?.name ?? ""))
       .filter(Boolean)
