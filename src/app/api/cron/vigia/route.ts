@@ -8,9 +8,10 @@ import { alertaAdmin } from "@/lib/alerts";
  * cliente deu errado.
  *
  * Hoje roda 1x por dia — o plano Hobby da Vercel não aceita intervalo menor.
- * No Pro, troque o schedule para "*/15 * * * *". Os alertas urgentes (webhook
- * falhou, IA fora do ar, venda sem acesso) já disparam na hora, direto do
- * código; este cron é a rede de segurança para o que ninguém acionou.
+ * No plano Pro, troque o schedule no vercel.json para rodar a cada 15 minutos.
+ * Os alertas urgentes (webhook falhou, IA fora do ar, venda sem acesso) já
+ * disparam na hora, direto do código; este cron é a rede de segurança para o
+ * que ninguém acionou.
  *
  * Cobre 4 dos 8 alertas do plano de monitoramento:
  *   1. webhook da Cakto que falhou
