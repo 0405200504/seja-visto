@@ -1,5 +1,40 @@
 import type { NextConfig } from "next";
 
+/** Host do Supabase, extraído da URL do projeto. */
+const supabaseHostname = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname;
+  } catch {
+    // Sem a variável (ex.: lint em CI), aceita qualquer subdomínio do Supabase.
+    return "*.supabase.co";
+  }
+})();
+
+/**
+ * Cabeçalhos de segurança aplicados a todas as respostas.
+ * A CSP ficou de fora de propósito: feita às pressas ela quebra o Next.js em
+ * produção. Configure depois, testando em staging.
+ */
+const SECURITY_HEADERS = [
+  // Força HTTPS por 2 anos, inclusive nos subdomínios.
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
+  // Impede que o site seja embutido em iframe (clickjacking no /admin).
+  { key: "X-Frame-Options", value: "DENY" },
+  // Impede o navegador de "adivinhar" o tipo do arquivo.
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  // Não vaza a URL completa para domínios externos.
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  // Câmera liberada: o envio de fit usa a câmera no celular.
+  {
+    key: "Permissions-Policy",
+    value: "camera=(self), microphone=(), geolocation=(), payment=(), usb=()",
+  },
+  { key: "X-DNS-Prefetch-Control", value: "on" },
+];
+
 const nextConfig: NextConfig = {
   images: {
     // Gera AVIF/WebP e vários tamanhos automaticamente na Vercel.
@@ -7,7 +42,16 @@ const nextConfig: NextConfig = {
     // 70 = fotos da página de vendas; 80 = seção/esteira do Raphael; 75 = padrão do app.
     qualities: [70, 75, 80],
     minimumCacheTTL: 60 * 60 * 24 * 365,
-    remotePatterns: [{ protocol: "https", hostname: "**" }],
+    // Só o Storage do Supabase. Com hostname "**", o /_next/image virava um
+    // proxy aberto: qualquer um podia reprocessar imagem de qualquer domínio
+    // gastando a cota e a banda da Vercel.
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: supabaseHostname,
+        pathname: "/storage/v1/object/**",
+      },
+    ],
   },
   async redirects() {
     return [
@@ -29,6 +73,17 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/:path*",
+        headers: SECURITY_HEADERS,
+      },
+      {
+        // Área do aluno e admin nunca devem ficar em cache compartilhado.
+        source: "/:prefix(admin|perfil|fit-check|acesso-expirado)/:path*",
+        headers: [
+          { key: "Cache-Control", value: "private, no-store, max-age=0" },
+        ],
+      },
       {
         // Fotos versionadas do produto: cache imutável de 1 ano no CDN/navegador.
         source: "/:prefix(estilos|mais-procurados)/:path*",

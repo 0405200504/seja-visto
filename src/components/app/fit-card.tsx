@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { ReactionButtons } from "@/components/app/reaction-buttons";
-import { fitImageUrl, type FitSocial } from "@/lib/community";
+import { type FitSocial } from "@/lib/community";
 import type { CommunityFit } from "@/lib/types";
 
 const STATUS_BADGE: Record<string, { label: string; variant: "accent" | "outline" }> = {
@@ -10,7 +10,16 @@ const STATUS_BADGE: Record<string, { label: string; variant: "accent" | "outline
   rejected: { label: "Não aprovado", variant: "outline" },
 };
 
-export function FitCard({ fit, social }: { fit: CommunityFit; social: FitSocial }) {
+export function FitCard({
+  fit,
+  social,
+  imageUrl,
+}: {
+  fit: CommunityFit;
+  social: FitSocial;
+  /** URL assinada — o bucket é privado, não existe URL pública. */
+  imageUrl: string | null;
+}) {
   const statusBadge = STATUS_BADGE[fit.status];
 
   return (
@@ -18,14 +27,16 @@ export function FitCard({ fit, social }: { fit: CommunityFit; social: FitSocial 
       href={`/combinacoes/comunidade/${fit.id}`}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-card transition-all duration-300 hover:border-border-strong hover:shadow-glow"
     >
-      <div className="relative aspect-[4/5] overflow-hidden">
-        <Image
-          src={fitImageUrl(fit.image_path)}
-          alt={fit.caption ?? `Fit de ${fit.author_name ?? "aluno"}`}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
-        />
+      <div className="relative aspect-[4/5] overflow-hidden bg-surface-3">
+        {imageUrl && (
+          <Image
+            src={imageUrl}
+            alt={fit.caption ?? `Fit de ${fit.author_name ?? "aluno"}`}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+          />
+        )}
         {statusBadge && (
           <div className="absolute left-3 top-3">
             <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>

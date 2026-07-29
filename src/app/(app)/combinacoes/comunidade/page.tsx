@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Users } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
-import { fetchFitsSocial } from "@/lib/community";
+import { fetchFitsSocial, signFitImageUrls } from "@/lib/community";
 import { PageHeader } from "@/components/app/page-header";
 import { CombinacoesTabs } from "@/components/app/combinacoes-tabs";
 import { FitCard } from "@/components/app/fit-card";
@@ -28,6 +28,9 @@ export default async function ComunidadePage() {
     user.id
   );
 
+  // Bucket privado: uma chamada assina todas as fotos de uma vez.
+  const imagens = await signFitImageUrls(supabase, fits.map((f) => f.image_path));
+
   // Seus envios em análise aparecem primeiro, para você acompanhar o status.
   const ordered = [
     ...fits.filter((f) => f.user_id === user.id && f.status !== "approved"),
@@ -52,7 +55,12 @@ export default async function ComunidadePage() {
           </p>
           <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {ordered.map((fit) => (
-              <FitCard key={fit.id} fit={fit} social={social.get(fit.id)!} />
+              <FitCard
+                key={fit.id}
+                fit={fit}
+                social={social.get(fit.id)!}
+                imageUrl={imagens.get(fit.image_path) ?? null}
+              />
             ))}
           </div>
         </>

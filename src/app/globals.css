@@ -100,3 +100,61 @@ html {
     scroll-behavior: auto;
   }
 }
+
+/* ---------- Páginas legais (termos, privacidade, reembolso) ---------- */
+.legal-prose {
+  color: var(--color-muted);
+  font-size: 0.9375rem;
+  line-height: 1.75;
+}
+.legal-prose h1 {
+  color: var(--color-foreground);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.legal-prose h2 {
+  color: var(--color-foreground);
+  font-size: 1.125rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+.legal-prose h3 {
+  color: var(--color-foreground);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+.legal-prose p { margin-bottom: 1rem; }
+.legal-prose ul, .legal-prose ol {
+  margin-bottom: 1rem;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.legal-prose ul { list-style: disc; }
+.legal-prose ol { list-style: decimal; }
+.legal-prose li::marker { color: var(--color-muted-2); }
+.legal-prose strong { color: var(--color-foreground); font-weight: 600; }
+.legal-prose a { color: #2f6bff; text-decoration: underline; text-underline-offset: 2px; }
+.legal-prose .atualizado {
+  color: var(--color-muted-2);
+  font-size: 0.8125rem;
+  margin-top: 0.5rem;
+  margin-bottom: 2rem;
+}
+.legal-prose .destaque {
+  border: 1px solid var(--color-border, #1e2938);
+  border-left: 3px solid #2f6bff;
+  border-radius: 4px;
+  padding: 0.875rem 1.125rem;
+  margin-bottom: 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+.legal-prose .destaque p:last-child { margin-bottom: 0; }

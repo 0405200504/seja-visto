@@ -6,12 +6,9 @@ import { dateTime, num, relTime } from "@/lib/admin/format";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type TableRow } from "@/components/admin/ui/data-table";
 import { bulkFitsAction } from "@/app/actions/admin/community";
+import { signFitImageUrls } from "@/lib/community";
 
 export const dynamic = "force-dynamic";
-
-function fitImageUrl(path: string): string {
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/fits/${path}`;
-}
 
 function statusBadge(status: string) {
   if (status === "approved") return <Badge variant="success">aprovado</Badge>;
@@ -32,6 +29,9 @@ export default async function ComunidadePage(props: { searchParams: Promise<Sear
 
   const { data, count } = await query;
   const fits = data ?? [];
+
+  // Bucket privado: assina as fotos em lote (o client de admin ignora RLS).
+  const imagens = await signFitImageUrls(db, fits.map((f) => f.image_path));
 
   const ids = fits.map((f) => f.id);
   const [reactionsRes, commentsRes, statusCounts] = await Promise.all([
@@ -69,7 +69,7 @@ export default async function ComunidadePage(props: { searchParams: Promise<Sear
       fit: (
         <span className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={fitImageUrl(f.image_path)} alt="" className="h-12 w-9 shrink-0 rounded-lg border border-border object-cover" loading="lazy" />
+          <img src={imagens.get(f.image_path) ?? ""} alt="" className="h-12 w-9 shrink-0 rounded-lg border border-border object-cover" loading="lazy" />
           <span className="min-w-0">
             <span className="block max-w-[180px] truncate font-medium text-foreground">{f.author_name ?? "Aluno"}</span>
             <span className="block max-w-[180px] truncate text-[11px] text-muted-2">{f.caption ?? "sem legenda"}</span>
@@ -90,7 +90,7 @@ export default async function ComunidadePage(props: { searchParams: Promise<Sear
     drawer: (
       <div className="space-y-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={fitImageUrl(f.image_path)} alt={f.caption ?? "Fit da comunidade"} className="max-h-[50vh] w-full rounded-xl border border-border object-contain" />
+        <img src={imagens.get(f.image_path) ?? ""} alt={f.caption ?? "Fit da comunidade"} className="max-h-[50vh] w-full rounded-xl border border-border object-contain" />
         {f.caption && <p className="text-sm text-muted">“{f.caption}”</p>}
         <p className="text-xs text-muted-2">
           {statusBadge(f.status)} · {num(likes.get(f.id) ?? 0)} curtidas · {num(comments.get(f.id) ?? 0)} comentários

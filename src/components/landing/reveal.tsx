@@ -1,18 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * useSyncExternalStore lê a media query direto da fonte, sem passar por
+ * setState dentro de efeito — que dispara render em cascata.
+ */
 function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return reduced;
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false // no servidor, assume que há movimento
+  );
 }
 
 function useInView<T extends Element>(margin = "-80px") {
@@ -81,13 +91,11 @@ export function Counter({
   const reduced = usePrefersReducedMotion();
   const { ref, inView } = useInView<HTMLSpanElement>("0px");
   const [current, setCurrent] = useState(0);
+  // Com movimento reduzido não há animação: mostra o número final direto.
+  const shown = reduced ? value : current;
 
   useEffect(() => {
-    if (!inView) return;
-    if (reduced) {
-      setCurrent(value);
-      return;
-    }
+    if (!inView || reduced) return;
     let raf = 0;
     const start = performance.now();
     const tick = (now: number) => {
@@ -102,7 +110,7 @@ export function Counter({
 
   return (
     <span ref={ref} className={className}>
-      {current}
+      {shown}
       {suffix}
     </span>
   );

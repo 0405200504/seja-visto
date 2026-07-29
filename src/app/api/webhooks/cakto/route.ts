@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { BASE_ENTITLEMENT, BONUSES } from "@/lib/bonuses";
 import { getSetting, GATEWAY_DEFAULTS, type GatewaySettings } from "@/lib/admin/settings";
+import { alertaAdmin } from "@/lib/alerts";
+import { checarRateLimit, ipDaRequisicao } from "@/lib/rate-limit";
 
 /**
  * Webhook da Cakto.
@@ -29,13 +32,31 @@ function parseTokenGrant(entitlement: string): number | null {
   return m ? parseInt(m[1], 10) : null;
 }
 
-const PASSWORD_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+/**
+ * Senha interna aleatória. NUNCA é transmitida: existe só para a conta não
+ * nascer sem senha. O comprador define a dele pelo link de acesso.
+ * Usa rejeição para não ter viés de módulo.
+ */
+function senhaInterna(): string {
+  const alfabeto = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  const limite = 256 - (256 % alfabeto.length);
+  let saida = "";
+  while (saida.length < 32) {
+    const bytes = crypto.getRandomValues(new Uint8Array(32));
+    for (const b of bytes) {
+      if (b < limite && saida.length < 32) saida += alfabeto[b % alfabeto.length];
+    }
+  }
+  return saida;
+}
 
-function generatePassword(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(8));
-  let chars = "";
-  for (const b of bytes) chars += PASSWORD_ALPHABET[b % PASSWORD_ALPHABET.length];
-  return `estilo-${chars.slice(0, 4)}-${chars.slice(4)}`;
+/** Comparação em tempo constante — `!==` vaza informação por tempo. */
+function segredoConfere(recebido: string | null | undefined, esperado: string): boolean {
+  if (!recebido) return false;
+  const a = Buffer.from(recebido);
+  const b = Buffer.from(esperado);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }
 
 async function sendEmail(to: string, subject: string, html: string) {
@@ -151,26 +172,27 @@ function emailLayout(content: string, siteUrl: string): string {
   </div>`;
 }
 
-function welcomeEmail(name: string, email: string, password: string, siteUrl: string): string {
+function welcomeEmail(name: string, email: string, linkAcesso: string, siteUrl: string): string {
   const firstName = name.split(" ")[0] || "aluno";
   return emailLayout(
     `
     <h1 style="color:#f4f6f9;font-size:22px;margin:0 0 12px">Bem-vindo, ${firstName}! 🎉</h1>
     <p style="color:#8b96a8;font-size:14px;line-height:1.6;margin:0 0 20px">
-      Sua compra foi aprovada e seu acesso à plataforma já está liberado.
-      Guarde seus dados de login:
+      Sua compra foi aprovada e seu acesso já está liberado. Clique no botão
+      abaixo para criar sua senha e entrar na plataforma.
     </p>
     <div style="background:#121924;border:1px solid #1e2938;border-radius:12px;padding:16px 20px;margin-bottom:20px">
-      <p style="color:#8b96a8;font-size:12px;margin:0 0 4px">E-mail</p>
-      <p style="color:#f4f6f9;font-size:15px;font-weight:bold;margin:0 0 12px">${email}</p>
-      <p style="color:#8b96a8;font-size:12px;margin:0 0 4px">Senha</p>
-      <p style="color:#f4f6f9;font-size:15px;font-weight:bold;margin:0">${password}</p>
+      <p style="color:#8b96a8;font-size:12px;margin:0 0 4px">Seu e-mail de acesso</p>
+      <p style="color:#f4f6f9;font-size:15px;font-weight:bold;margin:0">${email}</p>
     </div>
-    <a href="${siteUrl}/login" style="display:block;background:#2f6bff;color:#fff;text-decoration:none;text-align:center;font-weight:bold;font-size:15px;border-radius:12px;padding:14px">
-      Acessar a plataforma
+    <a href="${linkAcesso}" style="display:block;background:#2f6bff;color:#fff;text-decoration:none;text-align:center;font-weight:bold;font-size:15px;border-radius:12px;padding:14px">
+      Criar minha senha e entrar
     </a>
+    <p style="color:#5c677a;font-size:12px;line-height:1.6;margin:14px 0 0">
+      Este link é pessoal e vale por 24 horas. Se expirar, use "Esqueci minha senha"
+      na tela de login com o e-mail acima.
+    </p>
     <p style="color:#8b96a8;font-size:13px;line-height:1.6;margin:20px 0 0">
-      Dica: você pode trocar sua senha a qualquer momento em Perfil → depois de entrar.
       No primeiro acesso, responda o quiz de estilo — ele personaliza toda a sua experiência.
     </p>
   `,
@@ -196,6 +218,12 @@ function bonusEmail(name: string, bonusLabel: string, siteUrl: string): string {
 }
 
 export async function POST(request: Request) {
+  // Rate limit por IP: sem isto, um atacante pode forçar o segredo à vontade.
+  const ip = ipDaRequisicao(request);
+  if (!(await checarRateLimit(`cakto:${ip}`, 60, 60))) {
+    return NextResponse.json({ error: "Muitas requisições" }, { status: 429 });
+  }
+
   let payload: Record<string, unknown>;
   try {
     payload = await request.json();
@@ -203,15 +231,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
 
-  // Validação do secret (payload.secret, header ou query string)
-  const url = new URL(request.url);
+  // Validação do segredo. A query string saiu de propósito: segredo em URL
+  // fica gravado em log de acesso, histórico e cabeçalho Referer.
   const provided =
-    (payload.secret as string) ??
-    request.headers.get("x-cakto-secret") ??
-    url.searchParams.get("secret");
+    (payload.secret as string | undefined) ?? request.headers.get("x-cakto-secret");
   const expected = process.env.CAKTO_WEBHOOK_SECRET;
 
-  if (!expected || provided !== expected) {
+  if (!expected || !segredoConfere(provided, expected)) {
+    // Só alerta em volume: uma tentativa isolada é ruído.
+    if (!(await checarRateLimit(`cakto-invalido:${ip}`, 5, 300))) {
+      await alertaAdmin(
+        `Várias tentativas com segredo inválido no webhook, vindas de ${ip}.`,
+        { severidade: "critico", chave: `segredo-invalido:${ip}` }
+      );
+    }
     return NextResponse.json({ error: "Secret inválido" }, { status: 401 });
   }
 
@@ -248,6 +281,84 @@ export async function POST(request: Request) {
   const admin = createAdminClient();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.vercel.app";
 
+  /* ---------- Idempotência ----------
+   * A Cakto reenvia eventos (timeout, retentativa, reprocessamento manual).
+   * Gravamos ANTES de processar: o UNIQUE (provider, event_id) é a trava.
+   * Se o evento já entrou, saímos sem creditar token, sem duplicar venda e
+   * sem estender a validade de novo.
+   * O payload fica guardado para você auditar disputa com cliente. */
+  const eventId = String(
+    payload.id ??
+      payload.event_id ??
+      firstItem.id ??
+      firstItem.purchase_id ??
+      ""
+  );
+
+  if (!eventId) {
+    await alertaAdmin(
+      `Webhook da Cakto chegou sem id de evento (${event}, ${email}). ` +
+        `Sem id não dá para garantir que não vai duplicar.`,
+      { severidade: "critico" }
+    );
+    return NextResponse.json({ error: "Evento sem identificador" }, { status: 400 });
+  }
+
+  // O payload da Cakto pode trazer o segredo no corpo. Guardar isso em texto
+  // puro no banco transformaria o log de auditoria num vazamento de credencial.
+  const payloadParaLog = { ...payload };
+  if ("secret" in payloadParaLog) payloadParaLog.secret = "[redigido]";
+
+  const { error: eventoErro } = await admin.from("webhook_events").insert({
+    provider: "cakto",
+    event_id: eventId,
+    event_type: event,
+    payload: payloadParaLog,
+    user_email: email,
+  });
+
+  if (eventoErro) {
+    // 23505 = violação de unicidade: já vimos este evento antes.
+    if (eventoErro.code === "23505") {
+      const { data: anterior } = await admin
+        .from("webhook_events")
+        .select("status")
+        .eq("provider", "cakto")
+        .eq("event_id", eventId)
+        .maybeSingle<{ status: string }>();
+
+      // Só ignora se a tentativa anterior tiver COMPLETADO. Se ela falhou no
+      // meio, a Cakto está reenviando justamente para consertar — deixamos
+      // passar, senão o cliente pagaria e nunca receberia o acesso.
+      if (anterior?.status === "processed") {
+        return NextResponse.json({ ok: true, duplicado: eventId });
+      }
+      await admin
+        .from("webhook_events")
+        .update({ status: "pending", error_message: null })
+        .eq("provider", "cakto")
+        .eq("event_id", eventId);
+    } else {
+      console.error("[cakto] falha ao registrar evento", eventoErro);
+      await alertaAdmin(
+        `Não consegui registrar o evento ${eventId} da Cakto: ${eventoErro.message}. ` +
+          `A compra de ${email} NÃO foi processada — a Cakto vai reenviar.`,
+        { severidade: "critico" }
+      );
+      // 500 faz a Cakto reenviar, que é o que queremos.
+      return NextResponse.json({ error: "Erro ao registrar evento" }, { status: 500 });
+    }
+  }
+
+  /** Marca o evento como falho para aparecer na tela de reprocessamento. */
+  const marcarFalha = async (motivo: string) => {
+    await admin
+      .from("webhook_events")
+      .update({ status: "failed", error_message: motivo.slice(0, 500) })
+      .eq("provider", "cakto")
+      .eq("event_id", eventId);
+  };
+
   // Coleta todos os IDs de produto/oferta presentes no payload de todas as transações
   const candidateIds = new Set<string>();
   const collect = (value: unknown) => {
@@ -271,13 +382,49 @@ export async function POST(request: Request) {
 
   const { data: mappingRows } = await admin
     .from("cakto_product_map")
-    .select("entitlement, label, validity_days")
+    .select("entitlement, label, validity_days, expected_amount_cents")
     .in("cakto_id", candidateIds.size ? [...candidateIds] : ["__none__"]);
 
   const mappings = mappingRows ?? [];
-  const allEntitlements = mappings.length
-    ? [...new Set(mappings.map((m) => m.entitlement))]
-    : [BASE_ENTITLEMENT];
+
+  /* ---------- Produto sem mapeamento ----------
+   * Antes, o fallback concedia o acesso completo a QUALQUER compra
+   * desconhecida — um bump de R$ 9 entregava o produto inteiro.
+   *
+   * A regra segura depende da direção do evento:
+   *  · COMPRA  → não adivinha, não libera nada, avisa você.
+   *  · REEMBOLSO → revoga TUDO. Na dúvida, quem devolveu o dinheiro não
+   *    pode continuar com o produto; errar para o outro lado custa caro. */
+  const semMapeamento = mappings.length === 0;
+
+  if (semMapeamento && GRANT_EVENTS.has(event)) {
+    const idsRecebidos = [...candidateIds].join(", ") || "nenhum id no payload";
+    await marcarFalha(`Produto sem mapeamento. IDs: ${idsRecebidos}`);
+    await alertaAdmin(
+      `Compra de ${email} chegou com produto SEM MAPEAMENTO.\n` +
+        `IDs recebidos: ${idsRecebidos}\n` +
+        `NADA foi liberado. Cadastre o ID em /admin/receita/produtos e ` +
+        `libere o acesso em /admin/alunos.`,
+      { severidade: "critico" }
+    );
+    // 200 para a Cakto não reenviar: o evento já está registrado e aparece
+    // na tela /admin/sistema/webhooks para você reprocessar.
+    return NextResponse.json({ ok: true, pendente: "sem_mapeamento", eventId });
+  }
+
+  if (semMapeamento) {
+    await alertaAdmin(
+      `Reembolso de ${email} veio de um produto SEM MAPEAMENTO ` +
+        `(IDs: ${[...candidateIds].join(", ") || "nenhum"}). ` +
+        `Por segurança revoguei TODO o acesso dessa conta. ` +
+        `Se foi engano, libere de volta em /admin/alunos.`,
+      { severidade: "critico" }
+    );
+  }
+
+  const allEntitlements = semMapeamento
+    ? [BASE_ENTITLEMENT]
+    : [...new Set(mappings.map((m) => m.entitlement))];
 
   // Separa pacotes de tokens (consumíveis) dos entitlements permanentes.
   const tokenCredits = allEntitlements.reduce((sum, e) => sum + (parseTokenGrant(e) ?? 0), 0);
@@ -298,11 +445,46 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (profile) {
-      await admin
+      /* Reembolso do produto principal (ou do pacote 58%) derruba TUDO.
+       * Antes, só o entitlement mapeado era apagado — então quem comprava
+       * um bump barato ganhava o `base` junto e ficava com ele depois de
+       * pedir reembolso. */
+      const derrubaTudo =
+        entitlements.includes(BASE_ENTITLEMENT) || entitlements.includes("economize-58");
+
+      const aRevogar = derrubaTudo
+        ? [BASE_ENTITLEMENT, "economize-58", ...BONUSES.map((b) => b.key)]
+        : entitlements;
+
+      const { error: revogaErro } = await admin
         .from("user_entitlements")
         .delete()
         .eq("user_id", profile.user_id)
-        .in("entitlement", entitlements);
+        .in("entitlement", aRevogar);
+
+      if (revogaErro) {
+        await marcarFalha(`Falha ao revogar acesso: ${revogaErro.message}`);
+        await alertaAdmin(
+          `Reembolso de ${email} processado, mas NÃO consegui revogar o acesso: ` +
+            `${revogaErro.message}. Revogue à mão em /admin/alunos.`,
+          { severidade: "critico" }
+        );
+      }
+
+      // Estorna também os tokens de IA do pacote reembolsado. A função no
+      // banco usa greatest(...,0), então o saldo nunca fica negativo.
+      if (tokenCredits > 0) {
+        await admin.rpc("add_fit_check_credits", {
+          p_user: profile.user_id,
+          p_amount: -tokenCredits,
+        });
+      }
+    } else {
+      await alertaAdmin(
+        `Reembolso de ${email} chegou, mas não achei essa conta na plataforma. ` +
+          `Confira se o e-mail da Cakto bate com o do cadastro.`,
+        { severidade: "aviso" }
+      );
     }
 
     // Registra o reembolso para cada transação na tabela sales
@@ -315,6 +497,12 @@ export async function POST(request: Request) {
           .eq("cakto_id", caktoSaleId);
       }
     }
+
+    await admin
+      .from("webhook_events")
+      .update({ status: "processed" })
+      .eq("provider", "cakto")
+      .eq("event_id", eventId);
 
     return NextResponse.json({ ok: true, revoked: entitlements, user: Boolean(profile) });
   }
@@ -330,18 +518,24 @@ export async function POST(request: Request) {
 
   let userId = existingProfile?.user_id as string | undefined;
   let createdNow = false;
-  let password: string | null = null;
 
   if (!userId) {
-    password = generatePassword();
     const { data: created, error: createError } = await admin.auth.admin.createUser({
       email,
-      password,
+      // Senha aleatória que ninguém conhece: a conta não nasce sem senha e
+      // o comprador define a dele pelo link de acesso do e-mail.
+      password: senhaInterna(),
       email_confirm: true,
       user_metadata: { name },
     });
 
     if (createError || !created.user) {
+      await marcarFalha(`Falha ao criar usuário: ${createError?.message}`);
+      await alertaAdmin(
+        `${email} pagou mas NÃO consegui criar a conta: ${createError?.message}. ` +
+          `Crie à mão em /admin/alunos.`,
+        { severidade: "critico" }
+      );
       return NextResponse.json(
         { error: `Falha ao criar usuário: ${createError?.message}` },
         { status: 500 }
@@ -349,6 +543,20 @@ export async function POST(request: Request) {
     }
     userId = created.user.id;
     createdNow = true;
+  }
+
+  /* Link de acesso de uso único. Substitui a senha em texto puro, que antes
+   * ia por e-mail e por WhatsApp (passando por um terceiro) e ficava para
+   * sempre no histórico das duas caixas. Se o processo falhar mais adiante,
+   * basta reenviar o link — não existe mais senha perdida em memória. */
+  let linkAcesso: string | null = null;
+  if (createdNow) {
+    const { data: link } = await admin.auth.admin.generateLink({
+      type: "recovery",
+      email,
+      options: { redirectTo: `${siteUrl}/nova-senha` },
+    });
+    linkAcesso = link?.properties?.action_link ?? null;
   }
 
   // Busca os entitlements atuais do usuário para calcular a nova data de validade de forma justa
@@ -385,6 +593,14 @@ export async function POST(request: Request) {
     .upsert(grants, { onConflict: "user_id,entitlement" });
 
   if (grantError) {
+    await marcarFalha(`Falha ao liberar acesso: ${grantError.message}`);
+    await alertaAdmin(
+      `${email} pagou mas o acesso NÃO foi liberado: ${grantError.message}. ` +
+        `A conta já existe. Libere em /admin/alunos ou reprocesse o evento ${eventId}.`,
+      { severidade: "critico" }
+    );
+    // 500 para a Cakto reenviar. O evento ficou marcado como 'failed', então
+    // a retentativa passa pela idempotência e completa a liberação.
     return NextResponse.json(
       { error: `Falha ao liberar acesso: ${grantError.message}` },
       { status: 500 }
@@ -409,6 +625,21 @@ export async function POST(request: Request) {
         amountCents = Math.round(parseFloat(amountRaw) * 100);
       }
 
+      /* Confere o valor contra o preço cadastrado no admin. Antes o sistema
+       * gravava o que viesse no payload, sem questionar. Só avisa: não
+       * bloqueia a liberação, porque cupom e promoção mudam o valor
+       * legitimamente — quem julga é você, com o alerta na mão. */
+      const esperado = primaryMapping?.expected_amount_cents;
+      if (esperado && amountCents > 0 && Math.abs(amountCents - esperado) > 100) {
+        await alertaAdmin(
+          `Valor divergente na compra de ${email}: recebi ` +
+            `R$ ${(amountCents / 100).toFixed(2)} mas o cadastro do produto ` +
+            `"${primaryMapping?.label ?? primaryMapping?.entitlement}" diz ` +
+            `R$ ${(esperado / 100).toFixed(2)}. Confira antes de contabilizar.`,
+          { severidade: "aviso", chave: `valor:${eventId}` }
+        );
+      }
+
       const paymentMethod = String(
         item.paymentMethod ?? item.payment_method ?? item.payment_type ?? "cakto"
       ).toLowerCase();
@@ -421,7 +652,9 @@ export async function POST(request: Request) {
           ? Math.round(feeRaw * 100)
           : Math.round((amountCents * gateway.fee_percent) / 100) + gateway.fee_fixed_cents;
 
-      await admin.from("sales").insert({
+      /* O client do Supabase NÃO lança exceção em erro de banco: devolve
+       * { error }. O catch abaixo, sozinho, nunca via falha de constraint. */
+      const { error: vendaErro } = await admin.from("sales").insert({
         user_id: userId,
         email,
         name: name || existingProfile?.name || "Aluno",
@@ -429,13 +662,35 @@ export async function POST(request: Request) {
         gateway_fee_cents: Math.max(0, Math.min(feeCents, amountCents)),
         status: "approved",
         payment_method: paymentMethod,
-        cakto_id: caktoSaleId,
+        cakto_id: caktoSaleId || null,
         entitlement: primaryMapping?.entitlement ?? null,
         offer_name: primaryMapping?.label ?? primaryMapping?.entitlement ?? null,
         created_at: new Date().toISOString()
       });
+
+      if (vendaErro && vendaErro.code !== "23505") {
+        console.error("[cakto] venda não registrada", {
+          eventId,
+          cakto_id: caktoSaleId,
+          erro: vendaErro.message,
+        });
+        await alertaAdmin(
+          `Acesso liberado para ${email}, mas a VENDA de ` +
+            `R$ ${(amountCents / 100).toFixed(2)} não entrou no faturamento: ` +
+            `${vendaErro.message}. Lance à mão em /admin/receita/transacoes.`,
+          { severidade: "critico" }
+        );
+      }
     } catch (err) {
-      // Ignora falha de gravação financeira para não quebrar a liberação do aluno
+      // Nunca quebra a liberação do aluno por causa do registro contábil,
+      // mas o erro precisa aparecer em algum lugar.
+      console.error("[cakto] exceção ao registrar venda", err);
+      await alertaAdmin(
+        `Exceção ao registrar a venda de ${email}: ` +
+          `${err instanceof Error ? err.message : String(err)}. ` +
+          `O acesso foi liberado; confira o faturamento.`,
+        { severidade: "critico" }
+      );
     }
   }
 
@@ -445,11 +700,11 @@ export async function POST(request: Request) {
     .map((m) => m.label ?? m.entitlement);
 
   let emailResult: { sent: boolean; reason?: string };
-  if (createdNow && password) {
+  if (createdNow && linkAcesso) {
     emailResult = await sendEmail(
       email,
       "Seu acesso ao Manual Prático do Outfit chegou 🎉",
-      welcomeEmail(name, email, password, siteUrl)
+      welcomeEmail(name, email, linkAcesso, siteUrl)
     );
   } else if (bonusLabels.length > 0) {
     emailResult = await sendEmail(
@@ -466,14 +721,35 @@ export async function POST(request: Request) {
   let whatsResult: { sent: boolean; reason?: string } | undefined = undefined;
 
   if (phone) {
-    if (createdNow && password) {
-      const whatsMsg = `Olá, *${name}*! Seu acesso ao *Manual Prático do Outfit* chegou! 🎉\n\nSua compra foi aprovada e seu acesso à plataforma já está liberado.\n\nAqui estão seus dados de login:\n📧 *E-mail:* ${email}\n🔑 *Senha:* ${password}\n\nAcesse a plataforma em:\n${siteUrl}/login\n\nDica: você pode trocar sua senha a qualquer momento em Perfil depois de entrar. No primeiro acesso, responda o quiz de estilo — ele personaliza toda a sua experiência.`;
+    if (createdNow && linkAcesso) {
+      // Sem senha na mensagem: só o link, que expira. O WhatsApp passa por um
+      // terceiro (UAZAPI) e fica para sempre no histórico dos dois lados.
+      const whatsMsg = `Olá, *${name}*! Seu acesso ao *Manual Prático do Outfit* chegou! 🎉\n\nSua compra foi aprovada. Clique no link abaixo para criar sua senha e entrar:\n${linkAcesso}\n\n📧 Seu e-mail de acesso: ${email}\n\nO link é pessoal e vale por 24 horas. Se expirar, use "Esqueci minha senha" em ${siteUrl}/login.\n\nNo primeiro acesso, responda o quiz de estilo — ele personaliza toda a sua experiência.`;
       whatsResult = await sendWhatsApp(phone, whatsMsg);
     } else if (bonusLabels.length > 0) {
       const whatsMsg = `Olá, *${existingProfile?.name ?? name}*! Bônus liberado na sua conta! 🔓\n\nSua compra foi aprovada e os bônus abaixo já estão desbloqueados na sua conta:\n*${bonusLabels.join(", ")}*\n\nVer meus bônus em:\n${siteUrl}/bonus`;
       whatsResult = await sendWhatsApp(phone, whatsMsg);
     }
   }
+
+  /* O acesso foi liberado. Se o e-mail não saiu, o cliente pagou e não sabe
+   * como entrar — isso precisa chegar em você antes de virar reclamação. */
+  if (createdNow && !emailResult.sent) {
+    await alertaAdmin(
+      `${email} (${name}) comprou e o acesso foi liberado, mas o E-MAIL NÃO SAIU: ` +
+        `${emailResult.reason ?? "motivo desconhecido"}. ` +
+        `Mande o link de acesso à mão — a pessoa não consegue entrar sem ele.`,
+      { severidade: "critico" }
+    );
+  }
+
+  // Só agora o evento vira 'processed'. Se tivesse sido marcado antes, uma
+  // falha no meio bloquearia a retentativa da Cakto pela idempotência.
+  await admin
+    .from("webhook_events")
+    .update({ status: "processed", error_message: null })
+    .eq("provider", "cakto")
+    .eq("event_id", eventId);
 
   return NextResponse.json({
     ok: true,
