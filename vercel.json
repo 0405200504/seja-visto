@@ -2,8 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
+      "_comentario": "Plano Hobby da Vercel só permite cron diário. No Pro, troque para '*/15 * * * *' para pegar problema em 15 min em vez de 24h. Os alertas urgentes (webhook falhou, IA fora do ar, venda sem acesso) já disparam na hora, direto do código — este cron é a rede de segurança para o que ninguém acionou.",
       "path": "/api/cron/vigia",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 12 * * *"
     }
   ]
 }
