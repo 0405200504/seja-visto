@@ -565,8 +565,16 @@ export async function POST(request: Request) {
     .select("entitlement, expires_at")
     .eq("user_id", userId);
 
-  // Libera acesso base + tudo que foi comprado (produto e order bumps)
-  const grants = Array.from(new Set([BASE_ENTITLEMENT, ...entitlements])).map((key) => {
+  /* Libera exatamente o que foi comprado.
+   *
+   * Antes o código forçava BASE_ENTITLEMENT em TODA compra. Como cada bônus
+   * também é vendido avulso, quem comprasse só o "Grupo no WhatsApp" por
+   * R$ 17 levava o MPO inteiro junto — e vitalício, porque a compra do bônus
+   * não traz validade. Ou seja, saía mais barato que a assinatura mensal.
+   *
+   * O pacote "economize-58" continua liberando tudo: a expansão dele já
+   * incluiu 'base' na lista acima. */
+  const grants = Array.from(new Set(entitlements)).map((key) => {
     const mapItem = mappings.find((m) => m.entitlement === key);
     const validityDays = mapItem?.validity_days;
     let expiresAt: string | null = null;
@@ -588,9 +596,29 @@ export async function POST(request: Request) {
     };
   });
 
-  const { error: grantError } = await admin
-    .from("user_entitlements")
-    .upsert(grants, { onConflict: "user_id,entitlement" });
+  /* Compra só de bônus ou de tokens, de alguém que ainda não tem o MPO.
+   * Não liberamos o acesso principal de graça, mas a pessoa também não
+   * consegue ver o que comprou — isso precisa de decisão humana. */
+  if (!entitlements.includes(BASE_ENTITLEMENT)) {
+    const temBase = currentEntitlements?.some(
+      (c) =>
+        c.entitlement === BASE_ENTITLEMENT &&
+        (!c.expires_at || new Date(c.expires_at) > new Date())
+    );
+    if (!temBase) {
+      const oQue = entitlements.length ? entitlements.join(", ") : `${tokenCredits} tokens`;
+      await alertaAdmin(
+        `${email} comprou "${oQue}" mas NÃO tem o MPO ativo.\n` +
+          `O item foi creditado, mas a pessoa não consegue entrar na plataforma ` +
+          `para usar. Fale com ela: ou ela assina o MPO, ou você reembolsa.`,
+        { severidade: "critico" }
+      );
+    }
+  }
+
+  const { error: grantError } = grants.length
+    ? await admin.from("user_entitlements").upsert(grants, { onConflict: "user_id,entitlement" })
+    : { error: null }; // compra só de tokens não gera entitlement
 
   if (grantError) {
     await marcarFalha(`Falha ao liberar acesso: ${grantError.message}`);
