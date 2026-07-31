@@ -1,5 +1,6 @@
 import {
   Webhook,
+  Siren,
   LayoutDashboard,
   Users,
   Tags,
@@ -43,7 +44,10 @@ export type AdminNavSection = {
 export const ADMIN_NAV: AdminNavSection[] = [
   {
     label: "Visão geral",
-    items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard, badge: "atencao" }],
+    items: [
+      { href: "/admin", label: "Dashboard", icon: LayoutDashboard, badge: "atencao" },
+      { href: "/admin/alertas", label: "Alertas", icon: Siren, badge: "alertas_criticos" },
+    ],
   },
   {
     label: "Pessoas",

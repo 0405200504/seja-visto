@@ -1,0 +1,62 @@
+name: CI
+
+# Bloqueia merge com segredo vazado, teste quebrado ou lint falhando.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  segredos-no-historico:
+    name: gitleaks (histórico do git)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Histórico completo: um segredo commitado e removido depois
+          # continua sendo um segredo vazado.
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  testes:
+    name: lint + testes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+  segredos-no-bundle:
+    name: check:secrets (bundle do navegador)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: build + varredura
+        # Os segredos entram como env para o scan por VALOR REAL rodar —
+        # é ele que pega vazamento sem depender do formato da chave.
+        # Placeholders nas públicas: sem elas o build do Next falha.
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://exemplo.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_ci_placeholder_0000000000
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CAKTO_WEBHOOK_SECRET: ${{ secrets.CAKTO_WEBHOOK_SECRET }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          UAZAPI_TOKEN: ${{ secrets.UAZAPI_TOKEN }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: npm run check:secrets

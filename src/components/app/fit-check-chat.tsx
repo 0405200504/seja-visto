@@ -388,6 +388,11 @@ export function FitCheckChat() {
     setError(null);
     setLoading(true);
 
+    /* Chave de idempotência: um id por ENVIO. Se a mesma requisição chegar
+     * duas vezes (clique duplo, retry da rede), o servidor reconhece o id e
+     * devolve a resposta que já deu, em vez de cobrar outro token. */
+    const requestId = crypto.randomUUID();
+
     try {
       const res = await fetch("/api/fit-check", {
         method: "POST",
@@ -397,6 +402,7 @@ export function FitCheckChat() {
           image: image?.full,
           thumb: image?.thumb,
           conversationId,
+          requestId,
         }),
       });
       const data = await res.json();

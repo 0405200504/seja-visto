@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getPeriod } from "@/lib/admin/period-server";
 import { getSetting, FIT_CHECK_DEFAULTS, type FitCheckSettings } from "@/lib/admin/settings";
 import { brl, num } from "@/lib/admin/format";
-import { AutosaveForm, AutosaveInput, AutosaveTextarea } from "@/components/admin/ui/autosave";
+import { AutosaveForm, AutosaveInput, AutosaveSelect, AutosaveTextarea } from "@/components/admin/ui/autosave";
 import { saveSettingFieldAction } from "@/app/actions/admin/system";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +55,29 @@ export default async function FitCheckAdminPage() {
       </div>
 
       <AutosaveForm action={saveField} className="space-y-4">
+        {/* Interruptor de emergência. Fica no topo e sozinho de propósito: é o
+            que você procura quando algo está queimando dinheiro e você ainda
+            não sabe a causa. */}
+        <section className="space-y-3 rounded-xl border border-border bg-surface p-4">
+          <h2 className="text-sm font-semibold text-foreground">Chave geral do Fit Check</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <AutosaveSelect
+              name="ai_enabled"
+              label="Consultor de IA"
+              initial={settings.ai_enabled === false ? "nao" : "sim"}
+              options={[
+                { value: "sim", label: "Ligado — atendendo normalmente" },
+                { value: "nao", label: "DESLIGADO — ninguém consegue usar" },
+              ]}
+            />
+          </div>
+          <p className="text-xs leading-relaxed text-muted">
+            Desligar corta toda chamada à OpenAI e mostra uma mensagem amigável ao aluno.
+            Você (admin) continua usando normalmente, para conseguir testar. Leva até 1
+            minuto para valer em todos os servidores.
+          </p>
+        </section>
+
         <section className="space-y-3 rounded-xl border border-border bg-surface p-4">
           <h2 className="text-sm font-semibold text-foreground">Modelo e limites</h2>
           <div className="grid grid-cols-2 gap-3">
@@ -77,6 +100,13 @@ export default async function FitCheckAdminPage() {
               label="Limite diário de mensagens de texto"
               initial={String(settings.daily_text_limit)}
               validate={(v) => (parseInt(v, 10) > 0 ? null : "Número inválido.")}
+            />
+            <AutosaveInput
+              name="daily_budget_reais"
+              label="Teto de gasto do DIA (R$)"
+              initial={String(settings.daily_budget_reais)}
+              hint="Limita o tamanho de um dia ruim. Em dia de lançamento, suba antes — se estourar, o Fit Check para para todo mundo. 0 desliga a trava."
+              validate={(v) => (Number.isFinite(parseFloat(v)) ? null : "Número inválido.")}
             />
             <AutosaveInput
               name="monthly_budget_reais"

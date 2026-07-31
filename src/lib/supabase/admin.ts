@@ -1,18 +1,17 @@
+import "server-only";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { serverEnv } from "@/env.server";
 
 /**
  * Client administrativo (service role) — SOMENTE para uso no servidor
  * (webhooks e rotinas internas). Ignora RLS.
+ *
+ * O "server-only" acima faz o build falhar se este módulo for importado de
+ * um componente "use client": a service role dá acesso total ao banco, e
+ * embutida no bundle seria o pior vazamento possível do projeto.
  */
 export function createAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url || !serviceKey) {
-    throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY e NEXT_PUBLIC_SUPABASE_URL precisam estar configuradas."
-    );
-  }
+  const { NEXT_PUBLIC_SUPABASE_URL: url, SUPABASE_SERVICE_ROLE_KEY: serviceKey } = serverEnv();
 
   return createSupabaseClient(url, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },

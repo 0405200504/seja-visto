@@ -1,0 +1,27 @@
+#!/bin/sh
+# Impede push com segredo no bundle ou no diff.
+# Instale com: git config core.hooksPath .githooks
+
+set -e
+echo "[pre-push] varrendo segredos..."
+
+# 1) Segredo no bundle. Usa o build existente se houver; se não, avisa.
+if [ -d .next/static ]; then
+  node scripts/check-secrets.mjs .next || {
+    echo "[pre-push] BLOQUEADO: segredo no bundle. Corrija antes do push."
+    exit 1
+  }
+else
+  echo "[pre-push] .next ausente — rode 'npm run check:secrets' para a varredura completa."
+fi
+
+# 2) Segredo sendo introduzido agora, nos commits que vão subir.
+if git diff --cached --quiet 2>/dev/null; then :; fi
+PADRAO='sk-proj-[A-Za-z0-9_-]\{20\}\|sb_secret_[A-Za-z0-9_-]\{10\}\|re_[A-Za-z0-9]\{20\}'
+if git diff origin/main...HEAD 2>/dev/null | grep -q "$PADRAO"; then
+  echo "[pre-push] BLOQUEADO: os commits deste push contêm algo com formato de chave secreta."
+  echo "           Confira com: git diff origin/main...HEAD | grep -nE 'sk-proj-|sb_secret_|re_'"
+  exit 1
+fi
+
+echo "[pre-push] ok, nenhum segredo encontrado."

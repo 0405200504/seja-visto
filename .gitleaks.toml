@@ -1,0 +1,44 @@
+# Configuração do gitleaks para o MPO.
+# Estende as regras padrão e acrescenta os formatos que este projeto usa.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "supabase-secret-key"
+description = "Chave secreta / service role do Supabase (formato novo)"
+regex = '''sb_secret_[A-Za-z0-9_-]{20,}'''
+keywords = ["sb_secret_"]
+
+[[rules]]
+id = "supabase-service-role-jwt"
+description = "Service role do Supabase no formato JWT antigo"
+regex = '''eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'''
+keywords = ["eyJ"]
+
+[[rules]]
+id = "cakto-webhook-secret"
+description = "Segredo do webhook da Cakto atribuído no código"
+regex = '''(?i)cakto_webhook_secret\s*[=:]\s*['"][^'"\s]{12,}['"]'''
+keywords = ["cakto_webhook_secret"]
+
+[[rules]]
+id = "uazapi-token"
+description = "Token da UAZAPI atribuído no código"
+regex = '''(?i)uazapi_token\s*[=:]\s*['"][^'"\s]{12,}['"]'''
+keywords = ["uazapi_token"]
+
+[allowlist]
+description = "Falsos positivos conhecidos"
+paths = [
+  # Só nomes de variável e placeholders, sem valor real.
+  '''\.env\.local\.example$''',
+  '''\.gitleaks\.toml$''',
+  # O scanner precisa conter os PADRÕES para poder procurá-los.
+  '''scripts/check-secrets\.mjs$''',
+  # Migrações usam "service_role" como nome de ROLE do Postgres, não como chave.
+  '''supabase/migrations/.*\.sql$''',
+]
+regexes = [
+  '''sb_publishable_[A-Za-z0-9_-]+''', # publicável é público por definição
+]

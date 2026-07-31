@@ -182,6 +182,16 @@ export function FitUpload() {
                   />
                 </div>
 
+                {/* Quem envia para a comunidade precisa saber que a foto fica
+                    visível para os outros alunos. A análise do Fit Check é
+                    privada; esta aqui não é, e a diferença não é óbvia. */}
+                <p className="rounded-lg bg-surface-2 px-3 py-2 text-xs leading-relaxed text-muted">
+                  Depois de aprovada, esta foto fica visível para todos os alunos da
+                  plataforma. Se você quer só a análise de estilo, sem ninguém ver,
+                  use o <span className="font-medium text-foreground">Fit Check</span> —
+                  lá a foto é só sua.
+                </p>
+
                 {error && <p className="text-sm text-danger">{error}</p>}
 
                 <Button onClick={handleSubmit} disabled={!photo || sending} className="w-full">

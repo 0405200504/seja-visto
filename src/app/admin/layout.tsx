@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { signOut } from "@/app/actions/auth";
 import { getPeriod } from "@/lib/admin/period-server";
+import { contarAlertasCriticos } from "@/lib/admin/alertas";
 import { AdminSidebar, AdminContent, type SavedViewLink } from "@/components/admin/shell/admin-sidebar";
 import { AdminTopbar } from "@/components/admin/shell/admin-topbar";
 import { AdminShortcuts } from "@/components/admin/shell/admin-shortcuts";
@@ -18,7 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const now = new Date().toISOString();
 
   // Badges de pendências da sidebar + views salvas fixadas
-  const [fitsPendentes, acessosVencendo, looksSemImagem, viewsRes] = await Promise.all([
+  const [fitsPendentes, acessosVencendo, looksSemImagem, viewsRes, alertasCriticos] = await Promise.all([
     db.from("community_fits").select("*", { count: "exact", head: true }).eq("status", "pending"),
     db
       .from("user_entitlements")
@@ -37,12 +38,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .select("id, page, name, params")
       .eq("user_id", profile.user_id)
       .order("created_at"),
+    contarAlertasCriticos(),
   ]);
 
   const badges: Record<string, number> = {
     fits_pendentes: fitsPendentes.count ?? 0,
     acessos_vencendo: acessosVencendo.count ?? 0,
     looks_sem_imagem: looksSemImagem.count ?? 0,
+    alertas_criticos: alertasCriticos,
   };
 
   return (

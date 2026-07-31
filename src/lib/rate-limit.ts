@@ -1,3 +1,4 @@
+import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
@@ -39,4 +40,19 @@ export function ipDaRequisicao(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0].trim();
   return request.headers.get("x-real-ip") ?? "desconhecido";
+}
+
+/**
+ * IP dentro de uma Server Action, onde não existe objeto Request.
+ *
+ * Server Action não recebe a requisição como argumento, então sem isto os
+ * fluxos de login/cadastro/reset só conseguiam limitar por e-mail — e quem
+ * troca o e-mail a cada tentativa passava sem limite nenhum.
+ */
+export async function ipDoServerAction(): Promise<string> {
+  const { headers } = await import("next/headers");
+  const h = await headers();
+  const forwarded = h.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return h.get("x-real-ip") ?? "desconhecido";
 }

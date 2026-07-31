@@ -6,7 +6,7 @@ import { Loader2, Plus, Trash2 } from "lucide-react";
 import { removeTagEverywhereAction, saveTagCatalogAction } from "@/app/actions/admin/system";
 import { useToast } from "@/components/admin/ui/toast";
 import { useConfirm } from "@/components/admin/ui/confirm";
-import { TAG_COLORS } from "@/lib/admin/settings";
+import { TAG_COLORS } from "@/lib/admin/settings-shared";
 import { num } from "@/lib/admin/format";
 
 export function TagCatalogEditor({
