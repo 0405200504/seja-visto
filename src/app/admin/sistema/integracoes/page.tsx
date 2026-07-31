@@ -1,6 +1,8 @@
 import { CheckCircle2, XCircle } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { CopyButton } from "@/components/admin/copy-button";
+import { EmailTeste } from "@/components/admin/sistema/email-teste";
+import { cabecalhoDe, configSmtp, diagnosticoRemetente, dominioDe, remetente, replyTo } from "@/lib/email/config";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +23,13 @@ function StatusRow({ name, ok, detail }: { name: string; ok: boolean; detail: st
 }
 
 export default async function IntegracoesPage() {
-  await requireAdmin();
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.vercel.app").replace(/\/$/, "");
+  const { profile } = await requireAdmin();
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.com.br").replace(/\/$/, "");
   const webhookUrl = `${siteUrl}/api/webhooks/cakto`;
+
+  const de = remetente();
+  const smtp = configSmtp();
+  const envio = diagnosticoRemetente();
 
   const integracoes = [
     {
@@ -41,18 +47,25 @@ export default async function IntegracoesPage() {
         : "Falta OPENAI_API_KEY — o Fit Check não responde sem ela.",
     },
     {
-      name: "E-mail (Gmail SMTP)",
-      ok: !!process.env.GMAIL_USER && !!process.env.GMAIL_APP_PASSWORD,
-      detail: process.env.GMAIL_USER
-        ? `Enviando como ${process.env.GMAIL_USER}.`
-        : "Sem GMAIL_USER/GMAIL_APP_PASSWORD — e-mails de acesso caem no fallback (Resend).",
+      name: "E-mail — remetente",
+      ok: envio.pronto,
+      detail: `De: ${cabecalhoDe(de)} · Respostas para: ${replyTo()}. ${envio.detalhe}`,
     },
     {
-      name: "E-mail (Resend — fallback)",
+      name: "E-mail — SMTP do domínio",
+      ok: !!smtp && dominioDe(smtp.user) === dominioDe(de.email),
+      detail: smtp
+        ? dominioDe(smtp.user) === dominioDe(de.email)
+          ? `${smtp.host}:${smtp.port} (${smtp.secure ? "SSL/TLS" : "STARTTLS"}), autenticando como ${smtp.user}.`
+          : `Bloqueado: autentica como ${smtp.user}, mas assina como ${de.email}. Cadastre SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASSWORD/SMTP_SECURE do domínio.`
+        : "Sem SMTP_HOST/SMTP_USER/SMTP_PASSWORD — o envio depende do Resend.",
+    },
+    {
+      name: "E-mail (Resend — reserva)",
       ok: !!process.env.RESEND_API_KEY,
       detail: process.env.RESEND_API_KEY
-        ? "Configurado como reserva. Pendência conhecida: verificar o domínio no Resend para melhorar a entrega."
-        : "Sem RESEND_API_KEY. Opcional se o Gmail estiver ativo.",
+        ? `Configurado como reserva. Exige o domínio ${dominioDe(de.email)} verificado no painel do Resend (Domains → Add domain).`
+        : "Sem RESEND_API_KEY. Opcional se o SMTP do domínio estiver ativo.",
     },
     {
       name: "WhatsApp (UAZAPI)",
@@ -91,6 +104,31 @@ export default async function IntegracoesPage() {
           <StatusRow key={i.name} {...i} />
         ))}
       </ul>
+
+      {!envio.pronto && (
+        <div className="rounded-xl border border-danger/40 bg-danger/5 p-4">
+          <h2 className="text-sm font-semibold text-danger">E-mail de acesso parado</h2>
+          <p className="mt-1 text-xs leading-relaxed text-muted">
+            Enquanto isto não for resolvido, quem comprar recebe o acesso na plataforma mas
+            <strong> não recebe o e-mail com o link de senha</strong> — você é avisado por
+            WhatsApp/alerta e pode reenviar em Alunos → aluno → Reenviar e-mail de acesso.
+            Para resolver: cadastre o SMTP do domínio na Vercel ou verifique o domínio no Resend.
+          </p>
+        </div>
+      )}
+
+      <EmailTeste padrao={profile.email ?? ""} />
+
+      <div className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="text-sm font-semibold text-foreground">DNS do domínio</h2>
+        <p className="mt-1 text-xs leading-relaxed text-muted">
+          Para o e-mail chegar na caixa de entrada, o domínio {dominioDe(de.email)} precisa de
+          SPF, DKIM e DMARC publicados no DNS. Os valores exatos de SPF e DKIM vêm do provedor
+          que envia (Google Workspace, Zoho, Titan, Resend…). Depois de configurar, abra um
+          e-mail de teste no Gmail → menu de três pontos → “Exibir original” e confira se as
+          três linhas aparecem como PASS.
+        </p>
+      </div>
     </div>
   );
 }

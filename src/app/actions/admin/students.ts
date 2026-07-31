@@ -5,6 +5,8 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/admin/audit";
 import { ALL_ENTITLEMENT_KEYS, BONUSES } from "@/lib/bonuses";
+import { enviarEmailRegistrado } from "@/lib/email/envio";
+import { emailAcessoLiberado } from "@/lib/email/templates";
 
 type Result = { ok: boolean; message: string };
 
@@ -166,6 +168,69 @@ export async function addTokensAction(userId: string, amount: number): Promise<R
   revalidatePath("/admin/alunos");
   revalidatePath(`/admin/alunos/${userId}`);
   return { ok: true, message: `${amount > 0 ? "+" : ""}${amount} tokens · novo saldo: ${data}.` };
+}
+
+/**
+ * Reenvia o e-mail de acesso, com um link de senha novo.
+ *
+ * É a saída manual para quando o envio automático falhou (provedor fora do
+ * ar, caixa cheia, e-mail digitado errado e corrigido depois). Não cria
+ * conta, não mexe em acesso e não reaproveita link antigo.
+ *
+ * A chave de idempotência leva a hora do clique: o envio automático
+ * continua acontecendo uma única vez, e o reenvio manual — que é uma
+ * decisão sua — nunca fica travado por ela.
+ */
+export async function reenviarEmailAcessoAction(userId: string): Promise<Result> {
+  const { profile } = await requireAdmin();
+  const db = createAdminClient();
+
+  const { data: aluno } = await db
+    .from("users_profile")
+    .select("email, name")
+    .eq("user_id", userId)
+    .maybeSingle<{ email: string | null; name: string | null }>();
+
+  if (!aluno?.email) return { ok: false, message: "Este aluno não tem e-mail cadastrado." };
+
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const { data: link, error: linkErro } = await db.auth.admin.generateLink({
+    type: "recovery",
+    email: aluno.email,
+    options: { redirectTo: `${siteUrl}/nova-senha` },
+  });
+  const linkAcesso = link?.properties?.action_link;
+  if (!linkAcesso) {
+    return { ok: false, message: `Não consegui gerar o link de acesso: ${linkErro?.message ?? "erro desconhecido"}` };
+  }
+
+  const msg = emailAcessoLiberado({
+    nome: aluno.name ?? "aluno",
+    email: aluno.email,
+    linkAcesso,
+    siteUrl,
+  });
+  const envio = await enviarEmailRegistrado(
+    db,
+    { chave: `acesso:user:${userId}:manual:${Date.now()}`, tipo: "acesso", userId },
+    { para: aluno.email, assunto: msg.assunto, html: msg.html, texto: msg.texto }
+  );
+
+  await logAudit({
+    actorId: profile.user_id,
+    actorEmail: profile.email ?? null,
+    action: "aluno.reenviar_email_acesso",
+    entityType: "aluno",
+    entityId: userId,
+    entityLabel: aluno.name ?? aluno.email,
+    after: { enviado: envio.enviado, via: envio.via ?? null },
+  });
+
+  if (!envio.enviado) {
+    return { ok: false, message: `O e-mail não saiu: ${envio.motivo ?? "motivo desconhecido"}` };
+  }
+  revalidatePath(`/admin/alunos/${userId}`);
+  return { ok: true, message: `E-mail de acesso reenviado para ${aluno.email}.` };
 }
 
 export async function toggleAdminAction(userId: string, isAdmin: boolean): Promise<Result> {

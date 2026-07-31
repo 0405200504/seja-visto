@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthForm } from "@/components/app/auth-form";
+import { RecoverySession } from "@/components/app/recovery-session";
 import { updatePassword } from "@/app/actions/auth";
 
 export const metadata: Metadata = { title: "Nova senha" };
@@ -15,12 +16,16 @@ export default function NovaSenhaPage() {
         <CardDescription>Escolha uma nova senha para a sua conta.</CardDescription>
       </CardHeader>
       <CardContent>
-        <AuthForm action={updatePassword} submitLabel="Salvar nova senha">
-          <div className="space-y-2">
-            <Label htmlFor="password">Nova senha</Label>
-            <Input id="password" name="password" type="password" placeholder="Mínimo de 6 caracteres" required minLength={6} autoComplete="new-password" />
-          </div>
-        </AuthForm>
+        {/* O token do link de acesso chega no fragmento da URL e precisa
+            virar sessão antes do formulário ser útil. Ver o componente. */}
+        <RecoverySession>
+          <AuthForm action={updatePassword} submitLabel="Salvar nova senha">
+            <div className="space-y-2">
+              <Label htmlFor="password">Nova senha</Label>
+              <Input id="password" name="password" type="password" placeholder="Mínimo de 6 caracteres" required minLength={6} autoComplete="new-password" />
+            </div>
+          </AuthForm>
+        </RecoverySession>
       </CardContent>
     </Card>
   );

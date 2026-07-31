@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { KeyRound, Loader2, MinusCircle, Sparkles } from "lucide-react";
+import { KeyRound, Loader2, Mail, MinusCircle, Sparkles } from "lucide-react";
 import {
   addTokensAction,
   grantEntitlementAction,
+  reenviarEmailAcessoAction,
   revokeEntitlementAction,
 } from "@/app/actions/admin/students";
 import { useToast } from "@/components/admin/ui/toast";
@@ -126,6 +127,30 @@ export function StudentQuickActions({
             className="h-8 rounded-lg bg-surface-3 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-border disabled:opacity-50"
           >
             {busy === "tokens" ? <Loader2 className="size-3.5 animate-spin" /> : "Adicionar"}
+          </button>
+        </div>
+      </div>
+
+      {/* e-mail de acesso */}
+      <div className="rounded-xl border border-border bg-surface-2 p-3">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-2">E-mail de acesso</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            disabled={busy !== null}
+            onClick={async () => {
+              const ok = await confirm({
+                title: "Reenviar o e-mail de acesso?",
+                message:
+                  "O aluno recebe um link novo para criar a senha. O link anterior deixa de valer. Use quando o e-mail automático não chegou.",
+                confirmLabel: "Reenviar",
+              });
+              if (!ok) return;
+              run("email", () => reenviarEmailAcessoAction(userId));
+            }}
+            className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-surface px-3 text-xs font-semibold text-foreground transition-colors hover:border-accent/50 disabled:opacity-50"
+          >
+            {busy === "email" ? <Loader2 className="size-3.5 animate-spin" /> : <Mail className="size-3.5" />}
+            Reenviar e-mail de acesso
           </button>
         </div>
       </div>

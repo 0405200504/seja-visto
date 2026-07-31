@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
-import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { chaveAcesso, chaveBonus, enviarEmailRegistrado } from "@/lib/email/envio";
+import { emailAcessoLiberado, emailBonusLiberado } from "@/lib/email/templates";
 import { BASE_ENTITLEMENT, BONUSES } from "@/lib/bonuses";
 import {
   getSetting,
@@ -64,61 +65,6 @@ function segredoConfere(recebido: string | null | undefined, esperado: string): 
   return timingSafeEqual(a, b);
 }
 
-async function sendEmail(to: string, subject: string, html: string) {
-  const gmailUser = process.env.GMAIL_USER;
-  const gmailPass = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, "");
-
-  // Caminho principal: SMTP do Gmail (sem depender de domínio verificado)
-  if (gmailUser && gmailPass) {
-    try {
-      const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: { user: gmailUser, pass: gmailPass },
-      });
-      await transporter.sendMail({
-        from: process.env.EMAIL_FROM ?? `Manual Prático do Outfit <${gmailUser}>`,
-        to,
-        subject,
-        html,
-      });
-      return { sent: true, via: "gmail" };
-    } catch (err) {
-      const reason = err instanceof Error ? err.message : String(err);
-      const fallback = await sendViaResend(to, subject, html);
-      return fallback.sent ? { ...fallback, gmailError: reason } : { sent: false, reason };
-    }
-  }
-
-  return sendViaResend(to, subject, html);
-}
-
-async function sendViaResend(to: string, subject: string, html: string) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return { sent: false, reason: "GMAIL_APP_PASSWORD e RESEND_API_KEY ausentes" };
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: process.env.RESEND_FROM ?? "Manual Prático do Outfit <onboarding@resend.dev>",
-      to: [to],
-      subject,
-      html,
-      ...(process.env.EMAIL_REPLY_TO ? { reply_to: process.env.EMAIL_REPLY_TO } : {}),
-    }),
-  });
-
-  if (!res.ok) {
-    return { sent: false, reason: `Resend ${res.status}: ${(await res.text()).slice(0, 200)}` };
-  }
-  return { sent: true, via: "resend" };
-}
-
 async function sendWhatsApp(number: string, text: string) {
   const apiUrl = process.env.UAZAPI_URL;
   const token = process.env.UAZAPI_TOKEN;
@@ -159,67 +105,6 @@ async function sendWhatsApp(number: string, text: string) {
   } catch (err) {
     return { sent: false, reason: err instanceof Error ? err.message : String(err) };
   }
-}
-
-function emailLayout(content: string, siteUrl: string): string {
-  return `
-  <div style="background:#06080c;padding:32px 16px;font-family:Arial,Helvetica,sans-serif">
-    <div style="max-width:520px;margin:0 auto;background:#0c111a;border:1px solid #1e2938;border-radius:16px;padding:32px">
-      <div style="margin-bottom:24px">
-        <img src="${siteUrl}/logo-mpo-192.png" alt="MPO" width="34" height="34" style="border-radius:8px;vertical-align:middle" />
-        <span style="color:#f4f6f9;font-size:15px;font-weight:bold;margin-left:8px;vertical-align:middle">Manual Prático do Outfit</span>
-      </div>
-      ${content}
-      <p style="color:#5c677a;font-size:12px;margin-top:28px;border-top:1px solid #1e2938;padding-top:16px">
-        Você recebeu este e-mail porque realizou uma compra do Manual Prático do Outfit.
-      </p>
-    </div>
-  </div>`;
-}
-
-function welcomeEmail(name: string, email: string, linkAcesso: string, siteUrl: string): string {
-  const firstName = name.split(" ")[0] || "aluno";
-  return emailLayout(
-    `
-    <h1 style="color:#f4f6f9;font-size:22px;margin:0 0 12px">Bem-vindo, ${firstName}! 🎉</h1>
-    <p style="color:#8b96a8;font-size:14px;line-height:1.6;margin:0 0 20px">
-      Sua compra foi aprovada e seu acesso já está liberado. Clique no botão
-      abaixo para criar sua senha e entrar na plataforma.
-    </p>
-    <div style="background:#121924;border:1px solid #1e2938;border-radius:12px;padding:16px 20px;margin-bottom:20px">
-      <p style="color:#8b96a8;font-size:12px;margin:0 0 4px">Seu e-mail de acesso</p>
-      <p style="color:#f4f6f9;font-size:15px;font-weight:bold;margin:0">${email}</p>
-    </div>
-    <a href="${linkAcesso}" style="display:block;background:#2f6bff;color:#fff;text-decoration:none;text-align:center;font-weight:bold;font-size:15px;border-radius:12px;padding:14px">
-      Criar minha senha e entrar
-    </a>
-    <p style="color:#5c677a;font-size:12px;line-height:1.6;margin:14px 0 0">
-      Este link é pessoal e vale por 24 horas. Se expirar, use "Esqueci minha senha"
-      na tela de login com o e-mail acima.
-    </p>
-    <p style="color:#8b96a8;font-size:13px;line-height:1.6;margin:20px 0 0">
-      No primeiro acesso, responda o quiz de estilo — ele personaliza toda a sua experiência.
-    </p>
-  `,
-    siteUrl
-  );
-}
-
-function bonusEmail(name: string, bonusLabel: string, siteUrl: string): string {
-  const firstName = name.split(" ")[0] || "aluno";
-  return emailLayout(
-    `
-    <h1 style="color:#f4f6f9;font-size:22px;margin:0 0 12px">Bônus liberado, ${firstName}! 🔓</h1>
-    <p style="color:#8b96a8;font-size:14px;line-height:1.6;margin:0 0 20px">
-      Sua compra foi aprovada e o bônus <strong style="color:#f4f6f9">${bonusLabel}</strong>
-      já está desbloqueado na sua conta.
-    </p>
-    <a href="${siteUrl}/bonus" style="display:block;background:#2f6bff;color:#fff;text-decoration:none;text-align:center;font-weight:bold;font-size:15px;border-radius:12px;padding:14px">
-      Ver meus bônus
-    </a>
-  `,
-    siteUrl
-  );
 }
 
 export async function POST(request: Request) {
@@ -279,7 +164,17 @@ export async function POST(request: Request) {
   const email = customer.email?.trim().toLowerCase();
   const name = customer.name?.trim() || "Aluno";
 
+  /* Sem e-mail não dá para criar conta nem mandar o link de acesso. Nada é
+   * liberado e nenhuma conta é criada — mas alguém pagou, então isto precisa
+   * chegar em você agora, não virar reclamação depois. */
   if (!email) {
+    await alertaAdmin(
+      `Chegou um evento "${event}" da Cakto SEM o e-mail do comprador ` +
+        `(cliente: ${customer.name || "sem nome"}, telefone: ${customer.phone ?? "não informado"}). ` +
+        `Nada foi liberado. Pegue o e-mail na Cakto e cadastre à mão em /admin/alunos.`,
+      // A Cakto vai reenviar este evento; a chave evita um alerta por tentativa.
+      { severidade: "critico", chave: `sem-email:${customer.phone ?? customer.name ?? "?"}` }
+    );
     return NextResponse.json({ error: "E-mail do cliente ausente" }, { status: 400 });
   }
 
@@ -739,21 +634,31 @@ export async function POST(request: Request) {
     .filter((m) => m.entitlement !== BASE_ENTITLEMENT && parseTokenGrant(m.entitlement) === null)
     .map((m) => m.label ?? m.entitlement);
 
-  let emailResult: { sent: boolean; reason?: string };
+  /* O envio só acontece aqui, no fim: pagamento aprovado, conta criada,
+   * acesso liberado e link em mãos. E passa pelo registro em `email_sends`,
+   * que impede uma segunda entrega do mesmo evento de mandar uma segunda
+   * cópia — e permite nova tentativa se este envio falhar. */
+  let emailResult: { enviado: boolean; motivo?: string; duplicado?: boolean };
   if (createdNow && linkAcesso) {
-    emailResult = await sendEmail(
-      email,
-      "Seu acesso ao Manual Prático do Outfit chegou 🎉",
-      welcomeEmail(name, email, linkAcesso, siteUrl)
+    const msg = emailAcessoLiberado({ nome: name, email, linkAcesso, siteUrl });
+    emailResult = await enviarEmailRegistrado(
+      admin,
+      { chave: chaveAcesso(userId!), tipo: "acesso", userId },
+      { para: email, assunto: msg.assunto, html: msg.html, texto: msg.texto }
     );
   } else if (bonusLabels.length > 0) {
-    emailResult = await sendEmail(
-      email,
-      "Bônus liberado na sua conta 🔓",
-      bonusEmail(existingProfile?.name ?? name, bonusLabels.join(", "), siteUrl)
+    const msg = emailBonusLiberado({
+      nome: existingProfile?.name ?? name,
+      bonus: bonusLabels.join(", "),
+      siteUrl,
+    });
+    emailResult = await enviarEmailRegistrado(
+      admin,
+      { chave: chaveBonus(eventId), tipo: "bonus", userId },
+      { para: email, assunto: msg.assunto, html: msg.html, texto: msg.texto }
     );
   } else {
-    emailResult = { sent: false, reason: "usuário já existia; sem bônus novo" };
+    emailResult = { enviado: false, motivo: "usuário já existia; sem bônus novo" };
   }
 
   // Disparo do WhatsApp se houver telefone do cliente
@@ -764,7 +669,7 @@ export async function POST(request: Request) {
     if (createdNow && linkAcesso) {
       // Sem senha na mensagem: só o link, que expira. O WhatsApp passa por um
       // terceiro (UAZAPI) e fica para sempre no histórico dos dois lados.
-      const whatsMsg = `Olá, *${name}*! Seu acesso ao *Manual Prático do Outfit* chegou! 🎉\n\nSua compra foi aprovada. Clique no link abaixo para criar sua senha e entrar:\n${linkAcesso}\n\n📧 Seu e-mail de acesso: ${email}\n\nO link é pessoal e vale por 24 horas. Se expirar, use "Esqueci minha senha" em ${siteUrl}/login.\n\nNo primeiro acesso, responda o quiz de estilo — ele personaliza toda a sua experiência.`;
+      const whatsMsg = `Olá, *${name}*! Seu acesso ao *Manual Prático do Outfit* chegou! 🎉\n\nSua compra foi aprovada. Clique no link abaixo para criar sua senha e entrar:\n${linkAcesso}\n\n📧 Seu e-mail de acesso: ${email}\n\nO link é pessoal e fica disponível por tempo limitado. Se expirar, use "Esqueci minha senha" em ${siteUrl}/login.\n\nNo primeiro acesso, responda o quiz de estilo — ele personaliza toda a sua experiência.`;
       whatsResult = await sendWhatsApp(phone, whatsMsg);
     } else if (bonusLabels.length > 0) {
       const whatsMsg = `Olá, *${existingProfile?.name ?? name}*! Bônus liberado na sua conta! 🔓\n\nSua compra foi aprovada e os bônus abaixo já estão desbloqueados na sua conta:\n*${bonusLabels.join(", ")}*\n\nVer meus bônus em:\n${siteUrl}/bonus`;
@@ -774,11 +679,12 @@ export async function POST(request: Request) {
 
   /* O acesso foi liberado. Se o e-mail não saiu, o cliente pagou e não sabe
    * como entrar — isso precisa chegar em você antes de virar reclamação. */
-  if (createdNow && !emailResult.sent) {
+  if (createdNow && !emailResult.enviado) {
     await alertaAdmin(
       `${email} (${name}) comprou e o acesso foi liberado, mas o E-MAIL NÃO SAIU: ` +
-        `${emailResult.reason ?? "motivo desconhecido"}. ` +
-        `Mande o link de acesso à mão — a pessoa não consegue entrar sem ele.`,
+        `${emailResult.motivo ?? "motivo desconhecido"}. ` +
+        `Mande o link de acesso à mão — a pessoa não consegue entrar sem ele. ` +
+        `Você pode reenviar em /admin/alunos.`,
       { severidade: "critico" }
     );
   }

@@ -1,9 +1,12 @@
+import "server-only";
+import { enviarEmail } from "@/lib/email/mailer";
 /**
  * Alerta operacional para o administrador.
  *
  * Usa os canais que o projeto já tem configurados (WhatsApp via UAZAPI e
- * e-mail via Resend). Nunca lança exceção: um alerta que falha não pode
- * derrubar a liberação de acesso de um cliente que acabou de pagar.
+ * e-mail pelo transporte de lib/email/mailer). Nunca lança exceção: um
+ * alerta que falha não pode derrubar a liberação de acesso de um cliente
+ * que acabou de pagar.
  */
 
 type Severidade = "aviso" | "critico";
@@ -31,7 +34,7 @@ export async function alertaAdmin(
 
   if (chave && jaAvisado(chave)) return;
 
-  await Promise.allSettled([enviarWhatsApp(texto), enviarEmail(prefixo, mensagem)]);
+  await Promise.allSettled([enviarWhatsApp(texto), enviarEmailDeAlerta(prefixo, mensagem)]);
 }
 
 async function enviarWhatsApp(texto: string): Promise<void> {
@@ -52,25 +55,21 @@ async function enviarWhatsApp(texto: string): Promise<void> {
   }
 }
 
-async function enviarEmail(assunto: string, corpo: string): Promise<void> {
-  const apiKey = process.env.RESEND_API_KEY;
+async function enviarEmailDeAlerta(assunto: string, corpo: string): Promise<void> {
   const destino = process.env.ADMIN_EMAIL ?? process.env.EMAIL_REPLY_TO;
-  if (!apiKey || !destino) return;
+  if (!destino) return;
 
   try {
-    await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: process.env.RESEND_FROM ?? "MPO Alertas <onboarding@resend.dev>",
-        to: [destino],
-        subject: assunto,
-        text: corpo,
-      }),
-      signal: AbortSignal.timeout(5000),
+    // Mesmo remetente dos e-mails do aluno (ver lib/email/config.ts): um só
+    // domínio assinando tudo, em vez do "onboarding@resend.dev" de antes.
+    await enviarEmail({
+      para: destino,
+      assunto,
+      texto: corpo,
+      html: `<p style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;white-space:pre-wrap">${corpo
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")}</p>`,
     });
   } catch {
     // idem

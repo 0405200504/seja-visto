@@ -5,6 +5,10 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/admin/audit";
 import { getSetting, setSetting } from "@/lib/admin/settings";
+import { checarRateLimit } from "@/lib/rate-limit";
+import { diagnosticoRemetente } from "@/lib/email/config";
+import { enviarEmailRegistrado } from "@/lib/email/envio";
+import { emailTeste } from "@/lib/email/templates";
 
 type Result = { ok: boolean; message: string };
 
@@ -12,14 +16,20 @@ type Result = { ok: boolean; message: string };
 export async function saveSettingFieldAction(key: string, field: string, value: string): Promise<Result> {
   const { profile } = await requireAdmin();
   const allowed: Record<string, Set<string>> = {
-    fit_check: new Set(["model", "model_text", "max_output_tokens", "free_credits", "daily_text_limit", "prompt_extra", "system_prompt_override", "token_price_per_1k_cents", "monthly_budget_reais"]),
+    fit_check: new Set(["model", "model_text", "max_output_tokens", "free_credits", "daily_text_limit", "prompt_extra", "system_prompt_override", "token_price_per_1k_cents", "monthly_budget_reais", "daily_budget_reais", "ai_enabled"]),
     gateway: new Set(["fee_percent", "fee_fixed_cents"]),
   };
   if (!allowed[key]?.has(field)) return { ok: false, message: "Configuração desconhecida." };
 
   const current = await getSetting<Record<string, unknown>>(key, {});
-  const numeric = ["max_output_tokens", "free_credits", "daily_text_limit", "token_price_per_1k_cents", "fee_fixed_cents", "fee_percent", "monthly_budget_reais"];
-  const parsed = numeric.includes(field) ? parseFloat(value.replace(",", ".")) : value;
+  const numeric = ["max_output_tokens", "free_credits", "daily_text_limit", "token_price_per_1k_cents", "fee_fixed_cents", "fee_percent", "monthly_budget_reais", "daily_budget_reais"];
+  // O kill switch chega como "sim"/"nao" do select e é gravado como booleano —
+  // a rota do Fit Check compara com `=== false`.
+  const parsed = field === "ai_enabled"
+    ? value === "sim"
+    : numeric.includes(field)
+      ? parseFloat(value.replace(",", "."))
+      : value;
   if (numeric.includes(field) && !Number.isFinite(parsed)) return { ok: false, message: "Valor numérico inválido." };
 
   const next = { ...current, [field]: parsed };
@@ -82,6 +92,54 @@ export async function removeTagEverywhereAction(name: string): Promise<Result> {
   revalidatePath("/admin/segmentos");
   revalidatePath("/admin/alunos");
   return { ok: true, message: `Tag "${name}" removida de ${(students ?? []).length} alunos.` };
+}
+
+/* ---------- E-mail ---------- */
+
+/**
+ * Envio de teste para um endereço escolhido na hora.
+ *
+ * Usa o MESMO remetente, reply-to, layout e transporte do e-mail de acesso
+ * — é o único jeito de conferir SPF/DKIM/DMARC e a aparência no celular sem
+ * esperar uma venda de verdade. O link do botão aponta para o /login, não
+ * para um link de senha real: nada de credencial num teste.
+ *
+ * Só admin, com rate limit: o painel não vira um canhão de spam se a sessão
+ * de alguém for roubada.
+ */
+export async function enviarEmailTesteAction(para: string): Promise<Result> {
+  const { profile } = await requireAdmin();
+  const destino = para.trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(destino)) {
+    return { ok: false, message: "Informe um e-mail válido para o teste." };
+  }
+
+  if (!(await checarRateLimit(`email-teste:${profile.user_id}`, 10, 3600))) {
+    return { ok: false, message: "Muitos testes seguidos. Tente de novo daqui a pouco." };
+  }
+
+  const diagnostico = diagnosticoRemetente();
+  if (!diagnostico.pronto) {
+    return { ok: false, message: `Envio não configurado. ${diagnostico.detalhe}` };
+  }
+
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const msg = emailTeste({ siteUrl, para: destino });
+
+  const envio = await enviarEmailRegistrado(
+    createAdminClient(),
+    { chave: `teste:${destino}:${Date.now()}`, tipo: "teste", userId: profile.user_id },
+    { para: destino, assunto: msg.assunto, html: msg.html, texto: msg.texto }
+  );
+
+  await logAudit({
+    actorId: profile.user_id, actorEmail: profile.email ?? null,
+    action: "config.email_teste", entityType: "config", entityId: "email",
+    entityLabel: destino, after: { enviado: envio.enviado, via: envio.via ?? null },
+  });
+
+  if (!envio.enviado) return { ok: false, message: `Não saiu: ${envio.motivo ?? "motivo desconhecido"}` };
+  return { ok: true, message: `E-mail de teste enviado para ${destino} (via ${envio.via}).` };
 }
 
 /* ---------- Lixeira ---------- */

@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import nodemailer from "nodemailer";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/admin/audit";
+import { chaveAcesso, enviarEmailRegistrado } from "@/lib/email/envio";
+import { emailAcessoLiberado } from "@/lib/email/templates";
 import { paramsFromQueryString, toCsv } from "@/lib/admin/list";
 import { fetchSales } from "@/lib/admin/queries/sales";
 import { ALL_ENTITLEMENT_KEYS } from "@/lib/bonuses";
@@ -146,9 +147,12 @@ export async function createManualSaleAction2(input: {
   let createdAccount = false;
 
   if (!userId) {
+    /* Senha interna aleatória: a conta não nasce sem senha, mas ninguém
+     * conhece esta — nem ela sai daqui. O aluno define a dele pelo link do
+     * e-mail de acesso, igual ao fluxo do webhook da Cakto. */
     const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
     let password = "estilo-";
-    const bytes = crypto.getRandomValues(new Uint8Array(8));
+    const bytes = crypto.getRandomValues(new Uint8Array(24));
     for (const b of bytes) password += alphabet[b % alphabet.length];
 
     const { data: created, error: createError } = await db.auth.admin.createUser({
@@ -163,40 +167,25 @@ export async function createManualSaleAction2(input: {
     userId = created.user.id;
     createdAccount = true;
 
-    const gmailUser = process.env.GMAIL_USER;
-    const gmailPass = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, "");
-    if (gmailUser && gmailPass) {
-      try {
-        const transporter = nodemailer.createTransport({
-          host: "smtp.gmail.com", port: 465, secure: true,
-          auth: { user: gmailUser, pass: gmailPass },
-        });
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.vercel.app";
-        await transporter.sendMail({
-          from: process.env.EMAIL_FROM ?? `Manual Prático do Outfit <${gmailUser}>`,
-          to: email,
-          subject: "Bem-vindo ao Manual Prático do Outfit! 🎉",
-          html: `
-            <div style="background:#06080c;padding:32px 16px;font-family:Arial,Helvetica,sans-serif">
-              <div style="max-width:520px;margin:0 auto;background:#0c111a;border:1px solid #1e2938;border-radius:16px;padding:32px">
-                <h1 style="color:#f4f6f9;font-size:22px;margin:0 0 12px">Bem-vindo, ${input.name || "aluno"}! 🎉</h1>
-                <p style="color:#8b96a8;font-size:14px;line-height:1.6;margin:0 0 20px">
-                  Sua inscrição foi confirmada e seu acesso já está liberado. Guarde seus dados de login:
-                </p>
-                <div style="background:#121924;border:1px solid #1e2938;border-radius:12px;padding:16px 20px;margin-bottom:20px">
-                  <p style="color:#8b96a8;font-size:12px;margin:0 0 4px">E-mail</p>
-                  <p style="color:#f4f6f9;font-size:15px;font-weight:bold;margin:0 0 12px">${email}</p>
-                  <p style="color:#8b96a8;font-size:12px;margin:0 0 4px">Senha Provisória</p>
-                  <p style="color:#f4f6f9;font-size:15px;font-weight:bold;margin:0">${password}</p>
-                </div>
-                <a href="${siteUrl}/login" style="display:block;background:#2f6bff;color:#fff;text-decoration:none;text-align:center;font-weight:bold;font-size:15px;border-radius:12px;padding:14px">
-                  Acessar a plataforma
-                </a>
-              </div>
-            </div>`,
-        });
-      } catch {
-        // e-mail é melhor esforço; a senha pode ser redefinida via "esqueci a senha"
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.com.br").replace(/\/$/, "");
+    const { data: link } = await db.auth.admin.generateLink({
+      type: "recovery",
+      email,
+      options: { redirectTo: `${siteUrl}/nova-senha` },
+    });
+    const linkAcesso = link?.properties?.action_link;
+
+    if (linkAcesso) {
+      const msg = emailAcessoLiberado({ nome: input.name || "aluno", email, linkAcesso, siteUrl });
+      // Mesmo registro de idempotência do webhook: se a mesma pessoa entrar
+      // por uma venda manual e por uma venda da Cakto, sai um e-mail só.
+      const envio = await enviarEmailRegistrado(
+        db,
+        { chave: chaveAcesso(userId), tipo: "acesso", userId },
+        { para: email, assunto: msg.assunto, html: msg.html, texto: msg.texto }
+      );
+      if (!envio.enviado) {
+        console.error("[venda manual] e-mail de acesso não saiu:", envio.motivo);
       }
     }
   }
