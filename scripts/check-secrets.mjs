@@ -22,7 +22,19 @@ const RAIZ = process.argv[2] ?? ".next";
 /* Diretórios do build que NÃO vão para o navegador. O código do servidor
  * legitimamente contém referências a segredos; alertar sobre eles seria só
  * ruído. O que importa é /static e qualquer coisa servida ao cliente. */
-const IGNORAR = new Set(["cache", "server", "trace", "trace-build", "types", "diagnostics"]);
+const IGNORAR = new Set([
+  "cache",
+  "server",
+  "trace",
+  "trace-build",
+  "types",
+  "diagnostics",
+  /* Saída do `next dev`. Nunca é publicada, e em desenvolvimento o Next
+   * empacota bibliotecas inteiras (o @supabase/auth-js tem a string
+   * "service_role" no código dele) — o que gerava dezenas de alarmes falsos
+   * sempre que o servidor de desenvolvimento estava aberto. */
+  "dev",
+]);
 
 /** Segredos: se o NOME bater, o VALOR não pode aparecer no bundle. */
 const NOMES_SECRETOS = [
