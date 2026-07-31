@@ -47,6 +47,7 @@ const NOMES_SECRETOS = [
   "CRON_SECRET",
   "SMTP_PASS",
   "SMTP_PASSWORD",
+  "UAZAPI_WEBHOOK_SECRET",
 ];
 
 const PADROES = [
@@ -55,7 +56,7 @@ const PADROES = [
   { nome: "chave da Anthropic", re: /sk-ant-[A-Za-z0-9_-]{20,}/ },
   { nome: "chave do Resend", re: /\bre_[A-Za-z0-9]{20,}/ },
   { nome: "JWT (service_role antigo do Supabase)", re: /eyJ[A-Za-z0-9_-]{20,}\.eyJ[A-Za-z0-9_-]{20,}/ },
-  { nome: "nome de variável secreta embutido", re: /SUPABASE_SERVICE_ROLE_KEY|CAKTO_WEBHOOK_SECRET|GMAIL_APP_PASSWORD|UAZAPI_TOKEN|CRON_SECRET|SMTP_PASS(WORD)?/ },
+  { nome: "nome de variável secreta embutido", re: /SUPABASE_SERVICE_ROLE_KEY|CAKTO_WEBHOOK_SECRET|GMAIL_APP_PASSWORD|UAZAPI_TOKEN|CRON_SECRET|SMTP_PASS(WORD)?|UAZAPI_WEBHOOK_SECRET/ },
   { nome: "menção a service_role", re: /service_role/ },
 ];
 

@@ -5,6 +5,7 @@ import {
   Users,
   Tags,
   Camera,
+  MessageCircle,
   MessageSquare,
   Receipt,
   Package,
@@ -85,6 +86,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     items: [
       { href: "/admin/crescimento/links", label: "Links & UTMs", icon: Link2 },
       { href: "/admin/crescimento/funil", label: "Funil & Conversão", icon: Filter },
+      { href: "/admin/whatsapp", label: "WhatsApp", icon: MessageCircle },
     ],
   },
   {

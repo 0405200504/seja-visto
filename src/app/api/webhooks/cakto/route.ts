@@ -12,6 +12,16 @@ import {
 } from "@/lib/admin/settings";
 import { alertaAdmin } from "@/lib/alerts";
 import { checarRateLimit, ipDaRequisicao } from "@/lib/rate-limit";
+import {
+  EVENTOS_ABANDONO,
+  EVENTOS_CARRINHO,
+  EVENTOS_RECUSA,
+  tratarAbandono,
+  tratarAssinaturaCancelada,
+  tratarCheckoutIniciado,
+  tratarCompraAprovada,
+  tratarRenovacaoRecusada,
+} from "@/lib/whatsapp/cakto-eventos";
 
 /**
  * Webhook da Cakto.
@@ -27,6 +37,18 @@ import { checarRateLimit, ipDaRequisicao } from "@/lib/rate-limit";
 
 const GRANT_EVENTS = new Set(["purchase_approved", "subscription_renewed"]);
 const REVOKE_EVENTS = new Set(["refund", "chargeback", "purchase_refunded", "subscription_canceled"]);
+
+/**
+ * Eventos que só interessam às automações de WhatsApp: não liberam nem
+ * revogam acesso, então não passam por entitlement, venda ou e-mail.
+ */
+const WHATSAPP_EVENTS = new Set([
+  ...EVENTOS_CARRINHO,
+  ...EVENTOS_ABANDONO,
+  ...EVENTOS_RECUSA,
+  "subscription_created",
+  "subscription_renewal_refused",
+]);
 
 /**
  * Pacotes de tokens do Fit Check: mapeie o produto da Cakto (em /admin/vendas)
@@ -56,6 +78,33 @@ function senhaInterna(): string {
   return saida;
 }
 
+/**
+ * IDs de produto/oferta presentes no payload. A Cakto espalha isso entre
+ * product, offer, items e order bumps, com nomes de campo diferentes.
+ * Usado tanto pelo mapeamento de acesso quanto pelas automações.
+ */
+function idsDoPayload(dataList: Record<string, unknown>[]): string[] {
+  const encontrados = new Set<string>();
+  const coletar = (value: unknown) => {
+    if (!value || typeof value !== "object") return;
+    for (const item of Array.isArray(value) ? value : [value]) {
+      if (!item || typeof item !== "object") continue;
+      const rec = item as Record<string, unknown>;
+      for (const key of ["id", "short_id", "product_id", "offer_id"]) {
+        if (typeof rec[key] === "string" && rec[key]) encontrados.add(rec[key] as string);
+      }
+    }
+  };
+  for (const item of dataList) {
+    coletar(item.product);
+    coletar(item.offer);
+    for (const field of ["products", "offers", "items", "order_bumps", "orderBumps"]) {
+      coletar(item[field]);
+    }
+  }
+  return [...encontrados];
+}
+
 /** Comparação em tempo constante — `!==` vaza informação por tempo. */
 function segredoConfere(recebido: string | null | undefined, esperado: string): boolean {
   if (!recebido) return false;
@@ -63,48 +112,6 @@ function segredoConfere(recebido: string | null | undefined, esperado: string): 
   const b = Buffer.from(esperado);
   if (a.length !== b.length) return false;
   return timingSafeEqual(a, b);
-}
-
-async function sendWhatsApp(number: string, text: string) {
-  const apiUrl = process.env.UAZAPI_URL;
-  const token = process.env.UAZAPI_TOKEN;
-
-  if (!apiUrl || !token) {
-    console.warn("Disparo de WhatsApp ignorado: UAZAPI_URL ou UAZAPI_TOKEN ausentes.");
-    return { sent: false, reason: "credenciais ausentes" };
-  }
-
-  // Limpa o número para conter apenas dígitos
-  let cleaned = number.replace(/\D/g, "");
-  if (!cleaned) return { sent: false, reason: "número inválido" };
-
-  // Garante DDI do Brasil se começar sem
-  if (cleaned.length === 10 || cleaned.length === 11) {
-    cleaned = "55" + cleaned;
-  }
-
-  try {
-    const res = await fetch(`${apiUrl}/send/text`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        token: token,
-      },
-      body: JSON.stringify({
-        number: cleaned,
-        text: text,
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      return { sent: false, reason: `UAZAPI error ${res.status}: ${errText.slice(0, 150)}` };
-    }
-
-    return { sent: true };
-  } catch (err) {
-    return { sent: false, reason: err instanceof Error ? err.message : String(err) };
-  }
 }
 
 export async function POST(request: Request) {
@@ -141,7 +148,7 @@ export async function POST(request: Request) {
   const event = String(payload.event ?? "");
   const dataRaw = payload.data;
 
-  if (!GRANT_EVENTS.has(event) && !REVOKE_EVENTS.has(event)) {
+  if (!GRANT_EVENTS.has(event) && !REVOKE_EVENTS.has(event) && !WHATSAPP_EVENTS.has(event)) {
     return NextResponse.json({ ok: true, ignored: event });
   }
   if (!dataRaw) {
@@ -164,6 +171,74 @@ export async function POST(request: Request) {
   const email = customer.email?.trim().toLowerCase();
   const name = customer.name?.trim() || "Aluno";
 
+  const admin = createAdminClient();
+
+  /* ---------- Eventos só de WhatsApp ----------
+   * Checkout iniciado, abandono, recusa e falha de renovação não liberam
+   * nem revogam acesso: não passam por entitlement, venda ou e-mail. Saem
+   * por aqui, com idempotência própria — o mesmo carrinho reenviado pela
+   * Cakto não agenda a sequência duas vezes.
+   *
+   * Nada aqui pode derrubar o webhook: se a automação falhar, o pagamento
+   * do cliente segue normal e o erro vira alerta. */
+  if (WHATSAPP_EVENTS.has(event) && !GRANT_EVENTS.has(event) && !REVOKE_EVENTS.has(event)) {
+    const checkoutId = String(
+      firstItem.checkout_id ?? firstItem.checkoutId ?? firstItem.id ?? payload.id ?? ""
+    );
+    if (!checkoutId) return NextResponse.json({ ok: true, ignorado: "evento sem identificador de checkout" });
+
+    const chaveEvento = `wa:${event}:${checkoutId}`;
+    const { error: dup } = await admin.from("webhook_events").insert({
+      provider: "cakto",
+      event_id: chaveEvento,
+      event_type: event,
+      payload: { ...payload, secret: undefined },
+      user_email: email ?? null,
+      status: "processed",
+    });
+    if (dup?.code === "23505") {
+      return NextResponse.json({ ok: true, duplicado: chaveEvento });
+    }
+
+    const ctx = {
+      evento: event,
+      item: firstItem,
+      customer,
+      caktoIds: idsDoPayload(dataList),
+      checkoutId,
+      userId: null,
+    };
+
+    try {
+      if (EVENTOS_ABANDONO.has(event)) {
+        const r = await tratarAbandono(admin, ctx);
+        return NextResponse.json({ ok: true, evento: event, agendadas: r.agendadas, motivos: r.motivos });
+      }
+      if (EVENTOS_CARRINHO.has(event) || event === "subscription_created") {
+        await tratarCheckoutIniciado(admin, ctx);
+        return NextResponse.json({ ok: true, evento: event, carrinho: "registrado" });
+      }
+      if (event === "subscription_renewal_refused") {
+        await tratarRenovacaoRecusada(admin, ctx);
+        return NextResponse.json({ ok: true, evento: event, renovacao: "recusa registrada" });
+      }
+      if (EVENTOS_RECUSA.has(event)) {
+        // Tentativa recusada não fecha o carrinho: a pessoa pode tentar de
+        // novo com outro cartão, e a sequência de recuperação continua.
+        await tratarCheckoutIniciado(admin, ctx);
+        return NextResponse.json({ ok: true, evento: event, carrinho: "mantido aberto" });
+      }
+    } catch (err) {
+      console.error("[cakto] falha na automação de WhatsApp", err);
+      await alertaAdmin(
+        `Evento "${event}" chegou mas a automação de WhatsApp falhou: ` +
+          `${err instanceof Error ? err.message : String(err)}. O pagamento não foi afetado.`,
+        { severidade: "aviso", chave: `wa-evento:${event}` }
+      );
+    }
+    return NextResponse.json({ ok: true, evento: event });
+  }
+
   /* Sem e-mail não dá para criar conta nem mandar o link de acesso. Nada é
    * liberado e nenhuma conta é criada — mas alguém pagou, então isto precisa
    * chegar em você agora, não virar reclamação depois. */
@@ -178,7 +253,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "E-mail do cliente ausente" }, { status: 400 });
   }
 
-  const admin = createAdminClient();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.vercel.app";
 
   /* ---------- Idempotência ----------
@@ -260,25 +334,7 @@ export async function POST(request: Request) {
   };
 
   // Coleta todos os IDs de produto/oferta presentes no payload de todas as transações
-  const candidateIds = new Set<string>();
-  const collect = (value: unknown) => {
-    if (!value || typeof value !== "object") return;
-    for (const item of Array.isArray(value) ? value : [value]) {
-      if (!item || typeof item !== "object") continue;
-      const rec = item as Record<string, unknown>;
-      for (const key of ["id", "short_id", "product_id", "offer_id"]) {
-        if (typeof rec[key] === "string" && rec[key]) candidateIds.add(rec[key] as string);
-      }
-    }
-  };
-
-  for (const item of dataList) {
-    collect(item.product);
-    collect(item.offer);
-    for (const field of ["products", "offers", "items", "order_bumps", "orderBumps"]) {
-      collect(item[field]);
-    }
-  }
+  const candidateIds = new Set<string>(idsDoPayload(dataList));
 
   const { data: mappingRows } = await admin
     .from("cakto_product_map")
@@ -396,6 +452,21 @@ export async function POST(request: Request) {
           .update({ status: "refunded", refunded_at: new Date().toISOString() })
           .eq("cakto_id", caktoSaleId);
       }
+    }
+
+    /* Reembolso e cancelamento param TODA cobrança por WhatsApp: quem
+     * pediu o dinheiro de volta não pode receber lembrete de renovação. */
+    try {
+      await tratarAssinaturaCancelada(admin, {
+        evento: event,
+        item: firstItem,
+        customer,
+        caktoIds: [...candidateIds],
+        checkoutId: String(firstItem.checkout_id ?? firstItem.id ?? eventId),
+        userId: null,
+      });
+    } catch (err) {
+      console.error("[cakto] falha ao encerrar automações no reembolso", err);
     }
 
     await admin
@@ -629,6 +700,35 @@ export async function POST(request: Request) {
     }
   }
 
+  /* ---------- Automações de WhatsApp ----------
+   * Compra aprovada fecha o carrinho da pessoa, derruba a recuperação e
+   * mantém a assinatura em dia. É o freio que impede uma cobrança sair
+   * para quem acabou de pagar.
+   *
+   * Roda depois da liberação de acesso e nunca a derruba: qualquer erro
+   * aqui vira alerta, não 500. */
+  try {
+    const mapaBase = mappings.find((m) => m.validity_days === 30 || m.validity_days === 365);
+    const grantBase = grants.find((g) => g.entitlement === BASE_ENTITLEMENT);
+    await tratarCompraAprovada(admin, {
+      evento: event,
+      item: firstItem,
+      customer,
+      caktoIds: [...candidateIds],
+      checkoutId: String(firstItem.checkout_id ?? firstItem.id ?? eventId),
+      userId: userId ?? null,
+      validityDays: mapaBase?.validity_days ?? null,
+      expiresAt: grantBase?.expires_at ? new Date(grantBase.expires_at) : null,
+    });
+  } catch (err) {
+    console.error("[cakto] automação de WhatsApp falhou na compra aprovada", err);
+    await alertaAdmin(
+      `Acesso de ${email} liberado normalmente, mas a automação de WhatsApp falhou: ` +
+        `${err instanceof Error ? err.message : String(err)}. Confira em /admin/whatsapp.`,
+      { severidade: "aviso", chave: `wa-aprovada:${eventId}` }
+    );
+  }
+
   // E-mail (pacotes de tokens não contam como bônus permanente)
   const bonusLabels = mappings
     .filter((m) => m.entitlement !== BASE_ENTITLEMENT && parseTokenGrant(m.entitlement) === null)
@@ -661,22 +761,6 @@ export async function POST(request: Request) {
     emailResult = { enviado: false, motivo: "usuário já existia; sem bônus novo" };
   }
 
-  // Disparo do WhatsApp se houver telefone do cliente
-  const phone = customer.phone ?? customer.telephone ?? customer.mobile ?? "";
-  let whatsResult: { sent: boolean; reason?: string } | undefined = undefined;
-
-  if (phone) {
-    if (createdNow && linkAcesso) {
-      // Sem senha na mensagem: só o link, que expira. O WhatsApp passa por um
-      // terceiro (UAZAPI) e fica para sempre no histórico dos dois lados.
-      const whatsMsg = `Olá, *${name}*! Seu acesso ao *Manual Prático do Outfit* chegou! 🎉\n\nSua compra foi aprovada. Clique no link abaixo para criar sua senha e entrar:\n${linkAcesso}\n\n📧 Seu e-mail de acesso: ${email}\n\nO link é pessoal e fica disponível por tempo limitado. Se expirar, use "Esqueci minha senha" em ${siteUrl}/login.\n\nNo primeiro acesso, responda o quiz de estilo — ele personaliza toda a sua experiência.`;
-      whatsResult = await sendWhatsApp(phone, whatsMsg);
-    } else if (bonusLabels.length > 0) {
-      const whatsMsg = `Olá, *${existingProfile?.name ?? name}*! Bônus liberado na sua conta! 🔓\n\nSua compra foi aprovada e os bônus abaixo já estão desbloqueados na sua conta:\n*${bonusLabels.join(", ")}*\n\nVer meus bônus em:\n${siteUrl}/bonus`;
-      whatsResult = await sendWhatsApp(phone, whatsMsg);
-    }
-  }
-
   /* O acesso foi liberado. Se o e-mail não saiu, o cliente pagou e não sabe
    * como entrar — isso precisa chegar em você antes de virar reclamação. */
   if (createdNow && !emailResult.enviado) {
@@ -703,6 +787,5 @@ export async function POST(request: Request) {
     created: createdNow,
     granted: grants.map((g) => g.entitlement),
     email: emailResult,
-    whatsapp: whatsResult,
   });
 }

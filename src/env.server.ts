@@ -44,6 +44,10 @@ const schema = z.object({
   GMAIL_APP_PASSWORD: z.string().optional(),
   UAZAPI_URL: z.string().url().optional(),
   UAZAPI_TOKEN: z.string().optional(),
+  // Segredo do webhook de respostas do WhatsApp. Sem ele, o endpoint
+  // /api/webhooks/uazapi recusa tudo — aberto, qualquer um poderia forjar
+  // um "PARAR" e silenciar a comunicação com um cliente.
+  UAZAPI_WEBHOOK_SECRET: z.string().min(16).optional(),
 
   // ---------- Configuração não secreta ----------
   NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
@@ -55,6 +59,15 @@ const schema = z.object({
   SMTP_SECURE: z.string().optional(),
   ADMIN_EMAIL: z.string().optional(),
   ADMIN_WHATSAPP: z.string().optional(),
+  // Automações de WhatsApp — lidas em src/lib/whatsapp/config.ts, que já
+  // aplica padrão seguro (tudo desligado, modo de teste ligado).
+  WHATSAPP_QUEUE_ENABLED: z.string().optional(),
+  WHATSAPP_CART_RECOVERY_ENABLED: z.string().optional(),
+  WHATSAPP_RENEWAL_ENABLED: z.string().optional(),
+  WHATSAPP_AUTOMATION_TEST_MODE: z.string().optional(),
+  WHATSAPP_TEST_NUMBERS: z.string().optional(),
+  CHECKOUT_MENSAL_URL: z.string().url().optional(),
+  CHECKOUT_ANUAL_URL: z.string().url().optional(),
   WHATSAPP_GROUP_URL: z.string().url().optional(),
   VERCEL_URL: z.string().optional(),
 });
