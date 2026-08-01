@@ -11,6 +11,7 @@ import { StudentQuickActions } from "@/components/admin/students/student-quick-a
 import { TagsEditor } from "@/components/admin/students/tags-editor";
 import { bulkStudentsAction, csvStudentsAction } from "@/app/actions/admin/students";
 import { Badge } from "@/components/ui/badge";
+import { CreateMemberModal } from "@/components/admin/students/create-member-modal";
 
 export const dynamic = "force-dynamic";
 
@@ -132,6 +133,7 @@ export default async function AlunosPage(props: { searchParams: Promise<SearchPa
           <h1 className="font-display text-xl font-bold text-foreground">Alunos</h1>
           <p className="mt-0.5 text-xs text-muted">{num(total)} alunos no total — clique na linha para o painel rápido, Enter abre, e edita.</p>
         </div>
+        <CreateMemberModal />
       </div>
 
       <DataTable

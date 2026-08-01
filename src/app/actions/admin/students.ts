@@ -278,6 +278,130 @@ export async function deleteStudentAction(userId: string): Promise<Result> {
   return { ok: true, message: `Conta de ${label} excluída definitivamente.` };
 }
 
+/* ---------- criação de conta pelo admin ---------- */
+
+/**
+ * Cria uma conta nova para um membro diretamente pelo painel.
+ *
+ * Fluxo:
+ *  1. Cria o usuário no Supabase Auth (e-mail já confirmado).
+ *  2. Garante que o perfil existe na users_profile.
+ *  3. Gera um link de recuperação (define senha) e envia o e-mail de acesso.
+ *
+ * A senha inicial é aleatória e nunca é revelada ao admin — o membro
+ * define a própria senha ao clicar no link do e-mail.
+ */
+export async function createMemberAction(email: string, name?: string): Promise<Result> {
+  const { profile } = await requireAdmin();
+
+  const trimmedEmail = email.trim().toLowerCase();
+  if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    return { ok: false, message: "E-mail inválido." };
+  }
+
+  const db = createAdminClient();
+
+  // Senha aleatória forte — nunca é revelada ao admin nem ao membro.
+  const tempPassword =
+    Array.from(crypto.getRandomValues(new Uint8Array(24)))
+      .map((b) => b.toString(36).padStart(2, "0"))
+      .join("")
+      .slice(0, 32) + "A1!";
+
+  const { data: newUser, error: createError } = await db.auth.admin.createUser({
+    email: trimmedEmail,
+    password: tempPassword,
+    email_confirm: true,
+    user_metadata: { name: name?.trim() || undefined },
+  });
+
+  if (createError) {
+    if (createError.message?.toLowerCase().includes("already") ||
+        createError.message?.toLowerCase().includes("exists")) {
+      return { ok: false, message: "Já existe uma conta com esse e-mail." };
+    }
+    return { ok: false, message: `Erro ao criar conta: ${createError.message}` };
+  }
+
+  const userId = newUser.user.id;
+  const cleanName = name?.trim() || null;
+
+  // Garante perfil na users_profile
+  await db.from("users_profile").upsert(
+    {
+      user_id: userId,
+      email: trimmedEmail,
+      name: cleanName,
+      onboarding_completed: false,
+      is_admin: false,
+      tags: [],
+    },
+    { onConflict: "user_id" }
+  );
+
+  // Gera link para o membro definir a própria senha
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const { data: link, error: linkError } = await db.auth.admin.generateLink({
+    type: "recovery",
+    email: trimmedEmail,
+    options: { redirectTo: `${siteUrl}/nova-senha` },
+  });
+
+  const linkAcesso = link?.properties?.action_link;
+  if (!linkAcesso) {
+    // Conta criada, mas link falhou — admin pode reenviar depois
+    await logAudit({
+      actorId: profile.user_id,
+      actorEmail: profile.email ?? null,
+      action: "aluno.criar_conta",
+      entityType: "aluno",
+      entityId: userId,
+      entityLabel: cleanName ?? trimmedEmail,
+      after: { email: trimmedEmail, emailEnviado: false },
+    });
+    revalidatePath("/admin/alunos");
+    return {
+      ok: true,
+      message: `Conta criada, mas o link de acesso não pôde ser gerado (${linkError?.message ?? "erro desconhecido"}). Use "Reenviar e-mail de acesso" na página do aluno.`,
+    };
+  }
+
+  // Envia o e-mail de acesso
+  const msg = emailAcessoLiberado({
+    nome: cleanName ?? "aluno",
+    email: trimmedEmail,
+    linkAcesso,
+    siteUrl,
+  });
+
+  const envio = await enviarEmailRegistrado(
+    db,
+    { chave: `acesso:user:${userId}`, tipo: "acesso", userId },
+    { para: trimmedEmail, assunto: msg.assunto, html: msg.html, texto: msg.texto }
+  );
+
+  await logAudit({
+    actorId: profile.user_id,
+    actorEmail: profile.email ?? null,
+    action: "aluno.criar_conta",
+    entityType: "aluno",
+    entityId: userId,
+    entityLabel: cleanName ?? trimmedEmail,
+    after: { email: trimmedEmail, emailEnviado: envio.enviado, via: envio.via ?? null },
+  });
+
+  revalidatePath("/admin/alunos");
+
+  if (!envio.enviado) {
+    return {
+      ok: true,
+      message: `Conta criada para ${trimmedEmail}, mas o e-mail não saiu (${envio.motivo ?? "motivo desconhecido"}). Use "Reenviar e-mail de acesso" na página do aluno.`,
+    };
+  }
+
+  return { ok: true, message: `Conta criada e e-mail de acesso enviado para ${trimmedEmail}.` };
+}
+
 /* ---------- ações em massa da lista ---------- */
 
 export async function bulkStudentsAction(
