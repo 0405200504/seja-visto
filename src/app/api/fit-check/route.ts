@@ -524,7 +524,12 @@ export async function POST(request: Request) {
 
   const image = typeof body.image === "string" ? body.image : undefined;
   const thumb =
-    typeof body.thumb === "string" && body.thumb.startsWith("data:image/") && body.thumb.length < 60_000
+    /* Teto casado com o do navegador (THUMB_MAX_CHARS em fit-check-chat.tsx),
+     * com folga. Miniatura acima disso é descartada e a mensagem fica sem foto
+     * no histórico, então os dois lados têm que andar juntos. */
+    typeof body.thumb === "string" &&
+    body.thumb.startsWith("data:image/") &&
+    body.thumb.length < 180_000
       ? body.thumb
       : undefined;
   const message = typeof body.message === "string" ? body.message.slice(0, 1000) : "";
