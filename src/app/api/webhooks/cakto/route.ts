@@ -275,7 +275,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "E-mail do cliente ausente" }, { status: 400 });
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.vercel.app";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br";
 
   /* ---------- Idempotência ----------
    * A Cakto reenvia eventos (timeout, retentativa, reprocessamento manual).

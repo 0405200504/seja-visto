@@ -167,7 +167,7 @@ export async function createManualSaleAction2(input: {
     userId = created.user.id;
     createdAccount = true;
 
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.com.br").replace(/\/$/, "");
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
     const { data: link } = await db.auth.admin.generateLink({
       type: "recovery",
       email,

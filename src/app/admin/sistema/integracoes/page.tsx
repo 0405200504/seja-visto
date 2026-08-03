@@ -24,7 +24,7 @@ function StatusRow({ name, ok, detail }: { name: string; ok: boolean; detail: st
 
 export default async function IntegracoesPage() {
   const { profile } = await requireAdmin();
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
   const webhookUrl = `${siteUrl}/api/webhooks/cakto`;
 
   const de = remetente();

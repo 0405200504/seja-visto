@@ -3,7 +3,7 @@ import { brl, nomeDoPlano, textoCarrinho, textoRenovacao, valorDoPlano, TIPOS } 
 import { planoPorValidade } from "./automacoes";
 
 beforeEach(() => {
-  process.env.NEXT_PUBLIC_SITE_URL = "https://manualpraticodooutfit.com.br";
+  process.env.NEXT_PUBLIC_SITE_URL = "https://www.manualpraticodooutfit.com.br";
 });
 
 /* O Intl usa espaço não-quebrável entre "R$" e o número. Isso está certo
@@ -105,7 +105,7 @@ describe("conteúdo obrigatório", () => {
       plano: "mensal",
       amountCents: 2700,
     });
-    expect(t).toContain("https://manualpraticodooutfit.com.br/renovar");
+    expect(t).toContain("https://www.manualpraticodooutfit.com.br/renovar");
     expect(t).not.toContain("pay.cakto.com.br");
   });
 

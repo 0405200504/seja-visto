@@ -670,7 +670,7 @@ const FOOTER_LINKS = [
   { label: "Termos de uso", href: "/termos" },
   { label: "Política de privacidade", href: "/privacidade" },
   { label: "Reembolso", href: "/reembolso" },
-  { label: "Suporte", href: "mailto:equipe@manualpraticodooutfit.com.br" },
+  { label: "Suporte", href: "mailto:suporte@manualpraticodooutfit.com.br" },
 ];
 
 export function LandingFooter() {

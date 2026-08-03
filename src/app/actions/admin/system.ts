@@ -123,7 +123,7 @@ export async function enviarEmailTesteAction(para: string): Promise<Result> {
     return { ok: false, message: `Envio não configurado. ${diagnostico.detalhe}` };
   }
 
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
   const msg = emailTeste({ siteUrl, para: destino });
 
   const envio = await enviarEmailRegistrado(

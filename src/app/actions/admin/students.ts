@@ -193,7 +193,7 @@ export async function reenviarEmailAcessoAction(userId: string): Promise<Result>
 
   if (!aluno?.email) return { ok: false, message: "Este aluno não tem e-mail cadastrado." };
 
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
   const { data: link, error: linkErro } = await db.auth.admin.generateLink({
     type: "recovery",
     email: aluno.email,
@@ -340,7 +340,7 @@ export async function createMemberAction(email: string, name?: string): Promise<
   );
 
   // Gera link para o membro definir a própria senha
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
   const { data: link, error: linkError } = await db.auth.admin.generateLink({
     type: "recovery",
     email: trimmedEmail,

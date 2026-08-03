@@ -40,8 +40,8 @@ export default function ReembolsoPage() {
       <ol>
         <li>
           Envie um e-mail para{" "}
-          <a href="mailto:equipe@manualpraticodooutfit.com.br">
-            equipe@manualpraticodooutfit.com.br
+          <a href="mailto:suporte@manualpraticodooutfit.com.br">
+            suporte@manualpraticodooutfit.com.br
           </a>{" "}
           com o assunto <strong>&quot;Reembolso&quot;</strong>.
         </li>
@@ -116,8 +116,8 @@ export default function ReembolsoPage() {
       <h2>8. Fale com a gente</h2>
       <p>
         Qualquer dúvida sobre reembolso:{" "}
-        <a href="mailto:equipe@manualpraticodooutfit.com.br">
-          equipe@manualpraticodooutfit.com.br
+        <a href="mailto:suporte@manualpraticodooutfit.com.br">
+          suporte@manualpraticodooutfit.com.br
         </a>
         .
       </p>

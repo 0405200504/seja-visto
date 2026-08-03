@@ -175,8 +175,8 @@ export default function TermosPage() {
       </p>
       <p>
         Contato:{" "}
-        <a href="mailto:equipe@manualpraticodooutfit.com.br">
-          equipe@manualpraticodooutfit.com.br
+        <a href="mailto:suporte@manualpraticodooutfit.com.br">
+          suporte@manualpraticodooutfit.com.br
         </a>
         .
       </p>

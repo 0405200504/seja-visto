@@ -33,8 +33,8 @@ export default function PrivacidadePage() {
         O responsável pelo tratamento dos seus dados é o operador do Manual
         Prático do Outfit. Para qualquer assunto de privacidade, incluindo
         pedidos de acesso ou exclusão, escreva para{" "}
-        <a href="mailto:equipe@manualpraticodooutfit.com.br">
-          equipe@manualpraticodooutfit.com.br
+        <a href="mailto:suporte@manualpraticodooutfit.com.br">
+          suporte@manualpraticodooutfit.com.br
         </a>
         .
       </p>
@@ -159,8 +159,8 @@ export default function PrivacidadePage() {
       </ul>
       <p>
         Para exercer qualquer um desses direitos, escreva para{" "}
-        <a href="mailto:equipe@manualpraticodooutfit.com.br">
-          equipe@manualpraticodooutfit.com.br
+        <a href="mailto:suporte@manualpraticodooutfit.com.br">
+          suporte@manualpraticodooutfit.com.br
         </a>
         . Respondemos em até 15 dias.
       </p>

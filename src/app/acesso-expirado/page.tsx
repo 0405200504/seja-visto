@@ -23,7 +23,7 @@ export default async function AcessoExpiradoPage({
     : null;
 
   const renewUrl =
-    process.env.NEXT_PUBLIC_RENEW_URL ?? "https://manualpraticodooutfit.vercel.app";
+    process.env.NEXT_PUBLIC_RENEW_URL ?? "https://www.manualpraticodooutfit.com.br";
 
   const primeiroNome = (profile.name || "Aluno").split(" ")[0];
 

@@ -26,7 +26,7 @@ function flag(nome: string, padrao: boolean): boolean {
 export type ConfigWhatsApp = ReturnType<typeof configWhatsApp>;
 
 export function configWhatsApp() {
-  const appUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const appUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
 
   return {
     // ---------- Chaves gerais ----------
