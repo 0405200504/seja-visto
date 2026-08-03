@@ -11,6 +11,16 @@ import {
   type GatewaySettings,
 } from "@/lib/admin/settings";
 import { alertaAdmin } from "@/lib/alerts";
+import {
+  CANCEL_EVENTS,
+  GRANT_EVENTS,
+  REVOKE_EVENTS,
+  dataDoEvento,
+  idsDoPayload,
+  motivoDeBloqueio,
+  novaValidade,
+  parseTokenGrant,
+} from "@/lib/cakto/regras";
 import { checarRateLimit, ipDaRequisicao } from "@/lib/rate-limit";
 import {
   EVENTOS_ABANDONO,
@@ -35,9 +45,6 @@ import {
  * chave do bônus na plataforma.
  */
 
-const GRANT_EVENTS = new Set(["purchase_approved", "subscription_renewed"]);
-const REVOKE_EVENTS = new Set(["refund", "chargeback", "purchase_refunded", "subscription_canceled"]);
-
 /**
  * Eventos que só interessam às automações de WhatsApp: não liberam nem
  * revogam acesso, então não passam por entitlement, venda ou e-mail.
@@ -49,16 +56,6 @@ const WHATSAPP_EVENTS = new Set([
   "subscription_created",
   "subscription_renewal_refused",
 ]);
-
-/**
- * Pacotes de tokens do Fit Check: mapeie o produto da Cakto (em /admin/vendas)
- * para um entitlement no formato "tokens-200" ou "tokens-50" e o webhook credita
- * essa quantidade de imagens em vez de liberar um bônus permanente.
- */
-function parseTokenGrant(entitlement: string): number | null {
-  const m = /^tokens[-:_]?(\d+)$/i.exec(entitlement.trim());
-  return m ? parseInt(m[1], 10) : null;
-}
 
 /**
  * Senha interna aleatória. NUNCA é transmitida: existe só para a conta não
@@ -79,30 +76,45 @@ function senhaInterna(): string {
 }
 
 /**
- * IDs de produto/oferta presentes no payload. A Cakto espalha isso entre
- * product, offer, items e order bumps, com nomes de campo diferentes.
- * Usado tanto pelo mapeamento de acesso quanto pelas automações.
+ * Busca no banco as duas provas que `motivoDeBloqueio` precisa para decidir
+ * se esta aprovação está atrasada em relação a uma devolução de dinheiro.
+ *
+ * A decisão em si é pura e vive em lib/cakto/regras.ts — aqui só o I/O.
  */
-function idsDoPayload(dataList: Record<string, unknown>[]): string[] {
-  const encontrados = new Set<string>();
-  const coletar = (value: unknown) => {
-    if (!value || typeof value !== "object") return;
-    for (const item of Array.isArray(value) ? value : [value]) {
-      if (!item || typeof item !== "object") continue;
-      const rec = item as Record<string, unknown>;
-      for (const key of ["id", "short_id", "product_id", "offer_id"]) {
-        if (typeof rec[key] === "string" && rec[key]) encontrados.add(rec[key] as string);
-      }
-    }
-  };
-  for (const item of dataList) {
-    coletar(item.product);
-    coletar(item.offer);
-    for (const field of ["products", "offers", "items", "order_bumps", "orderBumps"]) {
-      coletar(item[field]);
-    }
-  }
-  return [...encontrados];
+async function revogacaoPosterior(
+  admin: ReturnType<typeof createAdminClient>,
+  email: string,
+  caktoIds: string[],
+  quando: Date | null
+): Promise<string | null> {
+  const ids = caktoIds.filter(Boolean);
+
+  const { data: reembolsadas } = ids.length
+    ? await admin
+        .from("sales")
+        .select("cakto_id, refunded_at")
+        .in("cakto_id", ids)
+        .eq("status", "refunded")
+        .limit(1)
+    : { data: [] };
+
+  const { data: revogacoes } = quando
+    ? await admin
+        .from("webhook_events")
+        .select("event_type, created_at")
+        .eq("provider", "cakto")
+        .eq("user_email", email)
+        .in("event_type", [...REVOKE_EVENTS])
+        .gt("created_at", quando.toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1)
+    : { data: [] };
+
+  return motivoDeBloqueio({
+    vendasReembolsadas: reembolsadas ?? [],
+    revogacoesPosteriores: revogacoes ?? [],
+    quando,
+  });
 }
 
 /** Comparação em tempo constante — `!==` vaza informação por tempo. */
@@ -148,7 +160,12 @@ export async function POST(request: Request) {
   const event = String(payload.event ?? "");
   const dataRaw = payload.data;
 
-  if (!GRANT_EVENTS.has(event) && !REVOKE_EVENTS.has(event) && !WHATSAPP_EVENTS.has(event)) {
+  if (
+    !GRANT_EVENTS.has(event) &&
+    !REVOKE_EVENTS.has(event) &&
+    !CANCEL_EVENTS.has(event) &&
+    !WHATSAPP_EVENTS.has(event)
+  ) {
     return NextResponse.json({ ok: true, ignored: event });
   }
   if (!dataRaw) {
@@ -181,7 +198,12 @@ export async function POST(request: Request) {
    *
    * Nada aqui pode derrubar o webhook: se a automação falhar, o pagamento
    * do cliente segue normal e o erro vira alerta. */
-  if (WHATSAPP_EVENTS.has(event) && !GRANT_EVENTS.has(event) && !REVOKE_EVENTS.has(event)) {
+  if (
+    WHATSAPP_EVENTS.has(event) &&
+    !GRANT_EVENTS.has(event) &&
+    !REVOKE_EVENTS.has(event) &&
+    !CANCEL_EVENTS.has(event)
+  ) {
     const checkoutId = String(
       firstItem.checkout_id ?? firstItem.checkoutId ?? firstItem.id ?? payload.id ?? ""
     );
@@ -333,6 +355,77 @@ export async function POST(request: Request) {
       .eq("event_id", eventId);
   };
 
+  /* ---------- Cancelamento de assinatura ----------
+   * NÃO mexe no entitlement. O acesso já foi pago até uma data e continua
+   * valendo até lá — é o que a seção 6 da página /reembolso promete e é o
+   * que o CDC espera de um serviço cobrado por período.
+   *
+   * O que o cancelamento faz: marca a assinatura como cancelada, cancela os
+   * lembretes de renovação que ainda estavam agendados e para por aí. Quando
+   * a data de validade chegar, `requirePaidAccess` corta o acesso sozinho.
+   *
+   * Devolver o dinheiro é outro evento (refund/chargeback) e aí sim o acesso
+   * cai na hora. */
+  if (CANCEL_EVENTS.has(event)) {
+    const { data: profile } = await admin
+      .from("users_profile")
+      .select("user_id")
+      .ilike("email", email)
+      .maybeSingle<{ user_id: string }>();
+
+    const { data: acesso } = profile
+      ? await admin
+          .from("user_entitlements")
+          .select("expires_at")
+          .eq("user_id", profile.user_id)
+          .eq("entitlement", BASE_ENTITLEMENT)
+          .maybeSingle<{ expires_at: string | null }>()
+      : { data: null };
+
+    /* Assinatura sem data de fim é o único caso que precisa de decisão
+     * humana: cancelar sem prazo deixaria o acesso vitalício de graça. */
+    if (profile && acesso && acesso.expires_at === null) {
+      await alertaAdmin(
+        `${email} cancelou a assinatura, mas o acesso dessa conta está SEM ` +
+          `data de vencimento — cancelar não tira nada e a pessoa ficaria com ` +
+          `o MPO para sempre. Defina a data de fim em /admin/alunos.`,
+        { severidade: "critico", chave: `cancel-sem-prazo:${email}` }
+      );
+    }
+
+    try {
+      await tratarAssinaturaCancelada(admin, {
+        evento: event,
+        item: firstItem,
+        customer,
+        caktoIds: idsDoPayload(dataList),
+        checkoutId: String(firstItem.checkout_id ?? firstItem.id ?? eventId),
+        userId: profile?.user_id ?? null,
+      });
+    } catch (err) {
+      console.error("[cakto] falha ao encerrar automações no cancelamento", err);
+      await alertaAdmin(
+        `Cancelamento de ${email} registrado, mas não consegui encerrar os ` +
+          `lembretes de renovação: ${err instanceof Error ? err.message : String(err)}. ` +
+          `Confira em /admin/whatsapp para a pessoa não receber cobrança.`,
+        { severidade: "aviso", chave: `cancel-automacao:${eventId}` }
+      );
+    }
+
+    await admin
+      .from("webhook_events")
+      .update({ status: "processed", error_message: null })
+      .eq("provider", "cakto")
+      .eq("event_id", eventId);
+
+    return NextResponse.json({
+      ok: true,
+      cancelado: true,
+      acessoAte: acesso?.expires_at ?? null,
+      regra: "acesso mantido até o fim do período já pago",
+    });
+  }
+
   // Coleta todos os IDs de produto/oferta presentes no payload de todas as transações
   const candidateIds = new Set<string>(idsDoPayload(dataList));
 
@@ -480,6 +573,37 @@ export async function POST(request: Request) {
 
   /* ---------- Compra aprovada ---------- */
 
+  /* Trava do evento atrasado.
+   *
+   * Uma aprovação que chega DEPOIS da devolução do dinheiro não pode
+   * devolver o acesso sozinha — acontece quando a Cakto reenvia um evento
+   * que deu timeout, quando alguém reprocessa um evento antigo no
+   * /admin/sistema/webhooks, ou quando os dois eventos se cruzam na fila.
+   *
+   * Nada é liberado e nada é criado. O evento fica marcado como falho, com
+   * o motivo, para você decidir na mão se foi engano.
+   *
+   * Responde 200 de propósito: o evento já está guardado e reenviar não vai
+   * mudar o resultado — a Cakto insistir aqui só geraria ruído. */
+  const bloqueio = await revogacaoPosterior(
+    admin,
+    email,
+    [...candidateIds, ...dataList.map((i) => String(i.id ?? i.purchase_id ?? ""))],
+    dataDoEvento(payload, firstItem)
+  );
+
+  if (bloqueio) {
+    await marcarFalha(`Aprovação posterior a uma revogação: ${bloqueio}`);
+    await alertaAdmin(
+      `Chegou uma compra aprovada de ${email} que NÃO foi liberada: ${bloqueio}.\n` +
+        `Isso costuma ser reenvio atrasado do gateway. NADA foi creditado e ` +
+        `nenhum acesso foi devolvido.\n` +
+        `Se a pessoa realmente comprou de novo, libere em /admin/alunos.`,
+      { severidade: "critico", chave: `atrasado:${eventId}` }
+    );
+    return NextResponse.json({ ok: true, bloqueado: "revogacao_posterior", motivo: bloqueio, eventId });
+  }
+
   // Localiza (ou cria) o usuário
   const { data: existingProfile } = await admin
     .from("users_profile")
@@ -545,27 +669,16 @@ export async function POST(request: Request) {
    *
    * O pacote "economize-58" continua liberando tudo: a expansão dele já
    * incluiu 'base' na lista acima. */
-  const grants = Array.from(new Set(entitlements)).map((key) => {
-    const mapItem = mappings.find((m) => m.entitlement === key);
-    const validityDays = mapItem?.validity_days;
-    let expiresAt: string | null = null;
-
-    if (validityDays) {
-      const existing = currentEntitlements?.find((c) => c.entitlement === key);
-      const existingExpiry = existing?.expires_at ? new Date(existing.expires_at) : null;
-      // Se a assinatura ainda estiver ativa no futuro, somamos a validade nela. Se não, começa de hoje.
-      const baseDate = (existingExpiry && existingExpiry > new Date()) ? existingExpiry : new Date();
-      baseDate.setDate(baseDate.getDate() + validityDays);
-      expiresAt = baseDate.toISOString();
-    }
-
-    return {
-      user_id: userId,
-      entitlement: key,
-      source: `cakto:${[...candidateIds][0] ?? event}`,
-      expires_at: expiresAt,
-    };
-  });
+  const grants = Array.from(new Set(entitlements)).map((key) => ({
+    user_id: userId,
+    entitlement: key,
+    source: `cakto:${[...candidateIds][0] ?? event}`,
+    // Renovação soma na data que já existe, quando ela ainda está no futuro.
+    expires_at: novaValidade(
+      mappings.find((m) => m.entitlement === key)?.validity_days,
+      currentEntitlements?.find((c) => c.entitlement === key)?.expires_at
+    ),
+  }));
 
   /* Compra só de bônus ou de tokens, de alguém que ainda não tem o MPO.
    * Não liberamos o acesso principal de graça, mas a pessoa também não

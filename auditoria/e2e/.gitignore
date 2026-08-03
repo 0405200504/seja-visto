@@ -1,0 +1,3 @@
+# Resultados de execução: contêm ids e horários da rodada, não do projeto.
+resultado-*.json
+snapshot-*.json
