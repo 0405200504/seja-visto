@@ -35,8 +35,16 @@ type Conversation = {
 };
 
 const MAX_EDGE = 768;
-const THUMB_EDGE = 160;
+/* A miniatura é o que aparece no chat e no histórico. Ela é exibida com até
+ * 224px de altura (max-h-56), e em tela retina isso vira 448–672px físicos —
+ * por isso o lado maior precisa ser bem acima do tamanho de exibição, senão a
+ * foto sai esticada e embaçada. */
+const THUMB_EDGE = 512;
 const JPEG_QUALITY = 0.82;
+const THUMB_QUALITY = 0.82;
+/* Teto de bytes da miniatura (ela é gravada no banco junto da mensagem).
+ * Precisa ficar abaixo do limite aceito pela API — ver api/fit-check/route.ts. */
+const THUMB_MAX_CHARS = 160_000;
 
 const SUGGESTIONS = [
   "Como fico pra sair à noite?",
@@ -69,12 +77,61 @@ async function fileToImage(file: File): Promise<HTMLImageElement> {
 function drawScaled(img: HTMLImageElement, maxEdge: number, quality: number): string {
   const scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
   const canvas = document.createElement("canvas");
-  canvas.width = Math.round(img.width * scale);
-  canvas.height = Math.round(img.height * scale);
+  canvas.width = Math.max(1, Math.round(img.width * scale));
+  canvas.height = Math.max(1, Math.round(img.height * scale));
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  /* Foto de celular tem 3000px+ de lado. Reduzir tudo de uma vez faz o
+   * navegador jogar pixel fora sem média e a imagem sai serrilhada, então
+   * pedimos a reamostragem boa e cortamos pela metade por vez. */
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(halve(img, canvas.width, canvas.height), 0, 0, canvas.width, canvas.height);
   return canvas.toDataURL("image/jpeg", quality);
+}
+
+/** Reduz a imagem pela metade repetidas vezes até chegar perto do alvo. */
+function halve(
+  img: HTMLImageElement,
+  targetW: number,
+  targetH: number
+): HTMLImageElement | HTMLCanvasElement {
+  let source: HTMLImageElement | HTMLCanvasElement = img;
+  let w = img.width;
+  let h = img.height;
+  while (w / 2 >= targetW && h / 2 >= targetH) {
+    w = Math.round(w / 2);
+    h = Math.round(h / 2);
+    const step = document.createElement("canvas");
+    step.width = w;
+    step.height = h;
+    const ctx = step.getContext("2d");
+    if (!ctx) return source;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(source, 0, 0, w, h);
+    source = step;
+  }
+  return source;
+}
+
+/* A miniatura vai gravada no banco, então tem teto de tamanho. Se a foto for
+ * pesada demais nesse teto, baixamos a qualidade e só depois o tamanho — perder
+ * nitidez de compressão incomoda menos que perder resolução. */
+function drawThumb(img: HTMLImageElement): string {
+  const steps: [number, number][] = [
+    [THUMB_EDGE, THUMB_QUALITY],
+    [THUMB_EDGE, 0.72],
+    [384, 0.72],
+    [256, 0.7],
+    [160, 0.7],
+  ];
+  let last = "";
+  for (const [edge, quality] of steps) {
+    last = drawScaled(img, edge, quality);
+    if (last.length <= THUMB_MAX_CHARS) return last;
+  }
+  return last;
 }
 
 /** Redimensiona a foto no navegador: versão p/ análise (768px) e miniatura p/ histórico. */
@@ -82,7 +139,7 @@ async function resizeImage(file: File): Promise<{ full: string; thumb: string }>
   const img = await fileToImage(file);
   return {
     full: drawScaled(img, MAX_EDGE, JPEG_QUALITY),
-    thumb: drawScaled(img, THUMB_EDGE, 0.7),
+    thumb: drawThumb(img),
   };
 }
 
@@ -591,8 +648,8 @@ export function FitCheckChat() {
                   <Image
                     src={message.image}
                     alt="Foto do fit"
-                    width={160}
-                    height={213}
+                    width={384}
+                    height={512}
                     unoptimized
                     className="mb-2 max-h-56 w-auto rounded-xl object-cover ring-1 ring-inset ring-white/10"
                   />
@@ -621,8 +678,8 @@ export function FitCheckChat() {
               <Image
                 src={pendingImage.thumb}
                 alt="Prévia do fit"
-                width={80}
-                height={104}
+                width={192}
+                height={256}
                 unoptimized
                 className="h-24 w-auto rounded-lg object-cover ring-1 ring-inset ring-white/10"
               />
