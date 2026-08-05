@@ -6,6 +6,10 @@ const PUBLIC_PATHS = [
   "/cadastro",
   "/recuperar-senha",
   "/nova-senha",
+  // Link de criar senha do e-mail: quem chega aqui, por definição, ainda
+  // não tem sessão. Sem esta linha o middleware devolveria a pessoa para
+  // o login e a tela de senha nunca apareceria.
+  "/definir-senha",
   "/auth",
   "/api",
   // Documentos legais precisam ser lidos ANTES da compra, sem login.

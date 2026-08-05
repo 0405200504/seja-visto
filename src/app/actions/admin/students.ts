@@ -5,8 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/admin/audit";
 import { ALL_ENTITLEMENT_KEYS, BONUSES } from "@/lib/bonuses";
-import { enviarEmailRegistrado } from "@/lib/email/envio";
-import { emailAcessoLiberado } from "@/lib/email/templates";
+import { enviarEmailDeAcesso } from "@/lib/email/acesso";
 
 type Result = { ok: boolean; message: string };
 
@@ -193,28 +192,12 @@ export async function reenviarEmailAcessoAction(userId: string): Promise<Result>
 
   if (!aluno?.email) return { ok: false, message: "Este aluno não tem e-mail cadastrado." };
 
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
-  const { data: link, error: linkErro } = await db.auth.admin.generateLink({
-    type: "recovery",
+  const envio = await enviarEmailDeAcesso(db, {
+    userId,
     email: aluno.email,
-    options: { redirectTo: `${siteUrl}/nova-senha` },
+    nome: aluno.name,
+    chave: `acesso:user:${userId}:manual:${Date.now()}`,
   });
-  const linkAcesso = link?.properties?.action_link;
-  if (!linkAcesso) {
-    return { ok: false, message: `Não consegui gerar o link de acesso: ${linkErro?.message ?? "erro desconhecido"}` };
-  }
-
-  const msg = emailAcessoLiberado({
-    nome: aluno.name ?? "aluno",
-    email: aluno.email,
-    linkAcesso,
-    siteUrl,
-  });
-  const envio = await enviarEmailRegistrado(
-    db,
-    { chave: `acesso:user:${userId}:manual:${Date.now()}`, tipo: "acesso", userId },
-    { para: aluno.email, assunto: msg.assunto, html: msg.html, texto: msg.texto }
-  );
 
   await logAudit({
     actorId: profile.user_id,
@@ -339,46 +322,13 @@ export async function createMemberAction(email: string, name?: string): Promise<
     { onConflict: "user_id" }
   );
 
-  // Gera link para o membro definir a própria senha
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
-  const { data: link, error: linkError } = await db.auth.admin.generateLink({
-    type: "recovery",
+  // Link de criar senha (30 dias) + e-mail de acesso, uma coisa só.
+  const envio = await enviarEmailDeAcesso(db, {
+    userId,
     email: trimmedEmail,
-    options: { redirectTo: `${siteUrl}/nova-senha` },
+    nome: cleanName,
+    chave: `acesso:user:${userId}`,
   });
-
-  const linkAcesso = link?.properties?.action_link;
-  if (!linkAcesso) {
-    // Conta criada, mas link falhou — admin pode reenviar depois
-    await logAudit({
-      actorId: profile.user_id,
-      actorEmail: profile.email ?? null,
-      action: "aluno.criar_conta",
-      entityType: "aluno",
-      entityId: userId,
-      entityLabel: cleanName ?? trimmedEmail,
-      after: { email: trimmedEmail, emailEnviado: false },
-    });
-    revalidatePath("/admin/alunos");
-    return {
-      ok: true,
-      message: `Conta criada, mas o link de acesso não pôde ser gerado (${linkError?.message ?? "erro desconhecido"}). Use "Reenviar e-mail de acesso" na página do aluno.`,
-    };
-  }
-
-  // Envia o e-mail de acesso
-  const msg = emailAcessoLiberado({
-    nome: cleanName ?? "aluno",
-    email: trimmedEmail,
-    linkAcesso,
-    siteUrl,
-  });
-
-  const envio = await enviarEmailRegistrado(
-    db,
-    { chave: `acesso:user:${userId}`, tipo: "acesso", userId },
-    { para: trimmedEmail, assunto: msg.assunto, html: msg.html, texto: msg.texto }
-  );
 
   await logAudit({
     actorId: profile.user_id,

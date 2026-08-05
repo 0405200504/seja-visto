@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { chaveAcesso, chaveBonus, enviarEmailRegistrado } from "@/lib/email/envio";
-import { emailAcessoLiberado, emailBonusLiberado } from "@/lib/email/templates";
+import { emailBonusLiberado } from "@/lib/email/templates";
+import { enviarEmailDeAcesso } from "@/lib/email/acesso";
 import { BASE_ENTITLEMENT, BONUSES } from "@/lib/bonuses";
 import {
   getSetting,
@@ -640,20 +641,6 @@ export async function POST(request: Request) {
     createdNow = true;
   }
 
-  /* Link de acesso de uso único. Substitui a senha em texto puro, que antes
-   * ia por e-mail e por WhatsApp (passando por um terceiro) e ficava para
-   * sempre no histórico das duas caixas. Se o processo falhar mais adiante,
-   * basta reenviar o link — não existe mais senha perdida em memória. */
-  let linkAcesso: string | null = null;
-  if (createdNow) {
-    const { data: link } = await admin.auth.admin.generateLink({
-      type: "recovery",
-      email,
-      options: { redirectTo: `${siteUrl}/nova-senha` },
-    });
-    linkAcesso = link?.properties?.action_link ?? null;
-  }
-
   // Busca os entitlements atuais do usuário para calcular a nova data de validade de forma justa
   const { data: currentEntitlements } = await admin
     .from("user_entitlements")
@@ -847,18 +834,20 @@ export async function POST(request: Request) {
     .filter((m) => m.entitlement !== BASE_ENTITLEMENT && parseTokenGrant(m.entitlement) === null)
     .map((m) => m.label ?? m.entitlement);
 
-  /* O envio só acontece aqui, no fim: pagamento aprovado, conta criada,
-   * acesso liberado e link em mãos. E passa pelo registro em `email_sends`,
-   * que impede uma segunda entrega do mesmo evento de mandar uma segunda
-   * cópia — e permite nova tentativa se este envio falhar. */
+  /* O envio só acontece aqui, no fim: pagamento aprovado, conta criada e
+   * acesso liberado. O link de criar senha nasce junto com o e-mail — vale
+   * 30 dias e não depende mais do OTP do Supabase, que morria em 24h. Tudo
+   * passa pelo registro em `email_sends`, que impede uma segunda entrega do
+   * mesmo evento de mandar uma segunda cópia — e permite nova tentativa se
+   * este envio falhar. */
   let emailResult: { enviado: boolean; motivo?: string; duplicado?: boolean };
-  if (createdNow && linkAcesso) {
-    const msg = emailAcessoLiberado({ nome: name, email, linkAcesso, siteUrl });
-    emailResult = await enviarEmailRegistrado(
-      admin,
-      { chave: chaveAcesso(userId!), tipo: "acesso", userId },
-      { para: email, assunto: msg.assunto, html: msg.html, texto: msg.texto }
-    );
+  if (createdNow) {
+    emailResult = await enviarEmailDeAcesso(admin, {
+      userId: userId!,
+      email,
+      nome: name,
+      chave: chaveAcesso(userId!),
+    });
   } else if (bonusLabels.length > 0) {
     const msg = emailBonusLiberado({
       nome: existingProfile?.name ?? name,

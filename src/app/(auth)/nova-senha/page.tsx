@@ -5,8 +5,15 @@ import { Label } from "@/components/ui/label";
 import { AuthForm } from "@/components/app/auth-form";
 import { RecoverySession } from "@/components/app/recovery-session";
 import { updatePassword } from "@/app/actions/auth";
+import { REGRA_SENHA } from "@/lib/senha";
 
 export const metadata: Metadata = { title: "Nova senha" };
+
+/**
+ * Tela antiga, mantida só para os links do Supabase que ainda estejam em
+ * caixas de entrada. Os links novos vão para /definir-senha/[token], que
+ * não depende de sessão nem de fragmento de URL.
+ */
 
 export default function NovaSenhaPage() {
   return (
@@ -22,7 +29,10 @@ export default function NovaSenhaPage() {
           <AuthForm action={updatePassword} submitLabel="Salvar nova senha">
             <div className="space-y-2">
               <Label htmlFor="password">Nova senha</Label>
-              <Input id="password" name="password" type="password" placeholder="Mínimo de 6 caracteres" required minLength={6} autoComplete="new-password" />
+              {/* O mínimo real é 8, e com letra e número: o Supabase recusa
+                  qualquer coisa abaixo disso. Prometer 6 aqui só fazia a
+                  pessoa levar um "não foi possível atualizar a senha". */}
+              <Input id="password" name="password" type="password" placeholder={REGRA_SENHA} required minLength={8} autoComplete="new-password" />
             </div>
           </AuthForm>
         </RecoverySession>

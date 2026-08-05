@@ -3,7 +3,10 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { checarRateLimit, ipDoServerAction } from "@/lib/rate-limit";
+import { enviarEmailDeRecuperacao } from "@/lib/email/acesso";
+import { validarSenha } from "@/lib/senha";
 
 export type AuthState = { error?: string; success?: string };
 
@@ -20,19 +23,6 @@ const FALHA_LOGIN = "E-mail ou senha incorretos. Verifique e tente novamente.";
 /** Mesma resposta com ou sem conta no e-mail informado. */
 const RESET_ENVIADO = "Enviamos um link de recuperação para o seu e-mail.";
 const CADASTRO_ENVIADO = "Conta criada! Confira seu e-mail para confirmar o cadastro.";
-
-/** Senha fraca é a porta de entrada mais barata para invadir uma conta. */
-function validarSenha(senha: string): string | null {
-  if (senha.length < 8) return "A senha precisa ter pelo menos 8 caracteres.";
-  if (!/[a-zA-Z]/.test(senha) || !/[0-9]/.test(senha)) {
-    return "Use pelo menos uma letra e um número na senha.";
-  }
-  const fracas = ["12345678", "senha123", "password", "123456789", "qwerty123"];
-  if (fracas.includes(senha.toLowerCase())) {
-    return "Essa senha é fácil demais de adivinhar. Escolha outra.";
-  }
-  return null;
-}
 
 function siteUrl(path: string): string | undefined {
   const base =
@@ -129,8 +119,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
 }
 
 export async function resetPassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
-  const supabase = await createClient();
-  const email = String(formData.get("email") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
 
   if (!email) return { error: "Informe seu e-mail." };
 
@@ -144,18 +133,36 @@ export async function resetPassword(_prev: AuthState, formData: FormData): Promi
   const ip = await ipDoServerAction();
   const podeEnviar =
     (await checarRateLimit(`reset-ip:${ip}`, 3, 3600, { falharFechado: true })) &&
-    (await checarRateLimit(`reset:${email.toLowerCase()}`, 1, 300, { falharFechado: true }));
+    (await checarRateLimit(`reset:${email}`, 1, 300, { falharFechado: true }));
 
   if (!podeEnviar) {
     return { success: RESET_ENVIADO };
   }
 
-  /* Erro do provedor também devolve sucesso: "não foi possível enviar" só
-   * acontece para e-mail inexistente em algumas configurações, e vira o
-   * mesmo oráculo de enumeração que fechamos no cadastro. */
-  await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: siteUrl("/auth/callback?next=/nova-senha"),
-  });
+  /* E-mail sem conta também devolve sucesso, e sem nem tentar enviar: dizer
+   * "não achei esse e-mail" vira o mesmo oráculo de enumeração que fechamos
+   * no cadastro. O mesmo vale para qualquer erro do provedor. */
+  try {
+    const db = createAdminClient();
+    const { data: perfil } = await db
+      .from("users_profile")
+      .select("user_id, name, email")
+      .ilike("email", email)
+      .maybeSingle<{ user_id: string; name: string | null; email: string | null }>();
+
+    if (perfil?.user_id) {
+      const envio = await enviarEmailDeRecuperacao(db, {
+        userId: perfil.user_id,
+        email: perfil.email ?? email,
+        nome: perfil.name,
+      });
+      if (!envio.enviado) {
+        console.error("[reset] e-mail de recuperação não saiu:", envio.motivo);
+      }
+    }
+  } catch (err) {
+    console.error("[reset] falha inesperada:", err);
+  }
 
   return { success: RESET_ENVIADO };
 }

@@ -110,20 +110,31 @@ function botao(href: string, rotulo: string): string {
 const P = `margin:0 0 16px 0;font-size:16px;line-height:1.6;color:${COR_TEXTO};`;
 const P_MUTED = `margin:0 0 16px 0;font-size:14px;line-height:1.6;color:${COR_MUTED};`;
 
+/** "30 dias", "24 horas" — o prazo escrito como gente fala. */
+function prazoPorExtenso(dias: number): string {
+  if (dias <= 1) return "24 horas";
+  return `${dias} dias`;
+}
+
 /**
  * E-mail de acesso — o que sai depois do pagamento confirmado.
- * `linkAcesso` é o link de uso único gerado pelo Supabase.
+ *
+ * `linkAcesso` é o link de uso único de /definir-senha. `validadeDias`
+ * precisa bater com o prazo real gravado no banco: prometer 30 dias e
+ * expirar em 1 é pior do que não prometer nada.
  */
 export function emailAcessoLiberado({
   nome,
   email,
   linkAcesso,
   siteUrl,
+  validadeDias = 30,
 }: {
   nome: string;
   email: string;
   linkAcesso: string;
   siteUrl: string;
+  validadeDias?: number;
 }): EmailPronto {
   const assunto = "Seu acesso ao MPO está liberado";
   const site = siteUrl.replace(/\/$/, "");
@@ -139,7 +150,7 @@ export function emailAcessoLiberado({
             <p style="${P}">Para entrar na plataforma, clique no botão abaixo e crie sua senha:</p>
 ${botao(linkAcesso, rotulo)}
             <p style="${P}"><strong>E-mail de acesso:</strong> ${esc(email)}</p>
-            <p style="${P_MUTED}">Por segurança, esse link é individual e ficará disponível por tempo limitado. Caso ele expire, você poderá solicitar um novo link na página de login.</p>
+            <p style="${P_MUTED}">Por segurança, esse link é individual e vale por ${prazoPorExtenso(validadeDias)}. Caso ele expire, você mesmo pode pedir um novo em ${esc(site)}/recuperar-senha — chega neste mesmo e-mail.</p>
             <p style="${P_MUTED}">Link da plataforma: <a href="${esc(site)}" style="color:${COR_BOTAO};">${esc(site)}</a></p>
             <p style="${P_MUTED}">Caso tenha qualquer dificuldade para entrar, responda este e-mail ou entre em contato pelo ${esc(SUPORTE_EMAIL)}.</p>
             <p style="${P}">Seja bem-vindo ao MPO!</p>
@@ -157,7 +168,7 @@ ${linkAcesso}
 
 E-mail de acesso: ${email}
 
-Por segurança, esse link é individual e ficará disponível por tempo limitado. Caso ele expire, você poderá solicitar um novo link na página de login.
+Por segurança, esse link é individual e vale por ${prazoPorExtenso(validadeDias)}. Caso ele expire, você mesmo pode pedir um novo em ${site}/recuperar-senha — chega neste mesmo e-mail.
 
 Link da plataforma:
 ${site}
@@ -165,6 +176,66 @@ ${site}
 Caso tenha qualquer dificuldade para entrar, responda este e-mail ou entre em contato pelo ${SUPORTE_EMAIL}.
 
 Seja bem-vindo ao MPO!
+
+Equipe MPO
+Manual Prático do Outfit`;
+
+  return { assunto, html, texto };
+}
+
+/**
+ * E-mail de "esqueci minha senha".
+ *
+ * Existe para tirar esse fluxo do template padrão do Supabase, que sai em
+ * inglês ("Reset your password"), com a marca errada, e cujo link morre em
+ * 24h. Aqui é o mesmo cartão dos outros e-mails, no mesmo remetente, com o
+ * link de /definir-senha — que abre em qualquer navegador, inclusive num
+ * aparelho diferente do que pediu a troca.
+ */
+export function emailRecuperacaoSenha({
+  nome,
+  email,
+  linkAcesso,
+  siteUrl,
+  validadeDias = 7,
+}: {
+  nome: string;
+  email: string;
+  linkAcesso: string;
+  siteUrl: string;
+  validadeDias?: number;
+}): EmailPronto {
+  const assunto = "Redefinir a senha do seu acesso ao MPO";
+  const site = siteUrl.replace(/\/$/, "");
+  const primeiro = primeiroNome(nome);
+  const rotulo = "CRIAR UMA NOVA SENHA";
+  const prazo = prazoPorExtenso(validadeDias);
+
+  const html = moldura({
+    siteUrl: site,
+    preheader: "Use o link abaixo para escolher uma nova senha da sua conta.",
+    conteudo: `            <h1 style="margin:0 0 16px 0;font-size:24px;line-height:1.3;color:${COR_TEXTO};">Redefinir sua senha</h1>
+            <p style="${P}">Olá, ${esc(primeiro)}!</p>
+            <p style="${P}">Recebemos um pedido para trocar a senha da conta <strong>${esc(email)}</strong> no MPO — Manual Prático do Outfit.</p>
+${botao(linkAcesso, rotulo)}
+            <p style="${P_MUTED}">O link vale por ${prazo} e pode ser usado uma vez. Depois de escolher a senha, você já entra direto na plataforma.</p>
+            <p style="${P_MUTED}">Se não foi você que pediu, ignore este e-mail: sua senha atual continua valendo e ninguém teve acesso à sua conta.</p>
+            <p style="${P_MUTED}">Dúvidas? Responda este e-mail ou escreva para ${esc(SUPORTE_EMAIL)}.</p>
+            <p style="${P_MUTED}">Equipe MPO<br>Manual Prático do Outfit</p>`,
+  });
+
+  const texto = `Olá, ${primeiro}!
+
+Recebemos um pedido para trocar a senha da conta ${email} no MPO — Manual Prático do Outfit.
+
+${rotulo}
+${linkAcesso}
+
+O link vale por ${prazo} e pode ser usado uma vez. Depois de escolher a senha, você já entra direto na plataforma.
+
+Se não foi você que pediu, ignore este e-mail: sua senha atual continua valendo e ninguém teve acesso à sua conta.
+
+Dúvidas? Responda este e-mail ou escreva para ${SUPORTE_EMAIL}.
 
 Equipe MPO
 Manual Prático do Outfit`;

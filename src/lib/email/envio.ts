@@ -19,7 +19,7 @@ import { enviarEmail, sanitizarErro, type Mensagem, type ResultadoEnvio } from "
 
 type Db = ReturnType<typeof createAdminClient>;
 
-export type TipoEmail = "acesso" | "bonus" | "teste";
+export type TipoEmail = "acesso" | "bonus" | "teste" | "recuperacao";
 
 type Reserva =
   | { seguir: true; id: number | null }

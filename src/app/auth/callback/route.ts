@@ -14,5 +14,9 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/login`);
+  /* A troca falha quando o link é aberto em outro navegador ou aparelho:
+   * o verificador do PKCE ficou no navegador que pediu. Mandar a pessoa
+   * para o login sem dizer nada era o buraco em que ela sumia — agora cai
+   * na tela de pedir um link novo, com o motivo escrito. */
+  return NextResponse.redirect(`${origin}/recuperar-senha?erro=link`);
 }

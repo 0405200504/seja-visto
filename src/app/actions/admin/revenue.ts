@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/admin/audit";
-import { chaveAcesso, enviarEmailRegistrado } from "@/lib/email/envio";
-import { emailAcessoLiberado } from "@/lib/email/templates";
+import { chaveAcesso } from "@/lib/email/envio";
+import { enviarEmailDeAcesso } from "@/lib/email/acesso";
 import { paramsFromQueryString, toCsv } from "@/lib/admin/list";
 import { fetchSales } from "@/lib/admin/queries/sales";
 import { ALL_ENTITLEMENT_KEYS } from "@/lib/bonuses";
@@ -167,26 +167,16 @@ export async function createManualSaleAction2(input: {
     userId = created.user.id;
     createdAccount = true;
 
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
-    const { data: link } = await db.auth.admin.generateLink({
-      type: "recovery",
+    // Mesmo registro de idempotência do webhook: se a mesma pessoa entrar
+    // por uma venda manual e por uma venda da Cakto, sai um e-mail só.
+    const envio = await enviarEmailDeAcesso(db, {
+      userId,
       email,
-      options: { redirectTo: `${siteUrl}/nova-senha` },
+      nome: input.name || null,
+      chave: chaveAcesso(userId),
     });
-    const linkAcesso = link?.properties?.action_link;
-
-    if (linkAcesso) {
-      const msg = emailAcessoLiberado({ nome: input.name || "aluno", email, linkAcesso, siteUrl });
-      // Mesmo registro de idempotência do webhook: se a mesma pessoa entrar
-      // por uma venda manual e por uma venda da Cakto, sai um e-mail só.
-      const envio = await enviarEmailRegistrado(
-        db,
-        { chave: chaveAcesso(userId), tipo: "acesso", userId },
-        { para: email, assunto: msg.assunto, html: msg.html, texto: msg.texto }
-      );
-      if (!envio.enviado) {
-        console.error("[venda manual] e-mail de acesso não saiu:", envio.motivo);
-      }
+    if (!envio.enviado) {
+      console.error("[venda manual] e-mail de acesso não saiu:", envio.motivo);
     }
   }
 

@@ -11,13 +11,21 @@ let estado: {
   erroSignUp: string | null;
   erroSignIn: string | null;
   erroReset: string | null;
+  /** Perfil devolvido pela busca por e-mail; `null` = ninguém com esse e-mail. */
+  perfil: { user_id: string; name: string | null; email: string } | null;
   limites: Record<string, boolean>;
 };
 
 const chamadas = { signUp: 0, signIn: 0, reset: 0 };
 
 function reset() {
-  estado = { erroSignUp: null, erroSignIn: null, erroReset: null, limites: {} };
+  estado = {
+    erroSignUp: null,
+    erroSignIn: null,
+    erroReset: null,
+    perfil: { user_id: "u1", name: "Cliente", email: "existe@teste.com" },
+    limites: {},
+  };
   chamadas.signUp = 0;
   chamadas.signIn = 0;
   chamadas.reset = 0;
@@ -44,12 +52,32 @@ vi.mock("@/lib/supabase/server", () => ({
           error: estado.erroSignUp ? { message: estado.erroSignUp } : null,
         };
       },
-      resetPasswordForEmail: async () => {
-        chamadas.reset++;
-        return { error: estado.erroReset ? { message: estado.erroReset } : null };
-      },
     },
   }),
+}));
+
+/* A recuperação de senha deixou de usar o e-mail do Supabase: agora procura
+ * a conta pelo perfil e manda o nosso próprio link. Os dois mocks abaixo
+ * cobrem esse caminho. */
+vi.mock("@/lib/supabase/admin", () => ({
+  createAdminClient: () => ({
+    from: () => ({
+      select: () => ({
+        ilike: () => ({
+          maybeSingle: async () => ({ data: estado.perfil, error: null }),
+        }),
+      }),
+    }),
+  }),
+}));
+
+vi.mock("@/lib/email/acesso", () => ({
+  enviarEmailDeRecuperacao: async () => {
+    chamadas.reset++;
+    return estado.erroReset
+      ? { enviado: false, motivo: estado.erroReset }
+      : { enviado: true, via: "resend" as const };
+  },
 }));
 
 vi.mock("@/lib/rate-limit", () => ({
@@ -105,11 +133,22 @@ describe("enumeração de usuário", () => {
     const { resetPassword } = await import("./auth");
 
     const ok = await resetPassword({}, form({ email: "existe@teste.com" }));
-    estado.erroReset = "User not found";
-    const inexistente = await resetPassword({}, form({ email: "naoexiste@teste.com" }));
+    expect(chamadas.reset).toBe(1);
 
+    // E-mail sem conta: nem tenta enviar...
+    estado.perfil = null;
+    const inexistente = await resetPassword({}, form({ email: "naoexiste@teste.com" }));
+    expect(chamadas.reset).toBe(1);
+
+    // ...e a resposta é byte a byte a mesma.
     expect(JSON.stringify(inexistente)).toBe(JSON.stringify(ok));
     expect(inexistente.error).toBeUndefined();
+
+    // Provedor fora do ar também não muda a resposta.
+    estado.perfil = { user_id: "u1", name: "Cliente", email: "existe@teste.com" };
+    estado.erroReset = "SMTP recusou";
+    const falhou = await resetPassword({}, form({ email: "existe@teste.com" }));
+    expect(JSON.stringify(falhou)).toBe(JSON.stringify(ok));
   });
 });
 
