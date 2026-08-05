@@ -310,7 +310,7 @@ const DELIVERABLES = [
   "8 módulos",
   "37 aulas",
   "Lookbook com filtros avançados",
-  "12 estilos masculinos",
+  "16 estilos masculinos",
   "Mais de 190 referências",
   "11 guias práticos",
   "Ferramentas interativas",
@@ -521,7 +521,7 @@ const FAQ = [
   },
   {
     q: "O MPO serve para qualquer estilo?",
-    a: "A plataforma trabalha com 12 estilos, incluindo Casual, Streetwear, Workwear, Smart Casual, Old Money, Preppy, Minimalista, Gorpcore, Vintage/Y2K, Techwear, Skater e Quiet Luxury.",
+    a: "A plataforma trabalha com 16 estilos: Casual, Streetwear, Workwear, Smart Casual, Old Money, Preppy, Minimalista, Gorpcore, Vintage/Y2K, Techwear, Skater, Quiet Luxury, US Drip, Opium, Sportlife e Boho.",
   },
   {
     q: "Como funciona o Fit Check?",

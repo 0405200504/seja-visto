@@ -108,12 +108,12 @@ export function FeaturesSection() {
             </BentoCard>
           </Reveal>
 
-          {/* 12 estilos */}
+          {/* 16 estilos */}
           <Reveal delay={200}>
             <BentoCard
               icon={Star}
-              title="12 estilos masculinos"
-              text="Entenda Casual, Streetwear, Workwear, Smart Casual, Old Money, Preppy, Minimalista, Gorpcore, Vintage/Y2K, Techwear, Skater e Quiet Luxury."
+              title="16 estilos masculinos"
+              text="Entenda Casual, Streetwear, Workwear, Smart Casual, Old Money, Preppy, Minimalista, Gorpcore, Vintage/Y2K, Techwear, Skater, Quiet Luxury, US Drip, Opium, Sportlife e Boho."
             >
               <div className="mt-5 grid grid-cols-4 gap-1.5" aria-hidden>
                 {["casual", "streetwear", "minimalista", "oldmoney"].map((s) => (

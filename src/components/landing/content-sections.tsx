@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Reveal } from "./reveal";
 
-/* ── Seção 10 — Os 12 estilos ─────────────────────────────── */
+/* ── Seção 10 — Os 16 estilos ─────────────────────────────── */
 
 const STYLES = [
   { slug: "casual", nome: "Casual", tagline: "O básico bem executado", refs: 10 },
@@ -25,6 +25,10 @@ const STYLES = [
   { slug: "techwear", nome: "Techwear", tagline: "Moda funcional e futurista", refs: 9 },
   { slug: "skater", nome: "Skater", tagline: "Cultura do skate dos anos 90 e 2000", refs: 10 },
   { slug: "quietluxury", nome: "Quiet Luxury", tagline: "Sofisticação sem ostentação", refs: 8 },
+  { slug: "usdrip", nome: "US Drip", tagline: "O visual do rap americano", refs: 10 },
+  { slug: "opium", nome: "Opium", tagline: "Preto total com peso gótico", refs: 8 },
+  { slug: "sportlife", nome: "Sportlife", tagline: "Camisa de time como peça de estilo", refs: 10 },
+  { slug: "boho", nome: "Boho", tagline: "Leveza artesanal em tons naturais", refs: 10 },
 ];
 
 export function StylesSection() {
@@ -94,7 +98,7 @@ export function StylesSection() {
 
       <Reveal delay={300}>
         <p className="mt-8 text-center font-display text-sm font-semibold tracking-wide text-[#F5F7FA]">
-          Mais de <span className="text-[#78A9FF]">190 fotos reais</span> de
+          Mais de <span className="text-[#78A9FF]">220 fotos reais</span> de
           referência organizadas por estilo.
         </p>
       </Reveal>

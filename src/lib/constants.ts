@@ -21,6 +21,10 @@ export const STYLES: Record<string, string> = {
   techwear: "Techwear",
   skater: "Skater",
   quietluxury: "Quiet Luxury",
+  usdrip: "US Drip",
+  opium: "Opium",
+  sportlife: "Sportlife",
+  boho: "Boho",
 };
 
 export type StyleProfile = {
@@ -140,6 +144,42 @@ export const STYLE_PROFILES: Record<string, StyleProfile> = {
       "Luxo discreto: materiais premium, paleta neutra, cortes impecáveis e ausência de logos chamativos.",
     keyPieces: ["Tricô premium", "Alfaiataria impecável", "Paleta neutra", "Couro discreto"],
     imageCount: 8,
+  },
+  usdrip: {
+    slug: "usdrip",
+    label: "US Drip",
+    tagline: "O visual do rap americano",
+    description:
+      "Jeans trabalhados com rasgos e pintura, gráficos grandes, correntes e sneakers de peso. Cada peça é escolhida para ser notada.",
+    keyPieces: ["Jeans stacked com rasgos", "Camiseta ou hoodie gráfico", "Air Force 1 ou Jordan", "Corrente e boné"],
+    imageCount: 10,
+  },
+  opium: {
+    slug: "opium",
+    label: "Opium",
+    tagline: "Preto total com peso gótico",
+    description:
+      "Paleta fechada em preto, silhuetas largas e detalhes duros: couro, tachas, cruzes e gráficos sombrios. Menos cor, mais atmosfera.",
+    keyPieces: ["Camiseta gráfica preta", "Baggy jeans preto lavado", "Jaqueta de couro", "Cinto de tachas", "Bota ou sneaker preto"],
+    imageCount: 8,
+  },
+  sportlife: {
+    slug: "sportlife",
+    label: "Sportlife",
+    tagline: "Camisa de time como peça de estilo",
+    description:
+      "Jerseys de futebol, agasalhos de tactel e sneakers de corrida usados fora da quadra. A referência esportiva vira roupa de rua.",
+    keyPieces: ["Jersey de futebol", "Track pants de tactel", "Jorts ou short de moletom", "Sneaker esportivo", "Gorro ou boné"],
+    imageCount: 10,
+  },
+  boho: {
+    slug: "boho",
+    label: "Boho",
+    tagline: "Leveza artesanal em tons naturais",
+    description:
+      "Tecidos naturais, camisas de crochê e linho, calças amplas e acessórios artesanais. Paleta clara e caimento solto, feito para o calor.",
+    keyPieces: ["Camisa de crochê ou linho", "Calça ampla clara", "Sandália ou clog", "Colares e pulseiras"],
+    imageCount: 10,
   },
 };
 
