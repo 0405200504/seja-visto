@@ -10,6 +10,7 @@ import { Sparkline } from "@/components/admin/ui/charts";
 import { CopyButton } from "@/components/admin/copy-button";
 import { NewLinkModal } from "@/components/admin/growth/new-link-form";
 import { bulkLinksAction, updateLinkFieldAction } from "@/app/actions/admin/links";
+import { baseDoSite } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function LinksPage(props: { searchParams: Promise<SearchPar
   const params = parseListParams(sp, { sort: "created_at.desc" });
   const period = await getPeriod();
   const db = createAdminClient();
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const siteUrl = baseDoSite();
 
   let query = db.from("tracking_links").select("*", { count: "exact" }).is("deleted_at", null);
   if (params.q) query = query.or(`slug.ilike.${ilikePattern(params.q)},description.ilike.${ilikePattern(params.q)}`);

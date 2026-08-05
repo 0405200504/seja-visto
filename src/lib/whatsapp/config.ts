@@ -1,5 +1,6 @@
 import "server-only";
 import { normalizarTelefone } from "./phone";
+import { baseDoSite } from "@/lib/site-url";
 
 /**
  * Configuração das automações de WhatsApp.
@@ -26,7 +27,7 @@ function flag(nome: string, padrao: boolean): boolean {
 export type ConfigWhatsApp = ReturnType<typeof configWhatsApp>;
 
 export function configWhatsApp() {
-  const appUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const appUrl = baseDoSite();
 
   return {
     // ---------- Chaves gerais ----------

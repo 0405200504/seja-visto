@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { CopyButton } from "@/components/admin/copy-button";
 import { EmailTeste } from "@/components/admin/sistema/email-teste";
 import { cabecalhoDe, configSmtp, diagnosticoRemetente, dominioDe, remetente, replyTo } from "@/lib/email/config";
+import { baseDoSite } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ function StatusRow({ name, ok, detail }: { name: string; ok: boolean; detail: st
 
 export default async function IntegracoesPage() {
   const { profile } = await requireAdmin();
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const siteUrl = baseDoSite();
   const webhookUrl = `${siteUrl}/api/webhooks/cakto`;
 
   const de = remetente();

@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { checarRateLimit, ipDoServerAction } from "@/lib/rate-limit";
 import { enviarEmailDeRecuperacao } from "@/lib/email/acesso";
 import { validarSenha } from "@/lib/senha";
+import { urlDoSite } from "@/lib/site-url";
 
 export type AuthState = { error?: string; success?: string };
 
@@ -24,12 +25,7 @@ const FALHA_LOGIN = "E-mail ou senha incorretos. Verifique e tente novamente.";
 const RESET_ENVIADO = "Enviamos um link de recuperação para o seu e-mail.";
 const CADASTRO_ENVIADO = "Conta criada! Confira seu e-mail para confirmar o cadastro.";
 
-function siteUrl(path: string): string | undefined {
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
-  return base ? `${base}${path}` : undefined;
-}
+const siteUrl = urlDoSite;
 
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const supabase = await createClient();

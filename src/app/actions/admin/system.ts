@@ -9,6 +9,7 @@ import { checarRateLimit } from "@/lib/rate-limit";
 import { diagnosticoRemetente } from "@/lib/email/config";
 import { enviarEmailRegistrado } from "@/lib/email/envio";
 import { emailTeste } from "@/lib/email/templates";
+import { baseDoSite } from "@/lib/site-url";
 
 type Result = { ok: boolean; message: string };
 
@@ -123,7 +124,7 @@ export async function enviarEmailTesteAction(para: string): Promise<Result> {
     return { ok: false, message: `Envio não configurado. ${diagnostico.detalhe}` };
   }
 
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br").replace(/\/$/, "");
+  const siteUrl = baseDoSite();
   const msg = emailTeste({ siteUrl, para: destino });
 
   const envio = await enviarEmailRegistrado(

@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { chaveAcesso, chaveBonus, enviarEmailRegistrado } from "@/lib/email/envio";
 import { emailBonusLiberado } from "@/lib/email/templates";
 import { enviarEmailDeAcesso } from "@/lib/email/acesso";
+import { baseDoSite } from "@/lib/site-url";
 import { BASE_ENTITLEMENT, BONUSES } from "@/lib/bonuses";
 import {
   getSetting,
@@ -276,7 +277,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "E-mail do cliente ausente" }, { status: 400 });
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.manualpraticodooutfit.com.br";
+  const siteUrl = baseDoSite();
 
   /* ---------- Idempotência ----------
    * A Cakto reenvia eventos (timeout, retentativa, reprocessamento manual).

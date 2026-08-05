@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/admin/audit";
+import { baseDoSite } from "@/lib/site-url";
 
 type Result = { ok: boolean; message: string };
 
@@ -42,9 +43,7 @@ export async function reprocessarWebhookAction(eventId: string): Promise<Result>
     .eq("provider", "cakto")
     .eq("event_id", eventId);
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  const siteUrl = baseDoSite();
 
   // O segredo foi redigido antes de ir para o banco. Removemos a chave para o
   // webhook cair no header — senão ele leria "[redigido]" e recusaria.

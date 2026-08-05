@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import type { createAdminClient } from "@/lib/supabase/admin";
+import { baseDoSite } from "@/lib/site-url";
 
 /**
  * Link de "criar/redefinir senha" próprio do projeto.
@@ -37,14 +38,10 @@ export function diasDaFinalidade(finalidade: Finalidade): number {
   return finalidade === "acesso" ? DIAS_LINK_ACESSO : DIAS_LINK_RECUPERACAO;
 }
 
-/** Base canônica do site, sem barra no fim. */
-export function baseDoSite(): string {
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ??
-    "https://www.manualpraticodooutfit.com.br";
-  return base.replace(/\/$/, "");
-}
+/* O endereço público do site mora em @/lib/site-url — inclusive a trava que
+ * impede um link `localhost` de sair em e-mail. Reexportado aqui porque
+ * meio projeto já pedia `baseDoSite` deste módulo. */
+export { baseDoSite };
 
 /** O que fica guardado no lugar do token. */
 export function hashToken(token: string): string {
