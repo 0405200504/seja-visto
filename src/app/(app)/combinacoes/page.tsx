@@ -31,25 +31,36 @@ export default async function CombinacoesPage({
   const { supabase, user } = await requireProfile();
 
   let query = supabase.from("looks").select("*").order("created_at");
+  let temFiltro = false;
   for (const [param, column] of Object.entries(PARAM_TO_COLUMN)) {
     const value = params[param];
     if (typeof value === "string" && value) {
       query = query.eq(column, value);
+      temFiltro = true;
     }
   }
 
-  const [{ data: looks }, { data: favorites }, { data: facets }] = await Promise.all([
-    query.returns<Look[]>(),
-    supabase
-      .from("user_favorites")
-      .select("look_id")
-      .eq("user_id", user.id)
-      .eq("kind", "favorite"),
-    supabase
-      .from("looks")
-      .select("occasion, style, climate, level, base_color")
-      .returns<LookFacet[]>(),
-  ]);
+  const [{ data: looks }, { data: favorites }, { data: facetsFiltrados }] =
+    await Promise.all([
+      query.returns<Look[]>(),
+      supabase
+        .from("user_favorites")
+        .select("look_id")
+        .eq("user_id", user.id)
+        .eq("kind", "favorite"),
+      // Os filtros precisam listar TODAS as opções, não só as do recorte atual —
+      // por isso a segunda leitura. Sem filtro ativo ela seria idêntica à de
+      // cima, então nesse caso reaproveitamos o resultado em vez de ler a
+      // tabela `looks` inteira duas vezes.
+      temFiltro
+        ? supabase
+            .from("looks")
+            .select("occasion, style, climate, level, base_color")
+            .returns<LookFacet[]>()
+        : Promise.resolve({ data: null }),
+    ]);
+
+  const facets = facetsFiltrados ?? (looks as LookFacet[] | null);
 
   looks?.sort((a, b) => (LEVEL_ORDER[a.level] ?? 1) - (LEVEL_ORDER[b.level] ?? 1));
 

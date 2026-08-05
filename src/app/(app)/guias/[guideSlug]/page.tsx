@@ -20,10 +20,14 @@ export default async function GuiaPage({
   params: Promise<{ guideSlug: string }>;
 }) {
   const { guideSlug } = await params;
-  const guide = applyOverride(getGuide(guideSlug), await getOverrides("guia"), guideSlug);
-  if (!guide) notFound();
+  // Em paralelo: a checagem de acesso não depende dos overrides, e vice-versa.
+  const [overrides, { supabase, user }] = await Promise.all([
+    getOverrides("guia"),
+    requireProfile(),
+  ]);
 
-  const { supabase, user } = await requireProfile();
+  const guide = applyOverride(getGuide(guideSlug), overrides, guideSlug);
+  if (!guide) notFound();
 
   let interactive: React.ReactNode = null;
   if (guide.interactive?.kind === "outfits") {

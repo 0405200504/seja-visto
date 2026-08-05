@@ -14,13 +14,14 @@ export const metadata: Metadata = { title: "Bônus" };
 export default async function BonusPage() {
   const { supabase, user } = await requireProfile();
 
-  const { data: rows } = await supabase
-    .from("user_entitlements")
-    .select("entitlement")
-    .eq("user_id", user.id);
+  // Em paralelo: os overrides não dependem dos entitlements do aluno.
+  const [{ data: rows }, overrides] = await Promise.all([
+    supabase.from("user_entitlements").select("entitlement").eq("user_id", user.id),
+    getOverrides("bonus"),
+  ]);
 
   const owned = new Set((rows ?? []).map((r) => r.entitlement));
-  const bonuses = applyOverrides(BONUSES, await getOverrides("bonus"), (b) => b.key);
+  const bonuses = applyOverrides(BONUSES, overrides, (b) => b.key);
   const unlockedCount = bonuses.filter((b) => owned.has(b.key)).length;
 
   return (

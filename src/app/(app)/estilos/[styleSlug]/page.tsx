@@ -18,10 +18,15 @@ export default async function EstiloDetailPage({
   params: Promise<{ styleSlug: string }>;
 }) {
   const { styleSlug } = await params;
-  const style = applyOverride(STYLE_PROFILES[styleSlug], await getOverrides("estilo"), styleSlug);
+  // Em paralelo: a checagem de acesso não depende dos overrides, e vice-versa.
+  const [overrides, { profile }] = await Promise.all([
+    getOverrides("estilo"),
+    requireProfile(),
+  ]);
+
+  const style = applyOverride(STYLE_PROFILES[styleSlug], overrides, styleSlug);
   if (!style) notFound();
 
-  const { profile } = await requireProfile();
   const isYours = profile.preferred_style === style.slug;
   const images = styleImages(style.slug);
 

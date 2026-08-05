@@ -10,8 +10,9 @@ import { applyOverrides, getOverrides } from "@/lib/content-overrides";
 export const metadata: Metadata = { title: "Guias" };
 
 export default async function GuiasPage() {
-  await requireProfile();
-  const guides = applyOverrides(GUIDES, await getOverrides("guia"), (g) => g.slug);
+  // Em paralelo: a checagem de acesso não depende dos overrides, e vice-versa.
+  const [, overrides] = await Promise.all([requireProfile(), getOverrides("guia")]);
+  const guides = applyOverrides(GUIDES, overrides, (g) => g.slug);
 
   return (
     <div className="animate-fade-up">

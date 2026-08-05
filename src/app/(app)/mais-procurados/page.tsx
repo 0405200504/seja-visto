@@ -8,8 +8,9 @@ import { applyOverrides, getOverrides } from "@/lib/content-overrides";
 export const metadata: Metadata = { title: "Mais Procurados" };
 
 export default async function MaisProcuradosPage() {
-  await requireProfile();
-  const mostWanted = applyOverrides(MOST_WANTED, await getOverrides("glossario"), (m) => m.slug);
+  // Em paralelo: a checagem de acesso não depende dos overrides, e vice-versa.
+  const [, overrides] = await Promise.all([requireProfile(), getOverrides("glossario")]);
+  const mostWanted = applyOverrides(MOST_WANTED, overrides, (m) => m.slug);
 
   return (
     <div className="animate-fade-up">

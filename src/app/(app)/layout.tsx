@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { requirePaidAccess } from "@/lib/auth";
 import { Sidebar, MobileHeader } from "@/components/app/app-nav";
 
@@ -13,12 +14,16 @@ export default async function AppLayout({
 
   // Marca o último acesso (no máx. 1x a cada 30 min) — alimenta "Ativos" e a
   // coluna "Última atividade" do admin.
+  // Vai em `after()`: é telemetria, ninguém precisa esperar esse write para ver
+  // a tela. Antes ele segurava a renderização de TODA página do app.
   const lastSeen = profile.last_seen_at ? new Date(profile.last_seen_at).getTime() : 0;
   if (Date.now() - lastSeen > 30 * 60 * 1000) {
-    await supabase
-      .from("users_profile")
-      .update({ last_seen_at: new Date().toISOString() })
-      .eq("user_id", profile.user_id);
+    after(async () => {
+      await supabase
+        .from("users_profile")
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq("user_id", profile.user_id);
+    });
   }
 
   return (

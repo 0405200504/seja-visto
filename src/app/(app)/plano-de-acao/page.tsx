@@ -13,13 +13,17 @@ export const metadata: Metadata = { title: "Plano de Ação" };
 export default async function PlanoDeAcaoPage() {
   const { supabase, user } = await requireProfile();
 
-  const { data: progress } = await supabase
-    .from("action_plan_progress")
-    .select("*")
-    .eq("user_id", user.id)
-    .returns<ActionPlanProgress[]>();
+  // Em paralelo: os overrides não dependem do progresso do aluno.
+  const [{ data: progress }, overrides] = await Promise.all([
+    supabase
+      .from("action_plan_progress")
+      .select("*")
+      .eq("user_id", user.id)
+      .returns<ActionPlanProgress[]>(),
+    getOverrides("plano"),
+  ]);
 
-  const planDays = applyOverrides(ACTION_PLAN_DAYS, await getOverrides("plano"), (d) => `dia-${d.day}`);
+  const planDays = applyOverrides(ACTION_PLAN_DAYS, overrides, (d) => `dia-${d.day}`);
   const byDay = new Map((progress ?? []).map((p) => [p.day, p]));
   const completedCount = (progress ?? []).filter((p) => p.completed).length;
   const pct = Math.round((completedCount / ACTION_PLAN_DAYS.length) * 100);

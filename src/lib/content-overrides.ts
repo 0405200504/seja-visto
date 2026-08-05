@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -16,18 +17,21 @@ export type OverrideRow = {
   order_index: number | null;
 };
 
-export async function getOverrides(kind: ContentKind): Promise<Map<string, OverrideRow>> {
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("content_overrides")
-      .select("slug, patch, hidden, order_index")
-      .eq("kind", kind);
-    return new Map((data ?? []).map((r) => [r.slug, r as OverrideRow]));
-  } catch {
-    return new Map();
+/** Deduplicado por requisição: a mesma página nunca lê o mesmo `kind` duas vezes. */
+export const getOverrides = cache(
+  async (kind: ContentKind): Promise<Map<string, OverrideRow>> => {
+    try {
+      const supabase = await createClient();
+      const { data } = await supabase
+        .from("content_overrides")
+        .select("slug, patch, hidden, order_index")
+        .eq("kind", kind);
+      return new Map((data ?? []).map((r) => [r.slug, r as OverrideRow]));
+    } catch {
+      return new Map();
+    }
   }
-}
+);
 
 /** Aplica patch/ocultar/ordem sobre a lista estática. */
 export function applyOverrides<T extends object>(

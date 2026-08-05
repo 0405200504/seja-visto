@@ -11,14 +11,14 @@ import { applyOverrides, getOverrides } from "@/lib/content-overrides";
 export const metadata: Metadata = { title: "Estilos" };
 
 export default async function EstilosPage() {
-  const { profile } = await requireProfile();
+  // Em paralelo: a checagem de acesso não depende dos overrides, e vice-versa.
+  const [{ profile }, overrides] = await Promise.all([
+    requireProfile(),
+    getOverrides("estilo"),
+  ]);
   const userStyle = profile.preferred_style;
 
-  const styles = applyOverrides(
-    Object.values(STYLE_PROFILES),
-    await getOverrides("estilo"),
-    (s) => s.slug
-  );
+  const styles = applyOverrides(Object.values(STYLE_PROFILES), overrides, (s) => s.slug);
   const ordered = styles.sort((a, b) =>
     a.slug === userStyle ? -1 : b.slug === userStyle ? 1 : 0
   );

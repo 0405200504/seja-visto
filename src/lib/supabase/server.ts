@@ -1,7 +1,15 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export async function createClient() {
+/**
+ * Client do Supabase para Server Components / Actions.
+ *
+ * Envolvido no `cache()` do React: dentro da MESMA requisição, layout e página
+ * passam a compartilhar uma única instância em vez de criar uma nova cada vez.
+ * Isso é o que permite deduplicar o `getUser()` em `@/lib/auth`.
+ */
+export const createClient = cache(async () => {
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -24,4 +32,4 @@ export async function createClient() {
       },
     }
   );
-}
+});

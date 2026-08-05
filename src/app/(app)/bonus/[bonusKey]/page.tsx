@@ -15,10 +15,14 @@ export default async function BonusDetailPage({
   params: Promise<{ bonusKey: string }>;
 }) {
   const { bonusKey } = await params;
-  const bonus = applyOverride(getBonus(bonusKey), await getOverrides("bonus"), bonusKey);
-  if (!bonus || bonus.type === "badge") notFound();
+  // Em paralelo: a checagem de acesso não depende dos overrides, e vice-versa.
+  const [overrides, { supabase, user }] = await Promise.all([
+    getOverrides("bonus"),
+    requireProfile(),
+  ]);
 
-  const { supabase, user } = await requireProfile();
+  const bonus = applyOverride(getBonus(bonusKey), overrides, bonusKey);
+  if (!bonus || bonus.type === "badge") notFound();
 
   const { data: entitlement } = await supabase
     .from("user_entitlements")

@@ -1,13 +1,54 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 
-/** Garante usuário autenticado em Server Components / Actions. */
-export async function requireUser() {
+/**
+ * Por que tudo aqui passa pelo `cache()`:
+ *
+ * Numa navegação do app o layout chama `requirePaidAccess()` e a página chama
+ * `requireProfile()`. Sem dedupe isso virava, por página, 2 chamadas ao Auth do
+ * Supabase (`getUser` é uma requisição HTTP, não uma leitura local do cookie) e
+ * 2 leituras de `users_profile` — em série, somando latência de rede antes de
+ * qualquer HTML sair. O `cache()` do React vale por requisição: a segunda
+ * chamada reaproveita a promise da primeira.
+ */
+
+/** Usuário autenticado — uma única chamada ao Auth por requisição. */
+const getUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  return { supabase, user };
+});
+
+/** Perfil — uma única leitura de `users_profile` por requisição. */
+const getProfile = cache(async (userId: string) => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("users_profile")
+    .select("*")
+    .eq("user_id", userId)
+    .single<Profile>();
+  return data;
+});
+
+/** Entitlement do produto base — uma única leitura por requisição. */
+const getBaseEntitlement = cache(async (userId: string) => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("user_entitlements")
+    .select("expires_at")
+    .eq("user_id", userId)
+    .eq("entitlement", "base")
+    .maybeSingle<{ expires_at: string | null }>();
+  return data;
+});
+
+/** Garante usuário autenticado em Server Components / Actions. */
+export async function requireUser() {
+  const { supabase, user } = await getUser();
 
   if (!user) redirect("/login");
   return { supabase, user };
@@ -17,11 +58,7 @@ export async function requireUser() {
 export async function requireProfile() {
   const { supabase, user } = await requireUser();
 
-  const { data: profile } = await supabase
-    .from("users_profile")
-    .select("*")
-    .eq("user_id", user.id)
-    .single<Profile>();
+  const profile = await getProfile(user.id);
 
   if (!profile?.onboarding_completed) redirect("/onboarding");
   return { supabase, user, profile };
@@ -45,12 +82,7 @@ export async function requirePaidAccess() {
   const { supabase, user, profile } = await requireProfile();
   if (profile.is_admin) return { supabase, user, profile };
 
-  const { data: entitlement } = await supabase
-    .from("user_entitlements")
-    .select("expires_at")
-    .eq("user_id", user.id)
-    .eq("entitlement", "base")
-    .maybeSingle<{ expires_at: string | null }>();
+  const entitlement = await getBaseEntitlement(user.id);
 
   const ativo =
     entitlement &&
