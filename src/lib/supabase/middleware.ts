@@ -1,11 +1,22 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  COOKIE_PORTAO,
+  assinaturaDoPortao,
+  assinaturasIguais,
+  vendasAbertas,
+} from "@/lib/lancamento";
 
 const PUBLIC_PATHS = [
   "/login",
   "/cadastro",
   "/recuperar-senha",
   "/nova-senha",
+  // Tela de senha do pré-lançamento e o robots.txt: os dois têm que
+  // responder para quem não tem sessão nenhuma — inclusive para o robô do
+  // Google, que senão levaria um redirecionamento para o login.
+  "/portao",
+  "/robots.txt",
   // Link de criar senha do e-mail: quem chega aqui, por definição, ainda
   // não tem sessão. Sem esta linha o middleware devolveria a pessoa para
   // o login e a tela de senha nunca apareceria.
@@ -61,6 +72,24 @@ export async function updateSession(request: NextRequest) {
   // A raiz "/" é a página de vendas — pública para visitantes e alunos.
   const isPublic =
     pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+
+  // Portão de pré-lançamento: até a data de abertura, a página de vendas só
+  // aparece para quem digitou a senha. Aluno logado passa direto — se tem
+  // sessão, já comprou. Depois da data, este bloco inteiro é ignorado.
+  if (pathname === "/" && !user && !vendasAbertas()) {
+    const cookie = request.cookies.get(COOKIE_PORTAO)?.value ?? "";
+    const esperada = await assinaturaDoPortao();
+
+    if (!assinaturasIguais(cookie, esperada)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/portao";
+      url.search = "";
+      const redirecionamento = NextResponse.redirect(url);
+      // Mesmo no desvio, avisa o buscador para não guardar nada disto.
+      redirecionamento.headers.set("x-robots-tag", "noindex, nofollow");
+      return redirecionamento;
+    }
+  }
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
