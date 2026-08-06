@@ -74,15 +74,19 @@ export async function updateSession(request: NextRequest) {
     pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
   // Portão de pré-lançamento: até a data de abertura, a página de vendas só
-  // aparece para quem digitou a senha. Aluno logado passa direto — se tem
-  // sessão, já comprou. Depois da data, este bloco inteiro é ignorado.
-  if (pathname === "/" && !user && !vendasAbertas()) {
+  // aparece para quem digitou a senha — INCLUSIVE para quem está logado.
+  // Ter conta não prova ter comprado: /cadastro é aberto, então "deixar
+  // passar quem tem sessão" seria a mesma coisa que deixar qualquer lead
+  // criar conta e ver a oferta. Depois da data, este bloco é ignorado.
+  if (pathname === "/" && !vendasAbertas()) {
     const cookie = request.cookies.get(COOKIE_PORTAO)?.value ?? "";
     const esperada = await assinaturaDoPortao();
 
     if (!assinaturasIguais(cookie, esperada)) {
       const url = request.nextUrl.clone();
-      url.pathname = "/portao";
+      // Quem já está logado não tem o que fazer na página de vendas agora:
+      // vai direto para dentro da plataforma, sem ver tela de senha.
+      url.pathname = user ? "/dashboard" : "/portao";
       url.search = "";
       const redirecionamento = NextResponse.redirect(url);
       // Mesmo no desvio, avisa o buscador para não guardar nada disto.
