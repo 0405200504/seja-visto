@@ -11,9 +11,15 @@
  * prioridade sobre o que está escrito aqui).
  */
 
-/** Momento exato em que a página de vendas abre para todo mundo (horário de Brasília). */
+/**
+ * Momento exato em que a página de vendas abre para todo mundo (horário de
+ * Brasília). Data no passado = página aberta, portão desligado.
+ *
+ * Aberta desde 08/08/2026. Para trancar de novo, basta colocar aqui uma data
+ * no futuro e dar push na main.
+ */
 export const VENDAS_ABREM_EM =
-  process.env.VENDAS_ABRE_EM ?? "2026-08-10T19:00:00-03:00";
+  process.env.VENDAS_ABRE_EM ?? "2026-08-08T00:00:00-03:00";
 
 /** Senha do portão. Só entra quem você mandar isto por mensagem. */
 export const VENDAS_SENHA = process.env.VENDAS_SENHA ?? "mpo-bastidores-2026";

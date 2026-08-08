@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 /**
  * Testes do portão de pré-lançamento.
@@ -6,6 +6,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
  * O que importa aqui é o par de garantias que sustenta o lançamento: senha
  * errada não passa de jeito nenhum, e a senha certa grava um cookie que o
  * middleware aceita — o mesmo cookie, calculado pela mesma função.
+ *
+ * Com a página de vendas já aberta, o portão só tem comportamento para testar
+ * se o relógio estiver antes da data de abertura — então os testes fixam o
+ * relógio em vez de depender do dia em que rodam.
  */
 
 const cookiesGravados: Array<{ nome: string; valor: string; opcoes: Record<string, unknown> }> = [];
@@ -45,6 +49,20 @@ beforeEach(() => {
 });
 
 describe("portão de pré-lançamento", () => {
+  // Um dia antes da abertura: portão fechado, que é a situação que ele existe
+  // para cobrir. Só o Date é falsificado — timers de verdade continuam vivos,
+  // senão o crypto.subtle não resolveria.
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: ["Date"],
+      now: new Date(VENDAS_ABREM_EM).getTime() - 86_400_000,
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("recusa senha errada sem gravar cookie", async () => {
     const r = await abrirPortao({}, form("chutando"));
     expect(r.error).toMatch(/incorreta/i);
