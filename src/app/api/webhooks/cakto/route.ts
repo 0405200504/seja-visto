@@ -481,10 +481,15 @@ export async function POST(request: Request) {
   const tokenCredits = allEntitlements.reduce((sum, e) => sum + (parseTokenGrant(e) ?? 0), 0);
   let entitlements = allEntitlements.filter((e) => parseTokenGrant(e) === null);
 
-  // Se comprou ou reembolsou o compre tudo com 58% off, expande a ação para MPO Base + todos os bônus
+  /* O "compre tudo economizando 58%" é o pacote dos BÔNUS, não do MPO.
+   *
+   * Ele NÃO libera o `base`: bônus é vitalício, mas só é acessível com a
+   * assinatura do MPO em dia — o layout de (app) exige `requirePaidAccess`.
+   * Enquanto isto entregava `base` junto, e sem validade, R$ 67 comprava a
+   * plataforma inteira para sempre e a assinatura nunca mais era paga. */
   if (entitlements.includes("economize-58")) {
     const bonusKeys = BONUSES.map((b) => b.key);
-    entitlements = Array.from(new Set([...entitlements, "base", ...bonusKeys]));
+    entitlements = Array.from(new Set([...entitlements, ...bonusKeys]));
   }
 
   /* ---------- Revogação (reembolso/chargeback) ---------- */
@@ -496,12 +501,15 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (profile) {
-      /* Reembolso do produto principal (ou do pacote 58%) derruba TUDO.
+      /* Reembolso do produto principal derruba TUDO.
        * Antes, só o entitlement mapeado era apagado — então quem comprava
        * um bump barato ganhava o `base` junto e ficava com ele depois de
-       * pedir reembolso. */
-      const derrubaTudo =
-        entitlements.includes(BASE_ENTITLEMENT) || entitlements.includes("economize-58");
+       * pedir reembolso.
+       *
+       * O pacote 58% ficou de fora desta regra junto com a mudança que parou
+       * de entregar `base` nele: quem devolve o pacote de bônus perde os
+       * bônus, mas a assinatura do MPO foi paga à parte e continua de pé. */
+      const derrubaTudo = entitlements.includes(BASE_ENTITLEMENT);
 
       const aRevogar = derrubaTudo
         ? [BASE_ENTITLEMENT, "economize-58", ...BONUSES.map((b) => b.key)]

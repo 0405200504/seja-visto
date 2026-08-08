@@ -389,31 +389,60 @@ async function grupoPacote(mapa) {
   checa("pacote: webhook 200", r.status === 200, `status ${r.status}`);
 
   const granted = arr(r.corpo?.granted);
-  const esperados = ["base", "economize-58", ...bonusKeys];
-  const faltando = esperados.filter((e) => !granted.includes(e));
+  const faltando = bonusKeys.filter((e) => !granted.includes(e));
   checa(
-    `pacote libera MPO + os ${bonusKeys.length} bônus (${esperados.length} itens)`,
+    `pacote libera os ${bonusKeys.length} bônus`,
     faltando.length === 0,
     faltando.length ? `FALTOU: ${faltando.join(", ")}` : `${granted.length} itens liberados`
+  );
+
+  /* A regra do negócio: bônus é vitalício, mas só abre com a assinatura do
+   * MPO em dia. Então o pacote NÃO pode entregar `base` — senão R$ 67
+   * comprariam a plataforma inteira para sempre. */
+  checa(
+    "pacote NÃO entrega o MPO junto",
+    !granted.includes("base"),
+    granted.includes("base") ? "REGRESSÃO: o pacote voltou a liberar 'base'" : "só bônus, como esperado"
   );
 
   await espera(1500);
   const a = await acessos(CONTA.pacote);
   checa(
-    "todos os itens do pacote estão no banco",
-    esperados.every((e) => a.mapa.has(e)),
+    "todos os bônus do pacote estão no banco, sem validade",
+    bonusKeys.every((e) => a.mapa.has(e) && a.mapa.get(e).expires_at === null),
     `${a.mapa.size} entitlement(s) gravado(s)`
   );
-
-  /* O pacote não traz validity_days, então o base sai vitalício. Isso é
-   * intencional? Vale conferir com olho humano — por isso fica como aviso. */
-  const baseRow = a.mapa.get("base");
   checa(
-    "ATENÇÃO: pacote 58% dá base SEM data de vencimento",
-    baseRow?.expires_at === null ? null : true,
-    baseRow?.expires_at === null
-      ? "expires_at=null → acesso vitalício. Se a intenção era 1 ano, defina validity_days=365 no produto."
-      : `expires_at em ${emDias(baseRow?.expires_at)} dia(s)`
+    "quem só comprou o pacote não tem acesso à plataforma",
+    !a.mapa.has("base"),
+    a.mapa.has("base") ? `base presente (expira em ${emDias(a.mapa.get("base").expires_at)} dias)` : "sem 'base' — precisa assinar o MPO para ver os bônus"
+  );
+
+  // ---- Reembolso do pacote não pode derrubar a assinatura, que foi paga à parte ----
+  console.log(`\n— reembolso do pacote em quem TAMBÉM assina o MPO —`);
+  const mensal = mapa.find((m) => m.entitlement === "base" && m.validity_days === 30);
+  await webhook(
+    payload("purchase_approved", {
+      conta: CONTA.pacote,
+      ofertas: [mensal.cakto_id],
+      valor: mensal.expected_amount_cents / 100,
+    })
+  );
+  await espera(1200);
+  await webhook(payload("refund", { conta: CONTA.pacote, ofertas: [pacote.cakto_id] }));
+  await espera(1500);
+  const depois = await acessos(CONTA.pacote);
+  checa(
+    "reembolso do pacote tira os bônus",
+    bonusKeys.every((k) => !depois.mapa.has(k)),
+    `sobrou dos bônus: ${bonusKeys.filter((k) => depois.mapa.has(k)).join(", ") || "nada"}`
+  );
+  checa(
+    "reembolso do pacote MANTÉM a assinatura do MPO",
+    depois.mapa.has("base"),
+    depois.mapa.has("base")
+      ? `base intacto, expira em ${emDias(depois.mapa.get("base").expires_at)} dia(s)`
+      : "REGRESSÃO: devolver o pacote de bônus cancelou a assinatura paga à parte"
   );
 }
 
