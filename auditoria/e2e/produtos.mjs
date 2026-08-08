@@ -59,9 +59,13 @@ let atual = null;
 /** Ids que um grupo cria e o outro precisa (ex.: reembolsar a MESMA transação). */
 const contexto = {};
 
-function grupo(nome) {
-  if (SO && SO !== nome) return false;
-  console.log(`\n${"═".repeat(72)}\n  ${nome.toUpperCase()}\n${"═".repeat(72)}`);
+/**
+ * Abre um grupo. O filtro --so= compara com `atual` (a chave curta), não com
+ * o título exibido — senão `--so=pacote` nunca casaria com "pacote 58%".
+ */
+function grupo(titulo) {
+  if (SO && SO !== atual) return false;
+  console.log(`\n${"═".repeat(72)}\n  ${titulo.toUpperCase()}\n${"═".repeat(72)}`);
   return true;
 }
 
