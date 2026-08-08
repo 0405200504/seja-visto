@@ -10,6 +10,127 @@ import {
 } from "lucide-react";
 import { Reveal } from "./reveal";
 
+/* ── Seção 9.5 — O método, módulo por módulo ──────────────── */
+
+/**
+ * Currículo real da plataforma: títulos, descrições e número de aulas saem
+ * da tabela `modules`/`lessons` do banco. Se um módulo for renomeado ou
+ * ganhar aula lá dentro, esta lista precisa ser atualizada junto — é a única
+ * parte da página de vendas que promete conteúdo nome por nome.
+ */
+const MODULES = [
+  {
+    n: 1,
+    title: "Diagnóstico de Estilo",
+    lessons: 4,
+    text: "Entenda por que você sente que não se veste bem e defina a imagem que quer passar. É aqui que o método começa.",
+  },
+  {
+    n: 2,
+    title: "Fundamentos",
+    lessons: 6,
+    text: "Caimento, proporção, cores, texturas, ocasião e terceira peça: os 6 pilares que separam roupa bonita de look bem construído.",
+  },
+  {
+    n: 3,
+    title: "Guarda-Roupa Base",
+    lessons: 4,
+    text: "As peças essenciais e coringas que sustentam qualquer combinação — e a ordem certa de compra.",
+  },
+  {
+    n: 4,
+    title: "Fórmulas de Looks",
+    lessons: 6,
+    text: "Fórmulas prontas e repetíveis para cada situação: do básico premium ao look de date.",
+  },
+  {
+    n: 5,
+    title: "Aprenda a usar as combinações do MPO",
+    lessons: 5,
+    text: "Como usar o lookbook da plataforma: combinações prontas por ocasião, estilo e clima, fáceis de copiar.",
+  },
+  {
+    n: 6,
+    title: "Guia de Cores",
+    lessons: 4,
+    text: "Dos neutros que nunca erram às combinações avançadas com cor de destaque.",
+  },
+  {
+    n: 7,
+    title: "Compras Inteligentes",
+    lessons: 4,
+    text: "Compre menos e melhor: como evitar peças inúteis e investir na ordem certa.",
+  },
+  {
+    n: 8,
+    title: "Plano de Ação",
+    lessons: 4,
+    text: "O desafio de 7 dias que transforma o método em hábito — com missões práticas e checklist final.",
+  },
+];
+
+export function MethodSection() {
+  return (
+    <section id="metodo" className="relative scroll-mt-24 py-20 md:py-28">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent"
+      />
+      <div className="mx-auto max-w-[1280px] px-5 md:px-8">
+        <div className="max-w-2xl">
+          <Reveal>
+            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
+              O método completo
+            </p>
+          </Reveal>
+          <Reveal delay={100}>
+            <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
+              8 módulos, 37 aulas — e você sabe exatamente o que tem dentro.
+            </h2>
+          </Reveal>
+          <Reveal delay={200}>
+            <p className="mt-6 leading-relaxed text-[#A4AAB5]">
+              As aulas são em texto, curtas e diretas: você lê em poucos minutos
+              e volta para consultar sempre que precisar, sem procurar o minuto
+              certo de um vídeo de 40 minutos.
+            </p>
+          </Reveal>
+        </div>
+
+        <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {MODULES.map((mod, i) => (
+            <Reveal key={mod.n} delay={i * 80}>
+              <div className="group h-full rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-6 transition-all hover:-translate-y-1 hover:border-[#146CFF]/50 hover:shadow-[0_12px_40px_-16px_rgb(20_108_255/0.35)]">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <span className="flex size-9 items-center justify-center rounded-xl border border-[#20242C] bg-[#146CFF]/[0.08] font-display text-sm font-bold text-[#78A9FF] transition-colors group-hover:bg-[#146CFF]/[0.16]">
+                    {mod.n}
+                  </span>
+                  <span className="rounded-full border border-[#20242C] px-2.5 py-1 text-[10px] font-medium text-[#A4AAB5]">
+                    {mod.lessons} aulas
+                  </span>
+                </div>
+                <h3 className="font-display text-base font-bold leading-snug text-[#F5F7FA]">
+                  {mod.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#A4AAB5]">
+                  {mod.text}
+                </p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal delay={300}>
+          <p className="mt-10 text-center text-sm leading-relaxed text-[#A4AAB5]/80">
+            O progresso de cada aula fica salvo, e o dashboard sempre mostra de
+            onde você parou.
+          </p>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 /* ── Seção 10 — Os 16 estilos ─────────────────────────────── */
 
 const STYLES = [
@@ -98,7 +219,7 @@ export function StylesSection() {
 
       <Reveal delay={300}>
         <p className="mt-8 text-center font-display text-sm font-semibold tracking-wide text-[#F5F7FA]">
-          Mais de <span className="text-[#78A9FF]">220 fotos reais</span> de
+          São <span className="text-[#78A9FF]">228 fotos reais</span> de
           referência organizadas por estilo.
         </p>
       </Reveal>
@@ -326,9 +447,9 @@ export function WardrobeSection() {
             </Reveal>
             <Reveal delay={120}>
               <p className="mt-6 leading-relaxed text-[#A4AAB5]">
-                O MPO organiza as peças por categoria e prioridade. Você marca o
-                que já possui, adiciona o que deseja comprar e evita gastar
-                dinheiro em roupas que não se conectam com o restante do
+                São 30 peças mapeadas em 6 categorias e 3 níveis de prioridade.
+                Você marca o que já possui, adiciona o que deseja comprar e evita
+                gastar dinheiro em roupas que não se conectam com o restante do
                 guarda-roupa.
               </p>
             </Reveal>
@@ -374,7 +495,7 @@ export function WardrobeSection() {
                   Meu guarda-roupa
                 </p>
                 <span className="rounded-full bg-[#146CFF]/[0.12] px-3 py-1 text-[10px] font-semibold text-[#78A9FF]">
-                  14 de 24 peças
+                  17 de 30 peças
                 </span>
               </div>
               <div className="mb-6">

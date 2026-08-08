@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Check, ChevronDown, Minus } from "lucide-react";
+import { Check, ChevronDown, Minus, ShieldCheck } from "lucide-react";
 import { Reveal } from "./reveal";
 import {
   ANNUAL_CHECKOUT_URL,
@@ -25,6 +25,7 @@ const MPO_WAY = [
   "Guarda-roupa organizado",
   "Progresso acompanhado",
   "Fit Check com IA",
+  "Fits reais dos outros alunos",
   "Uso contínuo no dia a dia",
 ];
 
@@ -308,19 +309,20 @@ const DELIVERABLES = [
   "Quiz e diagnóstico personalizado",
   "Dashboard individual",
   "8 módulos",
-  "37 aulas",
+  "37 aulas em texto",
   "Lookbook com filtros avançados",
   "16 estilos masculinos",
-  "Mais de 190 referências",
+  "228 referências visuais",
   "11 guias práticos",
-  "Ferramentas interativas",
-  "Dicionário do outfit",
-  "Guarda-roupa inteligente",
+  "3 ferramentas interativas",
+  "Dicionário com 24 peças",
+  "Guarda-roupa com 30 peças",
   "Lista de compras",
   "Área de favoritos",
   "Plano de ação de 7 dias",
   "Fit Check com IA",
   "Histórico das análises",
+  "Fits da comunidade",
   "Atualizações da plataforma",
 ];
 
@@ -371,14 +373,15 @@ export function StackSection() {
 const PLAN_BENEFITS = [
   "Acesso completo à plataforma",
   "Dashboard personalizado",
-  "Método com 37 aulas",
+  "Método com 8 módulos e 37 aulas",
   "Lookbook completo",
-  "190+ referências",
+  "228 referências visuais",
   "Guias e ferramentas interativas",
   "Guarda-roupa inteligente",
   "Plano de 7 dias",
   "Fit Check com IA",
-  "Cupons exclusivos",
+  "Fits da comunidade",
+  "Cupons de marcas parceiras",
   "Atualizações durante o período de acesso",
 ];
 
@@ -498,7 +501,33 @@ export function PricingSection() {
           </div>
         </Reveal>
 
+        {/* Garantia legal (CDC art. 49) — está na página de reembolso, então
+            precisa aparecer aqui também, ao lado do preço. */}
         <Reveal delay={300}>
+          <div className="mx-auto mt-8 flex max-w-2xl items-start gap-4 rounded-2xl border border-[#146CFF]/30 bg-[#146CFF]/[0.05] p-6">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-[#146CFF]/40 bg-[#146CFF]/[0.1] text-[#78A9FF]">
+              <ShieldCheck className="size-5" aria-hidden />
+            </span>
+            <div>
+              <p className="font-display text-base font-bold text-[#F5F7FA]">
+                7 dias de garantia
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-[#A4AAB5]">
+                Entre, use a plataforma inteira e, se não for para você, peça o
+                reembolso em até 7 dias corridos — sem precisar justificar.{" "}
+                <a
+                  href="/reembolso"
+                  className="font-medium text-[#78A9FF] hover:underline"
+                >
+                  Ver a política
+                </a>
+                .
+              </p>
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delay={350}>
           <p className="mt-8 text-center text-xs text-[#A4AAB5]/70">
             O acesso é individual e vinculado à conta cadastrada.
           </p>
@@ -529,7 +558,27 @@ const FAQ = [
   },
   {
     q: "Existe limite para usar o Fit Check?",
-    a: "Sim. A ferramenta possui um limite diário para manter a qualidade e a disponibilidade do serviço.",
+    a: "Sim. Você começa com 5 análises de foto incluídas e pode conversar por texto com o consultor até 20 mensagens por dia — o contador zera à meia-noite. Se quiser mais análises de foto, existem pacotes avulsos dentro da plataforma.",
+  },
+  {
+    q: "Como recebo o acesso depois de comprar?",
+    a: "A liberação é automática. Assim que o pagamento é confirmado, você recebe no e-mail da compra um link para criar sua senha e entrar. O link vale 30 dias, então não tem pressa nem risco de expirar antes de você abrir o e-mail.",
+  },
+  {
+    q: "Tem garantia?",
+    a: "Sim. Você tem 7 dias corridos a partir da compra para pedir reembolso integral, sem precisar justificar — é o direito de arrependimento previsto no Código de Defesa do Consumidor. Basta escrever para o suporte.",
+  },
+  {
+    q: "Existe uma comunidade?",
+    a: "Sim. Na área de Refs você publica os seus próprios fits e vê os fits reais dos outros alunos, podendo curtir, salvar e comentar. Todo fit enviado passa por aprovação antes de ficar visível, para manter a área organizada.",
+  },
+  {
+    q: "O que são os bônus da plataforma?",
+    a: "São 9 conteúdos extras opcionais — como corte ideal para o seu rosto, montar a mala, ficar bem nas fotos, círculo cromático e o grupo no WhatsApp. Eles não estão inclusos nos planos: são vendidos à parte e ficam visíveis dentro da plataforma, com liberação automática se você quiser algum.",
+  },
+  {
+    q: "O que acontece quando meu acesso termina?",
+    a: "Você perde o acesso às áreas da plataforma, mas nada do que você preencheu é apagado: guarda-roupa, favoritos, progresso e análises continuam salvos e voltam do jeito que estavam se você renovar.",
   },
   {
     q: "Consigo usar pelo celular?",
@@ -654,7 +703,7 @@ export function FinalCtaSection() {
         </Reveal>
         <Reveal delay={440}>
           <p className="mt-5 text-xs font-medium text-[#A4AAB5]/70">
-            Planos a partir de 12x de R$17.
+            Planos a partir de 12x de R$17 · 7 dias de garantia
           </p>
         </Reveal>
       </div>

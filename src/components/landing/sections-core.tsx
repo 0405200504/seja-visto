@@ -144,7 +144,7 @@ export function SolutionSection() {
             <p className="mt-6 leading-relaxed text-[#A4AAB5]">
               Ao entrar, você responde cinco perguntas rápidas sobre seu
               objetivo, suas dificuldades e o jeito que gostaria de ser
-              percebido. A plataforma cruza essas respostas com 12 perfis de
+              percebido. A plataforma cruza essas respostas com 16 perfis de
               estilo e passa a recomendar outfits, conteúdos e próximos passos de
               acordo com você.
             </p>
@@ -250,11 +250,15 @@ export function OnboardingSection() {
 
 /* ── Seção 6 — Números da plataforma ──────────────────────── */
 
+// Os números têm que bater com o que existe de verdade na plataforma:
+// módulos e aulas vêm do banco (8 e 37), estilos e referências são as 16
+// pastas de public/estilos e os 228 looks do lookbook, guias são os 11 de
+// src/lib/guides.ts e as peças catalogadas são as 24 de MOST_WANTED.
 const METRICS = [
   { value: 8, suffix: "", label: "módulos" },
   { value: 37, suffix: "", label: "aulas" },
-  { value: 12, suffix: "", label: "estilos" },
-  { value: 190, suffix: "+", label: "referências visuais" },
+  { value: 16, suffix: "", label: "estilos" },
+  { value: 228, suffix: "", label: "referências visuais" },
   { value: 11, suffix: "", label: "guias práticos" },
   { value: 3, suffix: "", label: "ferramentas interativas" },
   { value: 24, suffix: "", label: "peças catalogadas" },

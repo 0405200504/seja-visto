@@ -13,6 +13,7 @@ import {
   FitCheckSection,
 } from "@/components/landing/features";
 import {
+  MethodSection,
   StylesSection,
   GuidesSection,
   GlossarySection,
@@ -33,11 +34,11 @@ import {
 export const metadata: Metadata = {
   title: "MPO — Descubra seu estilo e aprenda a se vestir melhor",
   description:
-    "Lookbook, guias práticos, guarda-roupa inteligente, plano de ação e Fit Check com IA para você construir um estilo que realmente tenha a sua cara.",
+    "Método com 8 módulos e 37 aulas, lookbook com 228 referências, 16 estilos, guarda-roupa inteligente, plano de ação e Fit Check com IA para você construir um estilo que realmente tenha a sua cara.",
   openGraph: {
     title: "MPO — Descubra seu estilo e aprenda a se vestir melhor",
     description:
-      "Lookbook, guias práticos, guarda-roupa inteligente, plano de ação e Fit Check com IA para você construir um estilo que realmente tenha a sua cara.",
+      "Método com 8 módulos e 37 aulas, lookbook com 228 referências, 16 estilos, guarda-roupa inteligente, plano de ação e Fit Check com IA para você construir um estilo que realmente tenha a sua cara.",
     type: "website",
     locale: "pt_BR",
     siteName: "MPO — Manual Prático do Outfit",
@@ -62,6 +63,7 @@ export default function Home() {
         <OnboardingSection />
         <MetricsSection />
         <FeaturesSection />
+        <MethodSection />
         <LookbookSection />
         <FitCheckSection />
         <StylesSection />

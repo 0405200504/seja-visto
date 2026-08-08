@@ -1,6 +1,7 @@
 import Image from "next/image";
 import {
   BookOpen,
+  Bookmark,
   Calendar,
   Camera,
   Check,
@@ -9,9 +10,11 @@ import {
   Heart,
   LayoutDashboard,
   Layers,
+  MessageCircle,
   Plus,
   Shirt,
   Star,
+  Users,
 } from "lucide-react";
 import { Reveal, ProgressFill } from "./reveal";
 
@@ -51,9 +54,9 @@ export function FeaturesSection() {
                 <div className="rounded-xl border border-[#146CFF]/30 bg-[#146CFF]/[0.06] p-3.5">
                   <p className="text-[10px] font-medium text-[#78A9FF]">Continue de onde parou</p>
                   <p className="mt-1 text-xs font-semibold leading-snug text-[#F5F7FA]">
-                    Módulo 3 · Cores e combinações
+                    Módulo 3 · Guarda-Roupa Base
                   </p>
-                  <p className="mt-2 text-[10px] text-[#A4AAB5]">Aula 4 de 6</p>
+                  <p className="mt-2 text-[10px] text-[#A4AAB5]">Aula 3 de 4</p>
                 </div>
               </div>
             </BentoCard>
@@ -67,7 +70,7 @@ export function FeaturesSection() {
               text="São 8 módulos e 37 aulas em texto, organizadas para você aprender no seu ritmo e consultar sempre que precisar."
             >
               <div className="mt-5 space-y-2">
-                {["Fundamentos do estilo", "Modelagem e caimento", "Cores e combinações"].map(
+                {["Diagnóstico de Estilo", "Fundamentos", "Guarda-Roupa Base"].map(
                   (mod, i) => (
                     <div
                       key={mod}
@@ -217,6 +220,26 @@ export function FeaturesSection() {
                 <span className="ml-auto shrink-0 rounded-lg bg-[#146CFF] px-2.5 py-1 font-display text-xs font-bold text-white">
                   8,7
                 </span>
+              </div>
+            </BentoCard>
+          </Reveal>
+
+          {/* Fits da comunidade */}
+          <Reveal delay={450}>
+            <BentoCard
+              icon={Users}
+              title="Fits da comunidade"
+              text="Publique o seu outfit e veja o dos outros alunos. Dá para curtir, salvar e comentar — todo fit passa por aprovação antes de aparecer."
+            >
+              <div className="mt-5 flex items-center gap-2 text-[11px] text-[#A4AAB5]" aria-hidden>
+                <Heart className="size-3.5 shrink-0 text-[#78A9FF]" />
+                Curtir
+                <span className="text-[#20242C]">·</span>
+                <Bookmark className="size-3.5 shrink-0 text-[#78A9FF]" />
+                Salvar
+                <span className="text-[#20242C]">·</span>
+                <MessageCircle className="size-3.5 shrink-0 text-[#78A9FF]" />
+                Comentar
               </div>
             </BentoCard>
           </Reveal>

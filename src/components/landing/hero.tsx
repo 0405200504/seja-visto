@@ -207,7 +207,7 @@ export function Hero() {
                         Continue de onde parou
                       </p>
                       <p className="mt-1 text-[11px] font-semibold leading-snug text-[#F5F7FA]">
-                        Módulo 3 · Cores e combinações
+                        Módulo 3 · Guarda-Roupa Base
                       </p>
                     </div>
                   </div>
