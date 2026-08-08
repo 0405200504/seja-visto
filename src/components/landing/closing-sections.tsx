@@ -574,7 +574,7 @@ const FAQ = [
   },
   {
     q: "O que são os bônus da plataforma?",
-    a: "São 9 conteúdos extras opcionais — como corte ideal para o seu rosto, montar a mala, ficar bem nas fotos, círculo cromático e o grupo no WhatsApp. Eles não estão inclusos nos planos: são vendidos à parte e ficam visíveis dentro da plataforma, com liberação automática se você quiser algum.",
+    a: "São 10 conteúdos extras opcionais — como corte ideal para o seu rosto, montar a mala, ficar bem nas fotos, círculo cromático e o grupo no WhatsApp. Eles não estão inclusos nos planos: são vendidos à parte e ficam visíveis dentro da plataforma, com liberação automática se você quiser algum.",
   },
   {
     q: "O que acontece quando meu acesso termina?",
