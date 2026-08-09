@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { alertaAdmin } from "@/lib/alerts";
+import { baseDoSite } from "@/lib/site-url";
 
 /**
  * Vigia: agendado em vercel.json e avisa quando algo que custa dinheiro ou
@@ -123,9 +124,52 @@ export async function GET(request: Request) {
     );
   }
 
+  /* 5. SILÊNCIO da Cakto -------------------------------------------------
+   * As checagens 1 e 2 só enxergam problema quando existe LINHA no banco:
+   * um webhook que falhou, uma venda registrada. Elas são cegas para o pior
+   * caso — a Cakto parar de chamar. Foi o que aconteceu em 08/08/2026: o
+   * cliente pagou, nenhum evento chegou, e como não havia linha nenhuma
+   * ninguém foi avisado. O acesso só saiu no dia seguinte, na mão.
+   *
+   * O sinal usado é o evento MAIS RECENTE de qualquer tipo — não só compra.
+   * Checkout iniciado e abandono disparam muito mais que venda, então
+   * silêncio total por um dia inteiro significa que a Cakto não está mais
+   * conseguindo falar com a gente (URL trocada, domínio morto, segredo
+   * mudado), e não simplesmente que ninguém comprou. */
+  const horasSilencio = Number(process.env.VIGIA_SILENCIO_HORAS ?? 24);
+  let semNoticias = false;
+
+  if (horasSilencio > 0) {
+    const { data: ultimo } = await db
+      .from("webhook_events")
+      .select("created_at")
+      .eq("provider", "cakto")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<{ created_at: string }>();
+
+    const limite = new Date(agora.getTime() - horasSilencio * 3600_000);
+    const desde = ultimo ? new Date(ultimo.created_at) : null;
+
+    if (!desde || desde < limite) {
+      semNoticias = true;
+      problemas.push(
+        `NENHUM evento da Cakto há ${
+          desde
+            ? `${Math.floor((agora.getTime() - desde.getTime()) / 3600_000)}h`
+            : "tempo nenhum registrado"
+        }.\n` +
+          `Se alguém comprou nesse período, o acesso NÃO foi liberado e o e-mail NÃO saiu.\n` +
+          `Confira no painel da Cakto se a URL do webhook ainda é ${baseDoSite()}/api/webhooks/cakto ` +
+          `e veja o histórico de entregas — resposta 404 quer dizer endereço errado, 401 quer dizer segredo errado.`
+      );
+    }
+  }
+
   if (problemas.length) {
     await alertaAdmin(problemas.join("\n\n"), {
-      severidade: "aviso",
+      // Silêncio da Cakto é dinheiro entrando sem produto sair: sobe o tom.
+      severidade: semNoticias ? "critico" : "aviso",
       chave: "vigia",
     });
   }
@@ -134,5 +178,6 @@ export async function GET(request: Request) {
     ok: true,
     verificadoEm: agora.toISOString(),
     problemas: problemas.length,
+    silencioCakto: semNoticias,
   });
 }
