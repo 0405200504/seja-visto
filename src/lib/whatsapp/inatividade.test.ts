@@ -328,7 +328,8 @@ describe("texto", () => {
     expect(texto()).not.toMatch(/R\$|assine|renove/i);
   });
 
-  it("oferece a saída na própria mensagem", () => {
-    expect(texto()).toContain('responda "PARAR"');
+  it("termina no link, sem rodapé — é a mensagem curta que o Luis pediu", () => {
+    expect(texto().trim().endsWith("/dashboard")).toBe(true);
+    expect(texto()).not.toMatch(/PARAR|responda esta mensagem/i);
   });
 });

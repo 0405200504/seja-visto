@@ -276,9 +276,12 @@ Obrigado por continuar com o MPO!`;
  * Lembrete de quem parou de abrir o app.
  *
  * É uma mensagem de aluno ATIVO, não de venda: nenhum link de checkout,
- * nenhuma cobrança, nenhum prazo inventado. Só o convite de voltar e a
- * saída (PARAR) bem visível — quem já paga e não quer lembrete tem que
- * conseguir desligar na primeira mensagem.
+ * nenhuma cobrança, nenhum prazo inventado. Só o convite de voltar.
+ *
+ * Curta de propósito, sem o rodapé de opt-out que as mensagens de
+ * carrinho trazem — decisão do Luis em 10/08/2026. Responder "PARAR"
+ * continua desligando tudo (lib/whatsapp/respostas.ts): o que sai é o
+ * aviso na mensagem, não o mecanismo.
  */
 export function textoInatividade(d: { nome: string | null }): string {
   const cfg = configWhatsApp();
@@ -289,11 +292,7 @@ Vi que faz alguns dias que você não abre a plataforma. Seu acesso continua ati
 
 Se quiser retomar de onde parou, é só entrar:
 
-${cfg.linkApp}
-
-Se ficou travado em alguma parte, responda esta mensagem que eu te ajudo.
-
-Se preferir não receber lembretes como este, responda "PARAR".`;
+${cfg.linkApp}`;
 }
 
 /* ---------------- Respostas automáticas ---------------- */
