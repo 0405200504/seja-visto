@@ -11,7 +11,15 @@ import {
 } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getSetting, type TagsSettings } from "@/lib/admin/settings";
+import {
+  getSetting,
+  FIT_CHECK_DEFAULTS,
+  GATEWAY_DEFAULTS,
+  type FitCheckSettings,
+  type GatewaySettings,
+  type TagsSettings,
+} from "@/lib/admin/settings";
+import { calcularEconomiaAluno } from "@/lib/admin/economia-aluno";
 import { brl, dateShort, dateTime, initials, num, relTime } from "@/lib/admin/format";
 import { STYLES, STYLE_GOALS, MAIN_DIFFICULTIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
@@ -45,18 +53,21 @@ export default async function AlunoDetailPage(props: { params: Promise<{ id: str
 
   const [
     entRes, credRes, progressRes, lessonsRes, salesRes, convRes, logsRes,
-    favRes, fitsRes, tagsSettings,
+    favRes, fitsRes, tagsSettings, reqsRes, fitCheckSettings, gatewaySettings,
   ] = await Promise.all([
     db.from("user_entitlements").select("entitlement, source, expires_at, created_at").eq("user_id", id).order("created_at", { ascending: false }),
     db.from("fit_check_credits").select("balance, expires_at").eq("user_id", id).maybeSingle(),
     db.from("user_progress").select("lesson_id, created_at").eq("user_id", id).eq("completed", true).order("created_at", { ascending: false }),
     db.from("lessons").select("id, title, module_id").is("deleted_at", null),
-    db.from("sales").select("id, amount_cents, status, payment_method, offer_name, created_at, is_test").or(`user_id.eq.${id}${student.email ? `,email.ilike.${student.email}` : ""}`).order("created_at", { ascending: false }),
+    db.from("sales").select("id, amount_cents, status, payment_method, offer_name, created_at, is_test, gateway_fee_cents").or(`user_id.eq.${id}${student.email ? `,email.ilike.${student.email}` : ""}`).order("created_at", { ascending: false }),
     db.from("fit_check_conversations").select("id, title, created_at, updated_at").eq("user_id", id).order("updated_at", { ascending: false }).limit(10),
-    db.from("fit_check_logs").select("kind, total_tokens, created_at").eq("user_id", id).order("created_at", { ascending: false }).limit(500),
+    db.from("fit_check_logs").select("kind, total_tokens, prompt_tokens, completion_tokens, created_at").eq("user_id", id).order("created_at", { ascending: false }).limit(500),
     db.from("user_favorites").select("look_id, created_at, looks(title)").eq("user_id", id).eq("kind", "favorite").order("created_at", { ascending: false }).limit(20),
     db.from("community_fits").select("id, caption, status, created_at").eq("user_id", id).order("created_at", { ascending: false }),
     getSetting<TagsSettings>("student_tags", { tags: [] }),
+    db.from("fit_check_requests").select("custo_cents, created_at").eq("user_id", id),
+    getSetting<FitCheckSettings>("fit_check", FIT_CHECK_DEFAULTS),
+    getSetting<GatewaySettings>("gateway", GATEWAY_DEFAULTS),
   ]);
 
   const entitlements = entRes.data ?? [];
@@ -68,6 +79,15 @@ export default async function AlunoDetailPage(props: { params: Promise<{ id: str
   const logs = logsRes.data ?? [];
   const totalTokens = logs.reduce((a, l) => a + (l.total_tokens ?? 0), 0);
   const totalSpent = sales.filter((s) => s.status === "approved").reduce((a, s) => a + s.amount_cents, 0);
+  // Quanto este aluno rendeu, quanto custou de IA e o que sobrou.
+  const economia = calcularEconomiaAluno({
+    vendas: salesRes.data ?? [],
+    requisicoes: reqsRes.data ?? [],
+    logs,
+    fitCheck: fitCheckSettings,
+    gateway: gatewaySettings,
+  });
+
   const base = entitlements.find((e) => e.entitlement === "base");
   const hasBase = !!base && (!base.expires_at || new Date(base.expires_at) > new Date());
 
@@ -144,15 +164,26 @@ export default async function AlunoDetailPage(props: { params: Promise<{ id: str
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-6">
         {[
           { label: "Total gasto", value: brl(totalSpent), href: "#compras" },
+          { label: "Custo de IA", value: brl(economia.custoIaCents), href: "#economia", tom: economia.custoIaCents > 0 ? "custo" : undefined },
+          {
+            label: economia.lucroCents >= 0 ? "Lucro" : "Prejuízo",
+            value: brl(economia.lucroCents),
+            href: "#economia",
+            tom: economia.lucroCents >= 0 ? "lucro" : "custo",
+          },
           { label: "Aulas concluídas", value: `${progress.length}/${lessons.length}`, href: "#timeline" },
           { label: "Tokens (saldo)", value: credRes.data ? num(credRes.data.balance) : "—", href: "#tokens" },
-          { label: "Tokens consumidos", value: num(totalTokens), href: "#conversas" },
           { label: "Conversas de IA", value: num(conversations.length), href: "#conversas" },
-          { label: "Fits enviados", value: num(fitsRes.data?.length ?? 0), href: "/admin/comunidade" },
         ].map((kpi) => (
           <Link key={kpi.label} href={kpi.href} className="rounded-xl border border-border bg-surface p-3 transition-colors hover:border-border-strong">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-2">{kpi.label}</p>
-            <p className="mt-1 font-display text-lg font-bold tabular-nums text-foreground">{kpi.value}</p>
+            <p
+              className={`mt-1 font-display text-lg font-bold tabular-nums ${
+                kpi.tom === "lucro" ? "text-[#2fbf71]" : kpi.tom === "custo" ? "text-danger" : "text-foreground"
+              }`}
+            >
+              {kpi.value}
+            </p>
           </Link>
         ))}
       </div>
@@ -181,6 +212,80 @@ export default async function AlunoDetailPage(props: { params: Promise<{ id: str
             <div id="tokens">
               <StudentQuickActions userId={id} hasBase={hasBase} />
             </div>
+          </section>
+
+          {/* quanto sobra deste aluno */}
+          <section id="economia" className="rounded-xl border border-border bg-surface p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-foreground">Quanto sobra deste aluno</h2>
+              {economia.margemPct !== null && (
+                <Badge
+                  variant={economia.lucroCents >= 0 ? "success" : undefined}
+                  className={economia.lucroCents < 0 ? "border-danger/30 bg-danger/10 text-danger" : undefined}
+                >
+                  margem de {economia.margemPct}%
+                </Badge>
+              )}
+            </div>
+
+            {/* a conta, de cima para baixo */}
+            <ul className="divide-y divide-border/60 rounded-lg border border-border text-[13px]">
+              {[
+                { label: "Vendas aprovadas", value: economia.receitaBrutaCents, hint: null },
+                {
+                  label: "Taxa da Cakto",
+                  value: -economia.taxaGatewayCents,
+                  hint: economia.taxaEstimadaCents > 0 ? `${brl(economia.taxaEstimadaCents)} estimados` : null,
+                },
+                {
+                  label: "Custo de IA (Fit Check)",
+                  value: -economia.custoIaCents,
+                  hint:
+                    economia.chamadasEstimadas > 0
+                      ? `${economia.chamadasEstimadas} conversa(s) antiga(s) estimada(s)`
+                      : null,
+                },
+              ].map((linha) => (
+                <li key={linha.label} className="flex items-center gap-3 px-3 py-2">
+                  <span className="min-w-0 flex-1 truncate text-muted">{linha.label}</span>
+                  {linha.hint && (
+                    <span className="hidden shrink-0 text-[11px] text-muted-2 sm:inline">{linha.hint}</span>
+                  )}
+                  <span
+                    className={`shrink-0 font-semibold tabular-nums ${
+                      linha.value < 0 ? "text-danger" : "text-foreground"
+                    }`}
+                  >
+                    {linha.value < 0 ? `− ${brl(Math.abs(linha.value))}` : brl(linha.value)}
+                  </span>
+                </li>
+              ))}
+              <li className="flex items-center gap-3 bg-surface-2 px-3 py-2.5">
+                <span className="min-w-0 flex-1 font-semibold text-foreground">
+                  {economia.lucroCents >= 0 ? "Lucro" : "Prejuízo"}
+                </span>
+                <span
+                  className={`shrink-0 font-display text-base font-bold tabular-nums ${
+                    economia.lucroCents >= 0 ? "text-[#2fbf71]" : "text-danger"
+                  }`}
+                >
+                  {brl(economia.lucroCents)}
+                </span>
+              </li>
+            </ul>
+
+            {economia.reembolsadoCents > 0 && (
+              <p className="mt-2 text-[11px] text-muted-2">
+                Fora da conta: {brl(economia.reembolsadoCents)} reembolsados/estornados.
+              </p>
+            )}
+
+            <p className="mt-2 text-[11px] leading-relaxed text-muted-2">
+              O custo de IA é o que a OpenAI cobrou pelas {num(totalTokens)} tokens que este aluno
+              consumiu no Fit Check.
+              {economia.taxaEstimadaCents > 0 &&
+                " Parte da taxa da Cakto é estimada pela tabela do seu plano, porque o webhook não informou o valor real dessas vendas."}
+            </p>
           </section>
 
           {/* compras */}
