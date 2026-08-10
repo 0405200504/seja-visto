@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
-import { deleteStudentAction, toggleAdminAction } from "@/app/actions/admin/students";
+import { Loader2, ShieldCheck, ShieldOff } from "lucide-react";
+import { toggleAdminAction } from "@/app/actions/admin/students";
 import { useToast } from "@/components/admin/ui/toast";
 import { useConfirm } from "@/components/admin/ui/confirm";
+import { DeleteStudentButton } from "@/components/admin/students/delete-student-button";
 
 /** Zona de risco do aluno — ações perigosas isoladas no fim da tela. */
 export function StudentDangerZone({
@@ -53,27 +54,12 @@ export function StudentDangerZone({
           {isAdmin ? "Remover privilégio de admin" : "Tornar admin"}
         </button>
 
-        <button
-          disabled={busy !== null}
-          onClick={async () => {
-            const ok = await confirm({
-              title: "Excluir a conta definitivamente?",
-              message: `Isso apaga a conta de ${name}, o progresso nas aulas, favoritos, conversas de IA e acessos. Esta ação NÃO tem desfazer — as vendas já registradas são mantidas no financeiro.`,
-              typeToConfirm: name,
-              confirmLabel: "Excluir conta",
-            });
-            if (!ok) return;
-            setBusy("delete");
-            const res = await deleteStudentAction(userId);
-            toast({ title: res.message, kind: res.ok ? "success" : "error" });
-            setBusy(null);
-            if (res.ok) router.push("/admin/alunos");
-          }}
-          className="flex w-full items-center gap-2 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-left text-xs font-semibold text-danger transition-colors hover:bg-danger/20"
-        >
-          {busy === "delete" ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
-          Excluir conta…
-        </button>
+        <DeleteStudentButton userId={userId} name={name} isAdmin={isAdmin} redirectTo="/admin/alunos" />
+        {isAdmin && (
+          <p className="text-[11px] leading-relaxed text-muted-2">
+            Para excluir esta conta, remova antes o privilégio de admin.
+          </p>
+        )}
       </div>
     </section>
   );

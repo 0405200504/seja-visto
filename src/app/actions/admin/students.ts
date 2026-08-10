@@ -239,12 +239,53 @@ export async function toggleAdminAction(userId: string, isAdmin: boolean): Promi
   return { ok: true, message: isAdmin ? "Agora é admin." : "Privilégio de admin removido." };
 }
 
+/**
+ * Apaga do bucket as fotos que o aluno subiu para a comunidade.
+ *
+ * As linhas de `community_fits` somem sozinhas quando a conta é excluída
+ * (FK com `on delete cascade`), mas o arquivo no Storage não — ficaria
+ * ocupando espaço para sempre, sem nenhuma linha apontando para ele.
+ */
+async function removeStudentFitPhotos(
+  db: ReturnType<typeof createAdminClient>,
+  userId: string
+): Promise<void> {
+  const { data: fits } = await db.from("community_fits").select("image_path").eq("user_id", userId);
+  const paths = (fits ?? []).map((f) => f.image_path).filter(Boolean);
+  if (paths.length) await db.storage.from("fits").remove(paths);
+}
+
+/**
+ * Exclui a conta definitivamente.
+ *
+ * O `deleteUser` derruba em cascata perfil, progresso, acessos, favoritos,
+ * conversas de IA e fits. As vendas ficam (o `user_id` vira null, o e-mail
+ * continua na linha), então o financeiro não muda de número.
+ *
+ * Conta de admin é bloqueada de propósito: para excluir, tire o privilégio
+ * antes. É um passo a mais que evita apagar o painel por engano.
+ */
 export async function deleteStudentAction(userId: string): Promise<Result> {
   const { profile } = await requireAdmin();
   if (userId === profile.user_id) return { ok: false, message: "Você não pode excluir a própria conta." };
 
-  const label = await studentLabel(userId);
   const db = createAdminClient();
+  const { data: alvo } = await db
+    .from("users_profile")
+    .select("name, email, is_admin")
+    .eq("user_id", userId)
+    .maybeSingle<{ name: string | null; email: string | null; is_admin: boolean }>();
+
+  if (alvo?.is_admin) {
+    return {
+      ok: false,
+      message: "Esta conta é admin. Remova o privilégio de admin antes de excluir.",
+    };
+  }
+
+  const label = alvo?.name ?? alvo?.email ?? userId;
+  await removeStudentFitPhotos(db, userId);
+
   const { error } = await db.auth.admin.deleteUser(userId);
   if (error) return { ok: false, message: error.message };
 
@@ -255,7 +296,7 @@ export async function deleteStudentAction(userId: string): Promise<Result> {
     entityType: "aluno",
     entityId: userId,
     entityLabel: label,
-    before: { conta: label },
+    before: { conta: label, email: alvo?.email ?? null },
   });
   revalidatePath("/admin/alunos");
   return { ok: true, message: `Conta de ${label} excluída definitivamente.` };
@@ -387,6 +428,56 @@ export async function bulkStudentsAction(
       entityLabel: `${ids.length} alunos`, after: { ids, amount: 10 },
     });
     return { ok: true, message: `+10 tokens para ${ids.length} alunos.` };
+  }
+
+  if (actionId === "excluir") {
+    // "Selecionar todos os filtrados" só manda os ids da página. Em ação sem
+    // desfazer, prefiro recusar a apagar menos do que a tela prometeu.
+    if (payload.allFiltered) {
+      return {
+        ok: false,
+        message: "Para excluir, selecione as contas uma a uma (ou página por página) — não use 'todos os filtrados'.",
+      };
+    }
+
+    // Sua conta e as de admin ficam de fora — a seleção pode ter pego elas sem querer.
+    const { data: protegidos } = await db
+      .from("users_profile")
+      .select("user_id")
+      .in("user_id", ids)
+      .eq("is_admin", true);
+
+    const bloqueados = new Set([profile.user_id, ...(protegidos ?? []).map((p) => p.user_id)]);
+    const alvos = ids.filter((id) => !bloqueados.has(id));
+    if (!alvos.length) {
+      return { ok: false, message: "A seleção só tem contas de admin — nenhuma foi excluída." };
+    }
+
+    const falhas: string[] = [];
+    for (const id of alvos) {
+      await removeStudentFitPhotos(db, id);
+      const { error } = await db.auth.admin.deleteUser(id);
+      if (error) falhas.push(id);
+    }
+    const excluidos = alvos.length - falhas.length;
+
+    await logAudit({
+      actorId: profile.user_id, actorEmail: profile.email ?? null,
+      action: "aluno.bulk_excluir_conta", entityType: "aluno",
+      entityLabel: `${excluidos} alunos`,
+      before: { ids: alvos, pulados: [...bloqueados].filter((id) => ids.includes(id)), falhas },
+    });
+    revalidatePath("/admin/alunos");
+
+    const pulados = ids.length - alvos.length;
+    const extras = [
+      pulados > 0 ? `${pulados} admin(s) mantido(s)` : null,
+      falhas.length > 0 ? `${falhas.length} falharam` : null,
+    ].filter(Boolean);
+    return {
+      ok: falhas.length === 0,
+      message: `${excluidos} conta(s) excluída(s) definitivamente${extras.length ? ` · ${extras.join(" · ")}` : ""}.`,
+    };
   }
 
   return { ok: false, message: "Ação desconhecida." };

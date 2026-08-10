@@ -8,6 +8,7 @@ import { brl, dateShort, initials, num, relTime } from "@/lib/admin/format";
 import { STYLES, STYLE_GOALS } from "@/lib/constants";
 import { DataTable, type TableRow } from "@/components/admin/ui/data-table";
 import { StudentQuickActions } from "@/components/admin/students/student-quick-actions";
+import { DeleteStudentButton } from "@/components/admin/students/delete-student-button";
 import { TagsEditor } from "@/components/admin/students/tags-editor";
 import { bulkStudentsAction, csvStudentsAction } from "@/app/actions/admin/students";
 import { Badge } from "@/components/ui/badge";
@@ -121,6 +122,12 @@ export default async function AlunosPage(props: { searchParams: Promise<SearchPa
           >
             Abrir perfil completo →
           </Link>
+          <DeleteStudentButton
+            userId={r.user_id}
+            name={r.name ?? r.email ?? "este aluno"}
+            isAdmin={r.is_admin}
+            className="justify-center"
+          />
         </div>
       ),
     };
@@ -222,6 +229,19 @@ export default async function AlunosPage(props: { searchParams: Promise<SearchPa
         bulkActions={[
           { id: "liberar_base", label: "Liberar acesso base" },
           { id: "tokens_10", label: "+10 tokens" },
+          {
+            id: "excluir",
+            label: "Excluir contas",
+            danger: true,
+            confirm: {
+              title: "Excluir as contas selecionadas?",
+              message:
+                "Apaga {n} conta(s) de verdade: perfil, progresso, acessos, favoritos, conversas de IA e fits. NÃO tem desfazer — as vendas continuam no financeiro. Contas de admin são puladas.",
+              typeToConfirm: "EXCLUIR",
+              confirmLabel: "Excluir contas",
+              danger: true,
+            },
+          },
         ]}
         onBulk={bulkStudentsAction}
         csvAction={csvStudentsAction}
