@@ -23,6 +23,7 @@ export type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Início", icon: LayoutDashboard },
+  { href: "/instalar", label: "Instalar no celular", icon: Smartphone },
   { href: "/metodo", label: "Método", icon: BookOpen },
   { href: "/combinacoes", label: "Refs", icon: Layers },
   { href: "/fit-check", label: "Fit Check", icon: Sparkles },
@@ -33,6 +34,5 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/guarda-roupa", label: "Guarda-Roupa", icon: Shirt },
   { href: "/favoritos", label: "Favoritos", icon: Heart },
   { href: "/plano-de-acao", label: "Plano de Ação", icon: CalendarCheck },
-  { href: "/instalar", label: "Instalar no celular", icon: Smartphone },
   { href: "/perfil", label: "Perfil", icon: User },
 ];
