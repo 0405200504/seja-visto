@@ -19,6 +19,19 @@ export const metadata: Metadata = {
   },
   description:
     "A plataforma de estilo masculino de Raphael Pereira. Fundamentos, combinações prontas, guarda-roupa inteligente e plano de ação.",
+  // Faz o iOS abrir em tela cheia (sem a barra do Safari) quando o aluno
+  // adiciona o MPO à tela inicial. No Android quem cuida disso é o manifest.
+  appleWebApp: {
+    capable: true,
+    title: "MPO",
+    statusBarStyle: "black-translucent",
+  },
+  other: {
+    // O Next só emite a tag moderna `mobile-web-app-capable`. iPhones em iOS
+    // antigo ignoram ela e abrem com a barra do Safari — a tag da Apple é o
+    // que garante a tela cheia neles.
+    "apple-mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport: Viewport = {

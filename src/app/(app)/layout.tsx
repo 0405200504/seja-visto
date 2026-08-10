@@ -30,7 +30,10 @@ export default async function AppLayout({
     <div className="relative min-h-dvh">
       <Sidebar isAdmin={profile.is_admin} name={profile.name} />
       <MobileHeader isAdmin={profile.is_admin} name={profile.name} />
-      <main className="pb-10 pt-14 lg:pl-64 lg:pt-0">
+      {/* O header fixo cresce com a safe area (notch/Dynamic Island) quando o
+          MPO roda em tela cheia na tela inicial — o respiro do topo tem que
+          acompanhar, senão o conteúdo entra por baixo dele. */}
+      <main className="pb-10 pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pl-64 lg:pt-0">
         <div className="mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6 sm:pt-10 lg:px-10">
           {children}
         </div>

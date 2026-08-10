@@ -10,6 +10,7 @@ import {
   Palette,
   Tag,
   Gift,
+  Smartphone,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
@@ -32,5 +33,6 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/guarda-roupa", label: "Guarda-Roupa", icon: Shirt },
   { href: "/favoritos", label: "Favoritos", icon: Heart },
   { href: "/plano-de-acao", label: "Plano de Ação", icon: CalendarCheck },
+  { href: "/instalar", label: "Instalar no celular", icon: Smartphone },
   { href: "/perfil", label: "Perfil", icon: User },
 ];
