@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { alertaAdmin } from "@/lib/alerts";
 import { configWhatsApp } from "@/lib/whatsapp/config";
 import { processarFila } from "@/lib/whatsapp/fila";
+import { agendarLembretesInatividade } from "@/lib/whatsapp/automacoes";
 import { suspenderAssinaturasVencidas } from "@/lib/whatsapp/cakto-eventos";
 import { statusInstancia } from "@/lib/whatsapp/uazapi";
 
@@ -59,10 +60,20 @@ export async function GET(request: Request) {
     }
   }
 
-  // 2) Fila.
+  /* 2) Inatividade — a única automação que nasce de varredura, não de
+   *    evento da Cakto. Vai ANTES da fila para o lembrete de hoje já sair
+   *    nesta mesma rodada. */
+  let inatividade = { candidatos: 0, agendadas: 0, motivos: [] as string[] };
+  try {
+    inatividade = await agendarLembretesInatividade(db);
+  } catch (err) {
+    console.error("[cron/whatsapp] falha ao agendar lembretes de inatividade", err);
+  }
+
+  // 3) Fila.
   const resumo = await processarFila(db);
 
-  // 3) Alertas operacionais.
+  // 4) Alertas operacionais.
   if (resumo.parouPor?.includes("instância")) {
     const status = await statusInstancia();
     await alertaAdmin(
@@ -93,6 +104,7 @@ export async function GET(request: Request) {
     ok: true,
     modoTeste: cfg.modoTeste,
     suspensas,
+    inatividade,
     fila: resumo,
     falhasDefinitivas: definitivas ?? 0,
   });

@@ -2,6 +2,7 @@ import "server-only";
 import type { createAdminClient } from "@/lib/supabase/admin";
 import { configWhatsApp, podeEnviarPara } from "./config";
 import { enviarTexto, logEnvio, statusInstancia, type CategoriaErro } from "./uazapi";
+import { continuaInativo } from "./inatividade";
 import type { TipoMensagem } from "./templates";
 
 /**
@@ -163,9 +164,14 @@ export type Veredito = { enviar: true } | { enviar: false; motivo: string };
 export async function conferirAntesDeEnviar(db: Db, msg: MensagemFila): Promise<Veredito> {
   const { data: contato } = await db
     .from("whatsapp_contacts")
-    .select("id, phone, opted_out_at, consent_granted_at")
+    .select("id, phone, opted_out_at, consent_granted_at, user_id, email")
     .eq("id", msg.contact_id)
-    .maybeSingle<Pick<Contato, "id" | "phone" | "opted_out_at" | "consent_granted_at">>();
+    .maybeSingle<
+      Pick<Contato, "id" | "phone" | "opted_out_at" | "consent_granted_at"> & {
+        user_id: string | null;
+        email: string | null;
+      }
+    >();
 
   if (!contato) return { enviar: false, motivo: "contato não existe mais" };
   if (contato.opted_out_at) return { enviar: false, motivo: "contato pediu para parar" };
@@ -173,6 +179,13 @@ export async function conferirAntesDeEnviar(db: Db, msg: MensagemFila): Promise<
 
   const permissao = podeEnviarPara(contato.phone);
   if (!permissao.ok) return { enviar: false, motivo: permissao.motivo! };
+
+  /* Inatividade: o lembrete só continua verdadeiro enquanto a pessoa
+   * seguir sem acessar. Quem abriu o app depois do agendamento não recebe. */
+  if (msg.message_type === "inactivity_nudge") {
+    const veredito = await continuaInativo(db, { user_id: contato.user_id, email: contato.email });
+    if (!veredito.enviar) return veredito;
+  }
 
   // Carrinho: só continua se ainda estiver aberto e abandonado.
   if (msg.cart_id) {

@@ -30,6 +30,7 @@ export const TIPOS = [
   "annual_payment_pending",
   "annual_access_suspended",
   "renewal_payment_confirmed",
+  "inactivity_nudge",
 ] as const;
 
 export type TipoMensagem = (typeof TIPOS)[number];
@@ -267,6 +268,32 @@ Obrigado por continuar com o MPO!`;
     default:
       throw new Error(`tipo de mensagem sem texto: ${tipo}`);
   }
+}
+
+/* ---------------- Inatividade ---------------- */
+
+/**
+ * Lembrete de quem parou de abrir o app.
+ *
+ * É uma mensagem de aluno ATIVO, não de venda: nenhum link de checkout,
+ * nenhuma cobrança, nenhum prazo inventado. Só o convite de voltar e a
+ * saída (PARAR) bem visível — quem já paga e não quer lembrete tem que
+ * conseguir desligar na primeira mensagem.
+ */
+export function textoInatividade(d: { nome: string | null }): string {
+  const cfg = configWhatsApp();
+
+  return `Olá, ${primeiroNome(d.nome)}! Aqui é do ${ASSINATURA}.
+
+Vi que faz alguns dias que você não abre a plataforma. Seu acesso continua ativo e está tudo lá, do jeito que você deixou.
+
+Se quiser retomar de onde parou, é só entrar:
+
+${cfg.linkApp}
+
+Se ficou travado em alguma parte, responda esta mensagem que eu te ajudo.
+
+Se preferir não receber lembretes como este, responda "PARAR".`;
 }
 
 /* ---------------- Respostas automáticas ---------------- */

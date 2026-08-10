@@ -24,6 +24,7 @@ const ROTULO: Record<string, string> = {
   annual_payment_pending: "Anual · pendente",
   annual_access_suspended: "Anual · suspenso",
   renewal_payment_confirmed: "Renovação confirmada",
+  inactivity_nudge: "Inatividade · lembrete",
 };
 
 const COR_STATUS: Record<string, string> = {
@@ -86,8 +87,8 @@ export default async function WhatsAppPage() {
       <div>
         <h1 className="font-display text-xl font-bold text-foreground">WhatsApp</h1>
         <p className="mt-0.5 text-xs text-muted">
-          Recuperação de carrinho e avisos de renovação. O WhatsApp não é mais usado para o e-mail
-          de acesso — isso agora é só por e-mail.
+          Recuperação de carrinho, avisos de renovação e lembrete de aluno inativo. O WhatsApp não
+          é mais usado para o e-mail de acesso — isso agora é só por e-mail.
         </p>
       </div>
 
@@ -117,6 +118,14 @@ export default async function WhatsAppPage() {
             <li>Fila: {cfg.filaAtiva ? "ligada" : "DESLIGADA"}</li>
             <li>Carrinho abandonado: {cfg.carrinhoAtivo ? "ligada" : "DESLIGADA"}</li>
             <li>Renovação: {cfg.renovacaoAtiva ? "ligada" : "DESLIGADA"}</li>
+            <li>
+              Inatividade: {cfg.inatividadeAtiva ? "ligada" : "DESLIGADA"}
+              <span className="text-muted-2">
+                {" "}
+                ({cfg.inatividadeDias} a {cfg.inatividadeMaxDias} dias parado, no máximo 1 a cada{" "}
+                {cfg.inatividadeIntervaloDias} dias)
+              </span>
+            </li>
             <li className={cfg.modoTeste ? "font-semibold text-warning" : ""}>
               Modo de teste: {cfg.modoTeste ? `LIGADO (${cfg.numerosDeTeste.length} número(s) autorizado(s))` : "desligado"}
             </li>

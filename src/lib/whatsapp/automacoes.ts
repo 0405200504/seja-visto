@@ -5,10 +5,12 @@ import { configWhatsApp } from "./config";
 import { agendarMensagem, cancelarPendentes, type Contato } from "./fila";
 import {
   textoCarrinho,
+  textoInatividade,
   textoRenovacao,
   type Plano,
   type TipoMensagem,
 } from "./templates";
+import { buscarAlunosInativos } from "./inatividade";
 
 /**
  * Regras de negócio das duas automações.
@@ -441,6 +443,53 @@ export async function agendarSuspensao(
     plano: entrada.plano,
   });
   return r.agendada;
+}
+
+/* ------------------------------------------------------------------
+ * AUTOMAÇÃO 3 — aluno inativo
+ * ------------------------------------------------------------------ */
+
+export type ResumoInatividade = {
+  candidatos: number;
+  agendadas: number;
+  motivos: string[];
+};
+
+/**
+ * Lembra quem parou de abrir o app.
+ *
+ * Diferente das outras duas, esta não nasce de um evento da Cakto: é uma
+ * varredura, chamada pelo cron. Por isso o cuidado extra com volume —
+ * teto por rodada — e com repetição — descanso entre lembretes, dentro de
+ * buscarAlunosInativos.
+ *
+ * A mensagem entra na fila para AGORA e, como toda mensagem, é
+ * reconferida no instante do envio: quem voltar a acessar no meio do
+ * caminho não recebe.
+ */
+export async function agendarLembretesInatividade(db: Db): Promise<ResumoInatividade> {
+  const cfg = configWhatsApp();
+  const resumo: ResumoInatividade = { candidatos: 0, agendadas: 0, motivos: [] };
+
+  if (!cfg.inatividadeAtiva) {
+    resumo.motivos.push("automação de inatividade desligada");
+    return resumo;
+  }
+
+  const inativos = await buscarAlunosInativos(db, cfg);
+  resumo.candidatos = inativos.length;
+
+  for (const aluno of inativos.slice(0, cfg.inatividadeMaxPorRodada)) {
+    const r = await agendarMensagem(db, {
+      contato: aluno.contato,
+      tipo: "inactivity_nudge",
+      corpo: textoInatividade({ nome: aluno.contato.name }),
+      quando: new Date(),
+    });
+    if (r.agendada) resumo.agendadas++;
+    else resumo.motivos.push(`contato ${aluno.contato.id}: ${r.motivo}`);
+  }
+  return resumo;
 }
 
 /**

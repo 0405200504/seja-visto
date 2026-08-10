@@ -1,5 +1,14 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { brl, nomeDoPlano, textoCarrinho, textoRenovacao, valorDoPlano, TIPOS } from "./templates";
+import {
+  brl,
+  nomeDoPlano,
+  textoCarrinho,
+  textoInatividade,
+  textoRenovacao,
+  valorDoPlano,
+  TIPOS,
+  type TipoMensagem,
+} from "./templates";
 import { planoPorValidade } from "./automacoes";
 
 beforeEach(() => {
@@ -16,6 +25,18 @@ const CARRINHO = {
   amountCents: 2700,
   checkoutUrl: "https://pay.cakto.com.br/zkkrorx_973168",
 };
+
+/** Texto de qualquer tipo — usado pelas regras que valem para TODAS. */
+function texto(tipo: TipoMensagem): string {
+  if (tipo.startsWith("cart_")) return textoCarrinho(tipo as "cart_recovery_1", CARRINHO);
+  if (tipo === "inactivity_nudge") return textoInatividade({ nome: "Maria Silva" });
+  return textoRenovacao(tipo, {
+    nome: "Maria",
+    plano: "mensal",
+    amountCents: 2700,
+    proximaCobranca: new Date("2026-09-01"),
+  });
+}
 
 describe("mensal x anual", () => {
   it("identifica o plano pela validade do produto na Cakto", () => {
@@ -85,14 +106,7 @@ describe("conteúdo obrigatório", () => {
     const proibido = /última chance|imperdível|abra agora|corre|promoção|desconto especial|oferta relâmpago/i;
     const emoji = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
 
-    const todas = [
-      ...(["cart_recovery_1", "cart_recovery_2", "cart_recovery_3"] as const).map((t) => textoCarrinho(t, CARRINHO)),
-      ...TIPOS.filter((t) => !t.startsWith("cart_")).map((t) =>
-        textoRenovacao(t, { nome: "Maria", plano: "mensal", amountCents: 2700, proximaCobranca: new Date("2026-09-01") })
-      ),
-    ];
-
-    for (const t of todas) {
+    for (const t of TIPOS.map(texto)) {
       expect(proibido.test(t), `texto com linguagem proibida: ${t.slice(0, 60)}`).toBe(false);
       expect(emoji.test(t), `texto com emoji: ${t.slice(0, 60)}`).toBe(false);
       expect(t).toContain("MPO");
@@ -120,13 +134,10 @@ describe("conteúdo obrigatório", () => {
     expect(t).toContain("renovação anual");
   });
 
-  it("todos os 13 tipos têm texto", () => {
-    expect(TIPOS).toHaveLength(13);
+  it("todos os 14 tipos têm texto", () => {
+    expect(TIPOS).toHaveLength(14);
     for (const tipo of TIPOS) {
-      const t = tipo.startsWith("cart_")
-        ? textoCarrinho(tipo as "cart_recovery_1", CARRINHO)
-        : textoRenovacao(tipo, { nome: "Maria", plano: "mensal", amountCents: 2700 });
-      expect(t.length, `${tipo} sem texto`).toBeGreaterThan(50);
+      expect(texto(tipo).length, `${tipo} sem texto`).toBeGreaterThan(50);
     }
   });
 });

@@ -35,6 +35,7 @@ export function configWhatsApp() {
     filaAtiva: flag("WHATSAPP_QUEUE_ENABLED", false),
     carrinhoAtivo: flag("WHATSAPP_CART_RECOVERY_ENABLED", false),
     renovacaoAtiva: flag("WHATSAPP_RENEWAL_ENABLED", false),
+    inatividadeAtiva: flag("WHATSAPP_INACTIVITY_ENABLED", false),
 
     /** Em teste, só os números da lista recebem. Padrão: LIGADO. */
     modoTeste: flag("WHATSAPP_AUTOMATION_TEST_MODE", true),
@@ -56,6 +57,22 @@ export function configWhatsApp() {
     cobrancaMensalPendenteDias: num("WHATSAPP_MONTHLY_PENDING_DAYS", 3),
     cobrancaAnualPendenteDias: num("WHATSAPP_ANNUAL_PENDING_DAYS", 5),
 
+    // ---------- Ritmo do lembrete de inatividade ----------
+    /** Dias sem abrir o app para virar candidato ao lembrete. */
+    inatividadeDias: num("WHATSAPP_INACTIVITY_DAYS", 3),
+    /**
+     * Teto da janela. Quem sumiu há mais tempo que isto não recebe: um
+     * "senti sua falta" no terceiro mês é outra conversa, não este lembrete.
+     */
+    inatividadeMaxDias: num("WHATSAPP_INACTIVITY_MAX_DAYS", 30),
+    /**
+     * Intervalo mínimo entre dois lembretes para a MESMA pessoa. Sem isto,
+     * o cron diário mandaria a mesma mensagem todo dia para quem sumiu.
+     */
+    inatividadeIntervaloDias: num("WHATSAPP_INACTIVITY_COOLDOWN_DAYS", 14),
+    /** Teto de lembretes agendados por rodada, para não virar disparo em massa. */
+    inatividadeMaxPorRodada: num("WHATSAPP_INACTIVITY_BATCH", 25),
+
     // ---------- Fila ----------
     /** Intervalo técnico entre envios. Não é aleatório de propósito. */
     intervaloEnvioMs: num("WHATSAPP_SEND_INTERVAL_MS", 5000),
@@ -68,6 +85,8 @@ export function configWhatsApp() {
     appUrl,
     /** Página nossa que identifica o aluno e leva ao checkout certo. */
     linkRenovar: `${appUrl}/renovar`,
+    /** Porta de entrada de quem já é aluno — usada no lembrete de inatividade. */
+    linkApp: `${appUrl}/dashboard`,
     linkCancelamento: `${appUrl}/renovar#cancelar`,
     checkoutMensal: process.env.CHECKOUT_MENSAL_URL ?? "https://pay.cakto.com.br/zkkrorx_973168",
     checkoutAnual: process.env.CHECKOUT_ANUAL_URL ?? "https://pay.cakto.com.br/3dmtwv7",
