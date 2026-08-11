@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { ArrowUpRight, BadgeCheck, Gift, Lock } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
@@ -54,32 +53,20 @@ export default async function BonusPage() {
                     : "border-border bg-surface/50"
               )}
             >
-              <div className="relative aspect-[2/3] overflow-hidden bg-surface-3">
-                <Image
-                  src={`/bonus/${bonus.key}.jpg`}
-                  alt={bonus.title}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className={cn(
-                    "object-cover transition-transform duration-500 group-hover:scale-[1.03]",
-                    !unlocked && "opacity-70 grayscale group-hover:opacity-100 group-hover:grayscale-0"
-                  )}
-                />
-                <div className="absolute right-3 top-3">
+              <div className="flex flex-1 flex-col p-5 sm:p-6">
+                <div className="mb-3">
                   {unlocked ? (
-                    <Badge variant="success" className="backdrop-blur-md">
+                    <Badge variant="success">
                       <BadgeCheck className="size-3" />
                       Liberado
                     </Badge>
                   ) : (
-                    <Badge className="backdrop-blur-md">
+                    <Badge>
                       <Lock className="size-3" />
                       Bloqueado
                     </Badge>
                   )}
                 </div>
-              </div>
-              <div className="flex flex-1 flex-col p-5 sm:p-6">
                 <h3
                   className={cn(
                     "font-display text-base font-semibold leading-snug",
