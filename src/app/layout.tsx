@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import { GoogleAds } from "@/components/google-ads";
 import { MetaPixel } from "@/components/meta-pixel";
 import { PinterestTag } from "@/components/pinterest-tag";
+import { Utmify } from "@/components/utmify";
 import "./globals.css";
 
 const inter = Inter({
@@ -53,6 +54,7 @@ export default function RootLayout({
         <MetaPixel />
         <PinterestTag />
         <GoogleAds />
+        <Utmify />
         {children}
       </body>
     </html>
