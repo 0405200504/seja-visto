@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { MetaPixel } from "@/components/meta-pixel";
+import { PinterestTag } from "@/components/pinterest-tag";
 import "./globals.css";
 
 const inter = Inter({
@@ -48,8 +49,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>
-        {children}
         <MetaPixel />
+        <PinterestTag />
+        {children}
       </body>
     </html>
   );
