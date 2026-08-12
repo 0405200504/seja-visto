@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import { GoogleAds } from "@/components/google-ads";
 import { MetaPixel } from "@/components/meta-pixel";
 import { PinterestTag } from "@/components/pinterest-tag";
 import "./globals.css";
@@ -51,6 +52,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>
         <MetaPixel />
         <PinterestTag />
+        <GoogleAds />
         {children}
       </body>
     </html>
