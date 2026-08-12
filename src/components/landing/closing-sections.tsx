@@ -1,9 +1,12 @@
 import Image from "next/image";
 import { Check, ChevronDown, Minus, ShieldCheck } from "lucide-react";
 import { Reveal } from "./reveal";
+import { CheckoutLink } from "./checkout-link";
 import {
   ANNUAL_CHECKOUT_URL,
+  ANNUAL_PRICE,
   MONTHLY_CHECKOUT_URL,
+  MONTHLY_PRICE,
   checkoutHref,
 } from "./checkout";
 
@@ -445,13 +448,14 @@ export function PricingSection() {
                 ))}
               </ul>
 
-              <a
+              <CheckoutLink
                 href={checkoutHref(ANNUAL_CHECKOUT_URL)}
+                valor={ANNUAL_PRICE}
                 className="mt-4 flex h-11 items-center justify-center rounded-xl bg-[#146CFF] text-[11px] font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)] md:mt-8 md:h-[54px] md:text-sm"
               >
                 <span className="md:hidden">QUERO O ANUAL</span>
                 <span className="hidden md:inline">QUERO O PLANO ANUAL</span>
-              </a>
+              </CheckoutLink>
             </div>
           </Reveal>
 
@@ -473,13 +477,14 @@ export function PricingSection() {
                   período contratado.
                 </span>
               </p>
-              <a
+              <CheckoutLink
                 href={checkoutHref(MONTHLY_CHECKOUT_URL)}
+                valor={MONTHLY_PRICE}
                 className="mt-4 flex h-11 items-center justify-center rounded-xl border border-[#20242C] bg-white/[0.03] text-[11px] font-bold tracking-wide text-[#F5F7FA] transition-all hover:border-[#146CFF]/60 hover:bg-[#146CFF]/[0.08] max-md:mt-auto md:mt-8 md:h-[54px] md:text-sm"
               >
                 <span className="md:hidden">QUERO O MENSAL</span>
                 <span className="hidden md:inline">QUERO O PLANO MENSAL</span>
-              </a>
+              </CheckoutLink>
             </div>
           </Reveal>
         </div>

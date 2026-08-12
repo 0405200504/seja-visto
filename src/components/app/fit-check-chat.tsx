@@ -19,7 +19,13 @@ import {
   X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { TOKENS_200_CHECKOUT_URL, TOKENS_50_CHECKOUT_URL } from "@/components/landing/checkout";
+import {
+  TOKENS_200_CHECKOUT_URL,
+  TOKENS_200_PRICE,
+  TOKENS_50_CHECKOUT_URL,
+  TOKENS_50_PRICE,
+} from "@/components/landing/checkout";
+import { pinterestCheckout } from "@/lib/pinterest";
 import { cn } from "@/lib/utils";
 
 type ChatMessage = {
@@ -765,7 +771,7 @@ function TokenModal({
 }) {
   const isMain = step === 1;
   const amount = isMain ? 200 : 50;
-  const price = isMain ? "97" : "27";
+  const price = isMain ? TOKENS_200_PRICE : TOKENS_50_PRICE;
   const url = isMain ? TOKENS_200_CHECKOUT_URL : TOKENS_50_CHECKOUT_URL;
 
   return (
@@ -814,6 +820,9 @@ function TokenModal({
         <a
           href={url || "#"}
           {...(url ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          onClick={() => {
+            if (url) pinterestCheckout(price);
+          }}
           className="mt-4 flex w-full items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-hover px-4 py-3 text-sm font-semibold text-accent-foreground shadow-glow transition hover:brightness-110"
         >
           {isMain ? `Quero ${amount} tokens — R$ ${price}` : `Pegar ${amount} tokens — R$ ${price}`}
