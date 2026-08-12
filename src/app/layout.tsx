@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import { MetaPixel } from "@/components/meta-pixel";
 import "./globals.css";
 
 const inter = Inter({
@@ -48,6 +49,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>
         {children}
+        <MetaPixel />
       </body>
     </html>
   );
