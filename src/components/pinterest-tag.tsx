@@ -1,6 +1,6 @@
 import { PinterestTagRoutes } from "./pinterest-tag-routes";
 
-export const PINTEREST_TAG_ID = "2612939238671";
+export const PINTEREST_TAG_ID = "2612647613502";
 
 const SNIPPET = `!function(e){if(!window.pintrk){window.pintrk = function () {
 window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var
