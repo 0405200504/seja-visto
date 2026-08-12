@@ -1,6 +1,7 @@
 import { after } from "next/server";
 import { requirePaidAccess } from "@/lib/auth";
 import { Sidebar, MobileHeader } from "@/components/app/app-nav";
+import { PinterestEnhancedMatch } from "@/components/pinterest-enhanced-match";
 
 export default async function AppLayout({
   children,
@@ -10,7 +11,7 @@ export default async function AppLayout({
   // Bloqueia no servidor: quem não tem acesso pago é redirecionado para
   // /acesso-expirado e o conteúdo nunca chega a ser renderizado.
   // Esconder com CSS não servia — o HTML ia inteiro para o navegador.
-  const { supabase, profile } = await requirePaidAccess();
+  const { supabase, user, profile } = await requirePaidAccess();
 
   // Marca o último acesso (no máx. 1x a cada 30 min) — alimenta "Ativos" e a
   // coluna "Última atividade" do admin.
@@ -28,6 +29,7 @@ export default async function AppLayout({
 
   return (
     <div className="relative min-h-dvh">
+      <PinterestEnhancedMatch email={user.email} />
       <Sidebar isAdmin={profile.is_admin} name={profile.name} />
       <MobileHeader isAdmin={profile.is_admin} name={profile.name} />
       {/* O header fixo cresce com a safe area (notch/Dynamic Island) quando o
