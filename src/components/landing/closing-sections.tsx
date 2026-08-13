@@ -180,12 +180,13 @@ export function RaphaelSection() {
           <div>
             <Reveal delay={100}>
               <p className="mb-4 inline-block rounded-full border border-[#146CFF]/40 bg-[#146CFF]/[0.08] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#78A9FF]">
-                Quem está por trás do MPO
+                Quem montou os 228 outfits
               </p>
             </Reveal>
             <Reveal delay={150}>
               <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-                O MPO tem dono. E ele veste artista desde 2017.
+                Não saiu de um gerador aleatório. Saiu do olho de quem veste
+                artista desde 2017.
               </h2>
             </Reveal>
             <Reveal delay={200}>
@@ -216,11 +217,11 @@ export function RaphaelSection() {
             <Reveal delay={440}>
               <div className="mt-8 rounded-2xl border border-[#20242C] bg-[#050505] p-6">
                 <p className="text-sm leading-relaxed text-[#F5F7FA]">
-                  Não para transformar você em especialista em moda. Para ajudar
-                  você a se vestir melhor{" "}
+                  Cada outfit do MPO passou pelo mesmo critério que ele usa nos
+                  bastidores: o que funciona em qual corpo, em qual contexto,
+                  com qual proporção. A diferença é que agora isso está{" "}
                   <span className="text-[#78A9FF]">
-                    sem depender de opinião aleatória, tendência passageira ou
-                    tentativa e erro
+                    no seu bolso por menos de R$1 por outfit
                   </span>
                   .
                 </p>
@@ -258,15 +259,15 @@ export function RaphaelSection() {
 /* ── Seção 17 — Para quem é ───────────────────────────────── */
 
 const FOR_WHO = [
-  "Abre o guarda-roupa e acaba usando sempre a mesma coisa",
-  "Compra peças boas, mas tem dificuldade para combiná-las",
-  "Quer parecer mais bem vestido sem usar roupa social o tempo todo",
-  "Não sabe quais modelagens valorizam mais seu corpo",
-  "Salva muitas referências, mas não consegue adaptá-las",
-  "Quer montar um guarda-roupa mais inteligente",
-  "Deseja passar mais presença e intenção através da imagem",
-  "Quer receber uma opinião antes de sair com determinado outfit",
-  "Não tem paciência para consumir um curso longo em vídeo",
+  "Você perde tempo demais se arrumando e ainda sai insatisfeito",
+  "Você tem peças boas e não sabe o que casa com o quê",
+  "Você entra nos lugares e sente que ninguém repara",
+  "Você quer chegar num date sem a dúvida de “será que tá estranho?”",
+  "Você salva referência e nunca consegue reproduzir",
+  "Você quer parecer mais bem vestido sem viver de roupa social",
+  "Você não sabe qual modelagem valoriza o seu corpo",
+  "Você quer uma segunda opinião honesta antes de sair de casa",
+  "Você não tem a menor paciência pra curso longo em vídeo",
 ];
 
 export function ForWhoSection() {
@@ -275,7 +276,7 @@ export function ForWhoSection() {
       <div className="mx-auto max-w-[1280px] px-5 md:px-8">
         <Reveal>
           <h2 className="max-w-2xl font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-            O MPO faz sentido para você que…
+            Isso é pra você se…
           </h2>
         </Reveal>
 
@@ -293,11 +294,11 @@ export function ForWhoSection() {
         <Reveal delay={400}>
           <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-[#146CFF]/30 bg-[#146CFF]/[0.05] p-6 text-center">
             <p className="font-display text-base font-bold text-[#F5F7FA]">
-              Não é necessário entender de moda.
+              Não precisa entender de moda. Não precisa comprar guarda-roupa
+              novo.
             </p>
             <p className="mt-2 text-sm leading-relaxed text-[#A4AAB5]">
-              A plataforma foi criada justamente para organizar o processo desde
-              o começo.
+              Os outfits de nível fácil começam com o que você já tem.
             </p>
           </div>
         </Reveal>
@@ -309,23 +310,23 @@ export function ForWhoSection() {
 /* ── Seção 18 — Tudo que o aluno recebe ───────────────────── */
 
 const DELIVERABLES = [
-  "Quiz e diagnóstico personalizado",
-  "Dashboard individual",
-  "8 módulos",
-  "37 aulas em texto",
-  "Lookbook com filtros avançados",
+  "228 outfits prontos",
+  "Filtros por ocasião, clima, estilo, cor e nível",
   "16 estilos masculinos",
-  "228 referências visuais",
+  "Fit Check com IA",
+  "Guarda-roupa inteligente",
+  "Lista de compras na ordem certa",
   "11 guias práticos",
   "3 ferramentas interativas",
   "Dicionário com 24 peças",
-  "Guarda-roupa com 30 peças",
-  "Lista de compras",
-  "Área de favoritos",
   "Plano de ação de 7 dias",
-  "Fit Check com IA",
+  "Método com 8 módulos e 37 aulas",
+  "Comunidade de fits",
+  "Área de favoritos",
+  "Cupons de marcas parceiras",
   "Histórico das análises",
-  "Fits da comunidade",
+  "Dashboard individual",
+  "Quiz e diagnóstico personalizado",
   "Atualizações da plataforma",
 ];
 
@@ -339,7 +340,7 @@ export function StackSection() {
       <div className="mx-auto max-w-[1280px] px-5 md:px-8">
         <Reveal>
           <h2 className="max-w-2xl font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-            Seu sistema completo de estilo.
+            Tudo que entra no seu acesso.
           </h2>
         </Reveal>
 
@@ -362,7 +363,7 @@ export function StackSection() {
               href="#planos"
               className="inline-flex h-[52px] items-center justify-center rounded-xl bg-[#146CFF] px-8 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)]"
             >
-              VER OS PLANOS
+              QUERO AS 228 COMBINAÇÕES
             </a>
           </div>
         </Reveal>
@@ -377,8 +378,7 @@ const PLAN_BENEFITS = [
   "Acesso completo à plataforma",
   "Dashboard personalizado",
   "Método com 8 módulos e 37 aulas",
-  "Lookbook completo",
-  "228 referências visuais",
+  "Catálogo com 228 outfits prontos",
   "Guias e ferramentas interativas",
   "Guarda-roupa inteligente",
   "Plano de 7 dias",
@@ -406,7 +406,7 @@ export function PricingSection() {
         <div className="mx-auto max-w-2xl text-center">
           <Reveal>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-              Escolha como quer acessar.
+              228 outfits prontos por R$0,89 cada. Uma vez só, no ano.
             </h2>
           </Reveal>
           <Reveal delay={100}>
@@ -433,9 +433,12 @@ export function PricingSection() {
                 Total de R$204 por ano.
               </p>
               <p className="mt-2.5 inline-block w-fit rounded-lg bg-[#146CFF]/[0.14] px-2.5 py-1.5 text-[10px] font-semibold leading-snug text-[#78A9FF] md:mt-3 md:px-3.5 md:py-2 md:text-xs">
-                <span className="md:hidden">Economize R$120 no ano.</span>
+                <span className="md:hidden">
+                  R$0,56 por dia. Menos que meio pão na chapa.
+                </span>
                 <span className="hidden md:inline">
-                  Economize R$120 em comparação com 12 meses no plano mensal.
+                  Divididos pelos 228 outfits, dá R$0,89 por outfit pronto. E
+                  você economiza R$120 em relação ao mensal.
                 </span>
               </p>
 
@@ -453,8 +456,8 @@ export function PricingSection() {
                 valor={ANNUAL_PRICE}
                 className="mt-4 flex h-11 items-center justify-center rounded-xl bg-[#146CFF] text-[11px] font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)] md:mt-8 md:h-[54px] md:text-sm"
               >
-                <span className="md:hidden">QUERO O ANUAL</span>
-                <span className="hidden md:inline">QUERO O PLANO ANUAL</span>
+                <span className="md:hidden">QUERO OS 228 OUTFITS</span>
+                <span className="hidden md:inline">QUERO OS 228 OUTFITS</span>
               </CheckoutLink>
             </div>
           </Reveal>
@@ -471,10 +474,13 @@ export function PricingSection() {
                 <span className="text-xs font-semibold text-[#A4AAB5] md:text-lg">por mês</span>
               </p>
               <p className="mt-1.5 text-[11px] leading-relaxed text-[#A4AAB5] md:mt-6 md:text-sm">
-                <span className="md:hidden">Mesmos recursos do anual.</span>
+                <span className="md:hidden">
+                  Mesma plataforma, mesmos 228 outfits, mesmos bônus. Cancele
+                  quando quiser.
+                </span>
                 <span className="hidden md:inline">
-                  Os mesmos recursos disponíveis no plano anual durante o
-                  período contratado.
+                  Mesma plataforma, mesmos 228 outfits, mesmos bônus. Cancele
+                  quando quiser.
                 </span>
               </p>
               <CheckoutLink
@@ -482,8 +488,8 @@ export function PricingSection() {
                 valor={MONTHLY_PRICE}
                 className="mt-4 flex h-11 items-center justify-center rounded-xl border border-[#20242C] bg-white/[0.03] text-[11px] font-bold tracking-wide text-[#F5F7FA] transition-all hover:border-[#146CFF]/60 hover:bg-[#146CFF]/[0.08] max-md:mt-auto md:mt-8 md:h-[54px] md:text-sm"
               >
-                <span className="md:hidden">QUERO O MENSAL</span>
-                <span className="hidden md:inline">QUERO O PLANO MENSAL</span>
+                <span className="md:hidden">COMEÇAR PELO MENSAL</span>
+                <span className="hidden md:inline">COMEÇAR PELO MENSAL</span>
               </CheckoutLink>
             </div>
           </Reveal>
@@ -515,11 +521,13 @@ export function PricingSection() {
             </span>
             <div>
               <p className="font-display text-base font-bold text-[#F5F7FA]">
-                7 dias de garantia
+                Teste tudo. Se não valer, você não paga nada.
               </p>
               <p className="mt-1.5 text-sm leading-relaxed text-[#A4AAB5]">
-                Entre, use a plataforma inteira e, se não for para você, peça o
-                reembolso em até 7 dias corridos — sem precisar justificar.{" "}
+                Entre, abra os 228 outfits, monte três combinações com o que
+                você tem, use o Fit Check. Se em 7 dias achar que não valeu, pede
+                o reembolso e devolvemos 100%. Sem formulário chato, sem
+                justificar. O risco é todo nosso.{" "}
                 <a
                   href="/reembolso"
                   className="font-medium text-[#78A9FF] hover:underline"
@@ -546,12 +554,12 @@ export function PricingSection() {
 
 const FAQ = [
   {
-    q: "O MPO é um curso em vídeo?",
-    a: "Não. A plataforma foi pensada para ser utilizada como uma ferramenta. O conteúdo principal está organizado em textos, referências, guias, checklists, filtros e componentes interativos.",
+    q: "Preciso comprar as peças exatas dos outfits?",
+    a: "Não. Os outfits são descritos por tipo de peça, não por marca. E o filtro “já tenho as peças” mostra primeiro o que você monta hoje sem gastar nada. O conteúdo é em texto, consultável, não um curso em vídeo.",
   },
   {
     q: "Preciso entender de moda?",
-    a: "Não. O primeiro acesso ajuda a identificar seu perfil e a plataforma organiza os conteúdos a partir daí.",
+    a: "Não. Você escolhe a ocasião e recebe o outfit pronto, com a explicação do porquê funciona. O entendimento vem de usar, não de estudar.",
   },
   {
     q: "O MPO serve para qualquer estilo?",
@@ -591,7 +599,7 @@ const FAQ = [
   },
   {
     q: "Vou precisar comprar um guarda-roupa novo?",
-    a: "Não. Uma das primeiras propostas da plataforma é ajudar você a organizar e combinar melhor o que já possui antes de decidir o que vale comprar.",
+    a: "Não. Boa parte dos outfits de nível fácil se monta com peças que você provavelmente já tem. O guarda-roupa inteligente mostra o que falta e em que ordem comprar, se você quiser.",
   },
   {
     q: "O plano anual e o mensal possuem conteúdos diferentes?",
@@ -674,28 +682,27 @@ export function FinalCtaSection() {
       <div className="relative mx-auto max-w-3xl px-5 text-center md:px-8">
         <Reveal>
           <p className="mb-5 inline-block rounded-full border border-[#20242C] bg-white/[0.03] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
-            Seu guarda-roupa já tem um ponto de partida
+            São 228 outfits esperando você
           </p>
         </Reveal>
         <Reveal delay={100}>
           <h2 className="font-display text-4xl font-bold leading-[1.08] tracking-[-0.03em] text-[#F5F7FA] md:text-[56px]">
-            Agora falta transformar roupa em{" "}
+            Amanhã você vai abrir o guarda-roupa de novo.{" "}
             <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">
-              estilo
+              Já resolvido ou na mesma
             </span>
-            .
+            ?
           </h2>
         </Reveal>
         <Reveal delay={200}>
           <p className="mx-auto mt-6 max-w-xl leading-relaxed text-[#A4AAB5]">
-            Entre no MPO, descubra seu perfil e comece a organizar as peças,
-            referências e combinações que fazem sentido para você.
+            São 228 outfits prontos esperando você escolher a ocasião. Mais o
+            Fit Check, o guarda-roupa inteligente, os guias e o método inteiro.
           </p>
         </Reveal>
         <Reveal delay={280}>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-[#A4AAB5]/80">
-            Sem precisar mudar quem você é. Só deixando mais claro o que a sua
-            imagem comunica.
+            Por 12x de R$17, com 7 dias pra testar tudo e desistir se quiser.
           </p>
         </Reveal>
         <Reveal delay={360}>
@@ -703,7 +710,7 @@ export function FinalCtaSection() {
             href="#planos"
             className="mt-10 inline-flex h-14 items-center justify-center rounded-xl bg-[#146CFF] px-10 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_50px_-8px_rgb(20_108_255/1)]"
           >
-            DESCOBRIR MEU ESTILO
+            QUERO OS 228 OUTFITS AGORA
           </a>
         </Reveal>
         <Reveal delay={440}>

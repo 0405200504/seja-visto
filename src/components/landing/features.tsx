@@ -27,12 +27,12 @@ export function FeaturesSection() {
         <div className="max-w-2xl">
           <Reveal>
             <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
-              Tudo dentro da mesma plataforma
+              Você vem pelos 228 outfits
             </p>
           </Reveal>
           <Reveal delay={100}>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-              Do primeiro diagnóstico até o outfit pronto.
+              E leva a plataforma inteira junto, sem pagar um centavo a mais.
             </h2>
           </Reveal>
         </div>
@@ -42,7 +42,7 @@ export function FeaturesSection() {
           <Reveal className="lg:col-span-2">
             <BentoCard
               icon={LayoutDashboard}
-              title="Dashboard personalizado"
+              title="BÔNUS · Dashboard personalizado"
               text="Acompanhe seu progresso, veja seu estilo principal, continue de onde parou e receba outfits filtrados para o seu perfil."
             >
               <div className="mt-5 grid grid-cols-2 gap-3">
@@ -66,7 +66,7 @@ export function FeaturesSection() {
           <Reveal delay={100}>
             <BentoCard
               icon={Layers}
-              title="Método completo"
+              title="BÔNUS · Método completo"
               text="São 8 módulos e 37 aulas em texto, organizadas para você aprender no seu ritmo e consultar sempre que precisar."
             >
               <div className="mt-5 space-y-2">
@@ -91,8 +91,8 @@ export function FeaturesSection() {
           <Reveal delay={150}>
             <BentoCard
               icon={Compass}
-              title="Lookbook inteligente"
-              text="Encontre combinações prontas por ocasião, estilo, clima, nível e cor base."
+              title="Catálogo de Outfits"
+              text="228 combinações prontas, filtradas por ocasião, estilo, clima, nível e cor base. Você escolhe, copia e veste."
             >
               <div className="mt-5 flex flex-wrap gap-1.5" aria-hidden>
                 {["Date", "Trabalho", "Calor", "Streetwear", "Neutros"].map((chip, i) => (
@@ -115,7 +115,7 @@ export function FeaturesSection() {
           <Reveal delay={200}>
             <BentoCard
               icon={Star}
-              title="16 estilos masculinos"
+              title="BÔNUS · 16 estilos masculinos"
               text="Entenda Casual, Streetwear, Workwear, Smart Casual, Old Money, Preppy, Minimalista, Gorpcore, Vintage/Y2K, Techwear, Skater, Quiet Luxury, US Drip, Opium, Sportlife e Boho."
             >
               <div className="mt-5 grid grid-cols-4 gap-1.5" aria-hidden>
@@ -142,7 +142,7 @@ export function FeaturesSection() {
           <Reveal delay={250}>
             <BentoCard
               icon={BookOpen}
-              title="Guias práticos"
+              title="BÔNUS · 11 guias práticos"
               text="Aprenda sobre medidas, cores, modelagens, acessórios, tênis, calças, cuidados com as peças e guarda-roupa cápsula."
             />
           </Reveal>
@@ -151,7 +151,7 @@ export function FeaturesSection() {
           <Reveal delay={300}>
             <BentoCard
               icon={Shirt}
-              title="Guarda-roupa essencial"
+              title="BÔNUS · Guarda-roupa inteligente"
               text="Marque o que já possui, descubra o que falta e saiba quais peças comprar primeiro."
             >
               <div className="mt-5 space-y-2" aria-hidden>
@@ -183,7 +183,7 @@ export function FeaturesSection() {
           <Reveal delay={350}>
             <BentoCard
               icon={Calendar}
-              title="Plano de 7 dias"
+              title="BÔNUS · Plano de 7 dias"
               text="Saia da teoria e reorganize o seu guarda-roupa com pequenas missões diárias."
             >
               <div className="mt-5 flex gap-1.5" aria-hidden>
@@ -207,8 +207,8 @@ export function FeaturesSection() {
           <Reveal delay={400} className="md:col-span-2 lg:col-span-2">
             <BentoCard
               icon={Camera}
-              title="Fit Check com IA"
-              text="Envie uma foto ou descreva o outfit e receba uma análise sobre o que está funcionando e o que pode melhorar."
+              title="BÔNUS · Fit Check com IA"
+              text="Um stylist no bolso: manda a foto do outfit e recebe o que está funcionando, o que ajustar e uma nota geral. Antes de sair de casa, não depois de ver as fotos da noite."
               highlight
             >
               <div className="mt-5 flex items-center gap-3 rounded-xl border border-[#146CFF]/30 bg-[#146CFF]/[0.06] px-4 py-3" aria-hidden>
@@ -228,7 +228,7 @@ export function FeaturesSection() {
           <Reveal delay={450}>
             <BentoCard
               icon={Users}
-              title="Fits da comunidade"
+              title="BÔNUS · Comunidade de fits"
               text="Publique o seu outfit e veja o dos outros alunos. Dá para curtir, salvar e comentar — todo fit passa por aprovação antes de aparecer."
             >
               <div className="mt-5 flex items-center gap-2 text-[11px] text-[#A4AAB5]" aria-hidden>
@@ -330,16 +330,17 @@ export function LookbookSection() {
         <div className="max-w-2xl">
           <Reveal>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-              Você não recebe só a foto.{" "}
-              <span className="text-[#78A9FF]">Recebe a lógica por trás do outfit.</span>
+              Não é uma pasta de fotos bonitas.{" "}
+              <span className="text-[#78A9FF]">É a receita, escrita.</span>
             </h2>
           </Reveal>
           <Reveal delay={120}>
             <p className="mt-6 leading-relaxed text-[#A4AAB5]">
-              O lookbook foi criado para funcionar como uma biblioteca de
-              receitas. Você escolhe a ocasião, o estilo, o clima, o nível de
-              dificuldade e a cor principal. A plataforma mostra combinações
-              completas e explica por que cada uma funciona.
+              Você já salvou centenas de referências e nunca conseguiu reproduzir
+              nenhuma. Foto mostra o resultado. Nunca mostra a receita. Cada um
+              dos 228 outfits do MPO vem com as peças nomeadas uma por uma e a
+              explicação de por que aquela combinação funciona. Você não precisa
+              ter olho pra moda. Precisa saber ler uma lista.
             </p>
           </Reveal>
         </div>
@@ -416,8 +417,8 @@ export function LookbookSection() {
 
         <Reveal delay={300}>
           <p className="mx-auto mt-10 max-w-xl text-center text-sm leading-relaxed text-[#A4AAB5]/80">
-            Em vez de salvar mais uma imagem e esquecer dela, você transforma a
-            referência em um plano real para o seu guarda-roupa.
+            Favoritou um outfit? Vai direto pro seu plano. Faltou uma peça? Vai
+            direto pra sua lista de compras. Nada se perde.
           </p>
         </Reveal>
       </div>
@@ -450,7 +451,7 @@ export function FitCheckSection() {
           <div>
             <Reveal>
               <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
-                Um consultor de estilo no seu bolso
+                BÔNUS · Um stylist no seu bolso
               </p>
             </Reveal>
             <Reveal delay={100}>

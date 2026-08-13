@@ -29,7 +29,7 @@ const MODULES = [
     n: 2,
     title: "Fundamentos",
     lessons: 6,
-    text: "Caimento, proporção, cores, texturas, ocasião e terceira peça: os 6 pilares que separam roupa bonita de look bem construído.",
+    text: "Caimento, proporção, cores, texturas, ocasião e terceira peça: os 6 pilares que separam roupa bonita de outfit bem construído.",
   },
   {
     n: 3,
@@ -39,15 +39,15 @@ const MODULES = [
   },
   {
     n: 4,
-    title: "Fórmulas de Looks",
+    title: "Fórmulas de Outfits",
     lessons: 6,
-    text: "Fórmulas prontas e repetíveis para cada situação: do básico premium ao look de date.",
+    text: "Fórmulas prontas e repetíveis para cada situação: do básico premium ao outfit de date.",
   },
   {
     n: 5,
     title: "Aprenda a usar as combinações do MPO",
     lessons: 5,
-    text: "Como usar o lookbook da plataforma: combinações prontas por ocasião, estilo e clima, fáceis de copiar.",
+    text: "Como usar o Catálogo de Outfits da plataforma: combinações prontas por ocasião, estilo e clima, fáceis de copiar.",
   },
   {
     n: 6,

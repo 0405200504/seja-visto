@@ -12,7 +12,7 @@ import { Reveal, ProgressFill } from "./reveal";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-32 pb-16 md:pt-44 md:pb-24">
+    <section className="relative overflow-hidden pt-20 pb-16 md:pt-44 md:pb-24">
       {/* Fundo: grid tecnológico discreto + luz azul difusa */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
@@ -54,27 +54,29 @@ export function Hero() {
 
           <Reveal delay={100}>
             <h1 className="font-display text-4xl font-bold leading-[1.06] tracking-[-0.03em] text-[#F5F7FA] sm:text-5xl lg:text-[60px]">
-              Se vestir melhor,{" "}
               <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
-                sem complicação
-              </span>
-              .
+                +228
+              </span>{" "}
+              combinações prontas pra você se vestir melhor e mais rápido no dia
+              a dia
             </h1>
           </Reveal>
 
           <Reveal delay={200}>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-[#A4AAB5] md:text-lg">
-              O MPO existe para facilitar a vida de quem quer se vestir melhor.
-              Ele mostra quais peças combinam com você, quais outfits funcionam
-              para cada ocasião e o que ajustar — sem comprar mais roupa por
-              impulso e sem viver na tentativa e erro.
+              Escolha a ocasião — trabalho, date, faculdade, rolê à noite — e o
+              MPO te entrega o outfit completo: peça por peça, com o porquê
+              daquela combinação funcionar. Você abre, copia e veste. Em 30
+              segundos você está pronto, e sai de casa com a certeza de que está
+              bem vestido.
             </p>
           </Reveal>
 
           <Reveal delay={280}>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#A4AAB5]/80">
-              Lookbook, guias práticos, guarda-roupa inteligente, plano de ação
-              e um consultor de estilo com IA reunidos em uma única plataforma.
+              E vem tudo junto: Fit Check com IA pra analisar a foto do seu
+              outfit antes de sair, guarda-roupa inteligente, 16 estilos, 11
+              guias práticos e o método completo. Sem pagar nada a mais.
             </p>
           </Reveal>
 
@@ -84,7 +86,7 @@ export function Hero() {
                 href="#como-funciona"
                 className="inline-flex h-[52px] items-center justify-center rounded-xl bg-[#146CFF] px-8 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)]"
               >
-                DESCOBRIR MEU ESTILO
+                QUERO AS 228 COMBINAÇÕES
               </a>
               <a
                 href="#como-funciona"
@@ -97,7 +99,7 @@ export function Hero() {
 
           <Reveal delay={440}>
             <p className="mt-6 text-xs font-medium tracking-wide text-[#A4AAB5]/70">
-              Acesso imediato · Plataforma atualizada · Use no celular ou computador
+              Acesso imediato · 12x de R$17 · 7 dias de garantia incondicional
             </p>
           </Reveal>
         </div>
@@ -150,7 +152,7 @@ export function Hero() {
                     <Layers className="size-3" /> Método
                   </span>
                   <span className="flex items-center gap-2 px-2.5 py-1.5">
-                    <Compass className="size-3" /> Lookbook
+                    <Compass className="size-3" /> Catálogo de Outfits
                   </span>
                   <span className="flex items-center gap-2 px-2.5 py-1.5">
                     <Shirt className="size-3" /> Guarda-roupa

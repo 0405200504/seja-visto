@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
   { href: "#como-funciona", label: "Como funciona" },
-  { href: "#recursos", label: "O que você recebe" },
+  { href: "#recursos", label: "Bônus" },
   { href: "#metodo", label: "Método" },
   { href: "#fit-check", label: "Fit Check" },
   { href: "#planos", label: "Planos" },
@@ -78,12 +78,6 @@ export function LandingHeader() {
           >
             QUERO ACESSAR O MPO
           </a>
-          <Link
-            href="/login"
-            className="inline-flex items-center rounded-lg border border-[#20242C] px-3 py-2 text-xs font-semibold text-[#F5F7FA] sm:hidden"
-          >
-            Entrar
-          </Link>
           <a
             href="#planos"
             className="inline-flex rounded-lg bg-[#146CFF] px-3.5 py-2 text-xs font-semibold text-white sm:hidden"

@@ -10,10 +10,10 @@ import { OnboardingDemo } from "./onboarding-demo";
 /* ── Seção 3 — Reconhecimento do problema ─────────────────── */
 
 const PROBLEM_CHIPS = [
-  "A calça não conversa com o tênis.",
-  "A camiseta muda completamente o formato do corpo.",
-  "A combinação funciona na foto, mas não funciona em você.",
-  "Cada nova compra parece mais uma tentativa do que uma decisão.",
+  "Você tem peças boas, mas nenhuma delas conversa com a outra",
+  "A camiseta muda completamente o formato do seu corpo — e você nem percebe",
+  "O tênis derruba um outfit que estava perfeito",
+  "Cada compra nova é mais uma aposta do que uma decisão",
 ];
 
 export function ProblemSection() {
@@ -24,38 +24,42 @@ export function ProblemSection() {
           <div>
             <Reveal>
               <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-                Você até compra roupas boas.{" "}
+                Não é falta de roupa.{" "}
                 <span className="text-[#A4AAB5]">
-                  O difícil é fazer tudo conversar.
+                  É falta de combinação — e isso te custa tempo e presença.
                 </span>
               </h2>
             </Reveal>
             <Reveal delay={120}>
               <p className="mt-6 max-w-xl leading-relaxed text-[#A4AAB5]">
-                Talvez o seu guarda-roupa esteja cheio, mas na hora de sair você
-                continue usando as mesmas combinações.
+                Toda vez é o mesmo filme. Você abre o guarda-roupa, experimenta
+                três coisas, tira duas, olha no espelho, não gosta, coloca de
+                novo a mesma camiseta de sempre e sai atrasado. Perdeu 40
+                minutos pra chegar exatamente no mesmo lugar de sempre.
               </p>
             </Reveal>
             <Reveal delay={200}>
               <p className="mt-4 max-w-xl leading-relaxed text-[#A4AAB5]">
-                Você salva referências, acompanha pessoas que se vestem bem e
-                encontra peças interessantes. Só que, quando tenta trazer aquilo
-                para a sua realidade, alguma coisa não encaixa.
+                E o pior não é o tempo. É a sensação depois. É entrar no lugar e
+                sentir que você desapareceu no meio da galera. É estar num date
+                sem saber se está bem vestido ou só vestido. É ver alguém entrar
+                com uma roupa simples e ocupar todo o espaço, e você não
+                conseguir explicar o que ele fez de diferente.
               </p>
             </Reveal>
             <Reveal delay={280}>
               <div className="mt-8 rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-6">
                 <p className="leading-relaxed text-[#F5F7FA]">
-                  Isso acontece porque{" "}
+                  Roupa não é vaidade. É a primeira frase que você diz num lugar{" "}
                   <span className="font-semibold text-[#78A9FF]">
-                    referência sem método vira acúmulo
+                    antes de abrir a boca
                   </span>
                   .
                 </p>
                 <p className="mt-3 text-sm leading-relaxed text-[#A4AAB5]">
-                  Você não precisa decorar regra de moda. Precisa entender o que
-                  funciona para o seu corpo, sua rotina, seu objetivo e a imagem
-                  que quer passar.
+                  E dá pra parar de improvisar essa frase hoje: são 228 outfits
+                  prontos, montados por um stylist, esperando você escolher a
+                  ocasião.
                 </p>
               </div>
             </Reveal>
@@ -101,23 +105,23 @@ export function ProblemSection() {
 const FLOW_STEPS = [
   {
     icon: Compass,
-    title: "Descubra seu perfil",
-    text: "Responda ao quiz e veja quais estilos mais combinam com você.",
+    title: "Diga pra onde você vai",
+    text: "Escolha ocasião, clima, estilo e cor base. Leva 5 segundos.",
   },
   {
     icon: GraduationCap,
-    title: "Aprenda o que realmente importa",
-    text: "Consuma aulas e guias rápidos sobre modelagem, cores, peças e combinações.",
+    title: "Receba os outfits prontos",
+    text: "O catálogo entrega as combinações completas, com peça por peça e o porquê funciona.",
   },
   {
     icon: Shirt,
-    title: "Monte seu sistema pessoal",
-    text: "Organize o guarda-roupa, salve outfits e crie sua lista de compras.",
+    title: "Monte com o que você já tem",
+    text: "Marque as peças do seu armário e veja o que dá pra vestir hoje, sem comprar nada.",
   },
   {
     icon: ClipboardCheck,
-    title: "Teste e ajuste",
-    text: "Use o Fit Check para receber feedback sobre os seus próprios outfits.",
+    title: "Confirme antes de sair",
+    text: "Mande a foto no Fit Check e saia de casa sem dúvida nenhuma.",
   },
 ];
 
@@ -137,29 +141,29 @@ export function SolutionSection() {
           </Reveal>
           <Reveal delay={100}>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-              O MPO organiza o que antes era tentativa e erro.
+              Do &ldquo;não tenho o que vestir&rdquo; ao outfit pronto em poucos
+              toques.
             </h2>
           </Reveal>
           <Reveal delay={200}>
             <p className="mt-6 leading-relaxed text-[#A4AAB5]">
-              Ao entrar, você responde cinco perguntas rápidas sobre seu
-              objetivo, suas dificuldades e o jeito que gostaria de ser
-              percebido. A plataforma cruza essas respostas com 16 perfis de
-              estilo e passa a recomendar outfits, conteúdos e próximos passos de
-              acordo com você.
+              Você diz pra onde vai — trabalho, date, faculdade, rolê à noite —
+              e o catálogo filtra as combinações que funcionam naquele contexto,
+              no clima do dia e na cor que você quer usar como base.
             </p>
           </Reveal>
           <Reveal delay={280}>
             <p className="mt-4 leading-relaxed text-[#A4AAB5]">
-              Você aprende os fundamentos, aplica no seu próprio guarda-roupa,
-              salva referências, organiza suas compras e ainda pode mandar uma
-              foto do outfit para receber uma análise instantânea.
+              Cada outfit vem com as peças listadas uma por uma e a lógica
+              explicada. Você marca o que já tem no armário, monta hoje sem
+              gastar nada e, se quiser, manda uma foto pro Fit Check antes de
+              sair.
             </p>
           </Reveal>
           <Reveal delay={360}>
             <ul className="mt-6 space-y-2 text-sm text-[#A4AAB5]/85">
-              <li>Sem depender de inspiração aleatória.</li>
-              <li>Sem precisar assistir horas de vídeo para encontrar uma resposta simples.</li>
+              <li>Sem passar 40 minutos experimentando roupa na frente do espelho.</li>
+              <li>Sem depender de sorte, palpite ou referência que você nunca consegue reproduzir.</li>
               <li>Sem comprar mais uma peça que fica esquecida no fundo do armário.</li>
             </ul>
           </Reveal>
@@ -257,8 +261,8 @@ export function OnboardingSection() {
 const METRICS = [
   { value: 8, suffix: "", label: "módulos" },
   { value: 37, suffix: "", label: "aulas" },
-  { value: 16, suffix: "", label: "estilos" },
-  { value: 228, suffix: "", label: "referências visuais" },
+  { value: 16, suffix: "", label: "estilos masculinos" },
+  { value: 228, suffix: "", label: "outfits e referências visuais" },
   { value: 11, suffix: "", label: "guias práticos" },
   { value: 3, suffix: "", label: "ferramentas interativas" },
   { value: 24, suffix: "", label: "peças catalogadas" },
@@ -293,8 +297,8 @@ export function MetricsSection() {
               ))}
             </dl>
             <p className="relative mt-10 text-center text-xs leading-relaxed text-[#A4AAB5]/70">
-              Tudo organizado para você encontrar a resposta certa sem precisar
-              procurar em dezenas de vídeos, pastas ou perfis diferentes.
+              Tudo filtrável, tudo no celular, tudo pronto pra consultar no
+              exato momento em que você está se arrumando.
             </p>
           </div>
         </Reveal>
