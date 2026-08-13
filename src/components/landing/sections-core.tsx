@@ -22,23 +22,23 @@ export function ProblemSection() {
       <div className="mx-auto max-w-[1280px] px-5 md:px-8">
         <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <div>
-            <Reveal>
+            <div>
               <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
                 Não é falta de roupa.{" "}
                 <span className="text-[#A4AAB5]">
                   É falta de combinação — e isso te custa tempo e presença.
                 </span>
               </h2>
-            </Reveal>
-            <Reveal delay={120}>
+            </div>
+            <div>
               <p className="mt-6 max-w-xl leading-relaxed text-[#A4AAB5]">
                 Toda vez é o mesmo filme. Você abre o guarda-roupa, experimenta
                 três coisas, tira duas, olha no espelho, não gosta, coloca de
                 novo a mesma camiseta de sempre e sai atrasado. Perdeu 40
                 minutos pra chegar exatamente no mesmo lugar de sempre.
               </p>
-            </Reveal>
-            <Reveal delay={200}>
+            </div>
+            <div>
               <p className="mt-4 max-w-xl leading-relaxed text-[#A4AAB5]">
                 E o pior não é o tempo. É a sensação depois. É entrar no lugar e
                 sentir que você desapareceu no meio da galera. É estar num date
@@ -46,8 +46,8 @@ export function ProblemSection() {
                 com uma roupa simples e ocupar todo o espaço, e você não
                 conseguir explicar o que ele fez de diferente.
               </p>
-            </Reveal>
-            <Reveal delay={280}>
+            </div>
+            <div>
               <div className="mt-8 rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-6">
                 <p className="leading-relaxed text-[#F5F7FA]">
                   Roupa não é vaidade. É a primeira frase que você diz num lugar{" "}
@@ -62,12 +62,12 @@ export function ProblemSection() {
                   ocasião.
                 </p>
               </div>
-            </Reveal>
+            </div>
           </div>
 
           <div className="flex flex-col justify-center gap-3">
-            {PROBLEM_CHIPS.map((chip, i) => (
-              <Reveal key={chip} delay={i * 100}>
+            {PROBLEM_CHIPS.map((chip) => (
+              <div key={chip}>
                 <div className="flex items-start gap-3 rounded-xl border border-[#20242C] bg-white/[0.02] px-5 py-4 transition-colors hover:border-[#146CFF]/40">
                   <span
                     aria-hidden
@@ -77,9 +77,9 @@ export function ProblemSection() {
                     {chip}
                   </p>
                 </div>
-              </Reveal>
+              </div>
             ))}
-            <Reveal delay={450}>
+            <div>
               <div className="mt-2 flex flex-wrap gap-2" aria-hidden>
                 {["Boxy tee", "Baggy jeans", "Retro runner", "Overshirt", "Trucker jacket", "Jorts"].map(
                   (peca) => (
@@ -92,7 +92,7 @@ export function ProblemSection() {
                   )
                 )}
               </div>
-            </Reveal>
+            </div>
           </div>
         </div>
       </div>
