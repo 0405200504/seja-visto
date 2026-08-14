@@ -440,12 +440,11 @@ export function PricingSection() {
               </span>
               <p className="mt-5 font-display text-[44px] font-bold leading-none tracking-tight text-[#F5F7FA] md:text-6xl">
                 R$27
-                <span className="align-super text-base font-semibold text-[#A4AAB5] md:text-lg">
-                  /mês
-                </span>
               </p>
-              <p className="mt-2.5 text-sm font-semibold text-[#78A9FF]">
-                Cancele quando quiser
+              {/* O período sai de cima do número, mas continua aqui: é o que
+                  o visitante lê antes de decidir. */}
+              <p className="mt-3 text-sm font-semibold text-[#78A9FF]">
+                Assinatura mensal · cancele quando quiser
               </p>
             </div>
 
@@ -566,6 +565,10 @@ const FAQ = [
   {
     q: "O que são os bônus da plataforma?",
     a: "São 10 conteúdos extras opcionais — como corte ideal para o seu rosto, montar a mala, ficar bem nas fotos, círculo cromático e o grupo no WhatsApp. Eles não estão inclusos nos planos: são vendidos à parte, com liberação automática. Uma vez comprado, o bônus é seu para sempre — mas, como ele fica dentro da plataforma, você precisa estar com o MPO ativo para acessá-lo.",
+  },
+  {
+    q: "Como funciona a cobrança?",
+    a: "O MPO é uma assinatura mensal de R$27. A cobrança se repete todo mês no mesmo dia, e você mantém o acesso enquanto ela estiver ativa. Pode cancelar quando quiser, direto com o suporte, sem multa nem fidelidade — e nos primeiros 7 dias ainda vale o reembolso integral.",
   },
   {
     q: "O que acontece quando meu acesso termina?",
