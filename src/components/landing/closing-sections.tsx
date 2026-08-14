@@ -422,22 +422,23 @@ export function PricingSection() {
           </Reveal>
         </div>
 
-        {/* Anual sempre primeiro — lado a lado no mobile e no desktop */}
-        <div className="mt-12 grid grid-cols-2 gap-3 md:grid-cols-[1.15fr_1fr] md:items-start md:gap-6">
+        {/* Mobile: empilhados, mensal em destaque. Desktop: lado a lado,
+            anual em destaque. */}
+        <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-[1.15fr_1fr] md:items-start md:gap-6">
           {/* PLANO ANUAL */}
-          <Reveal delay={150} className="h-full">
-            <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#146CFF]/60 bg-gradient-to-b from-[#146CFF]/[0.1] to-[#0c0e14] p-4 shadow-[0_0_60px_-18px_rgb(20_108_255/0.45)] md:p-9">
-              <span className="mb-3 w-fit rounded-full bg-[#146CFF] px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-white md:absolute md:right-6 md:top-6 md:mb-0 md:px-3.5 md:py-1.5 md:text-[10px]">
+          <Reveal delay={150} className="order-2 h-full md:order-1">
+            <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-5 md:border-[#146CFF]/60 md:bg-gradient-to-b md:from-[#146CFF]/[0.1] md:to-[#0c0e14] md:p-9 md:shadow-[0_0_60px_-18px_rgb(20_108_255/0.45)]">
+              <span className="hidden w-fit rounded-full bg-[#146CFF] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white md:absolute md:right-6 md:top-6 md:block">
                 Mais vantajoso
               </span>
-              <p className="font-display text-sm font-bold text-[#F5F7FA] md:text-lg">MPO Anual</p>
-              <p className="mt-2 font-display text-[22px] font-bold leading-tight tracking-tight text-[#F5F7FA] md:mt-5 md:text-5xl">
+              <p className="font-display text-base font-bold text-[#F5F7FA] md:text-lg">MPO Anual</p>
+              <p className="mt-2 font-display text-[28px] font-bold leading-tight tracking-tight text-[#F5F7FA] md:mt-5 md:text-5xl">
                 12x <span className="text-[#78A9FF]">de R$17</span>
               </p>
-              <p className="mt-1.5 text-[11px] text-[#A4AAB5] md:mt-2 md:text-sm">
+              <p className="mt-1.5 text-xs text-[#A4AAB5] md:mt-2 md:text-sm">
                 Total de R$204 por ano.
               </p>
-              <p className="mt-2.5 inline-block w-fit rounded-lg bg-[#146CFF]/[0.14] px-2.5 py-1.5 text-[10px] font-semibold leading-snug text-[#78A9FF] md:mt-3 md:px-3.5 md:py-2 md:text-xs">
+              <p className="mt-3 inline-block w-fit rounded-lg bg-[#146CFF]/[0.14] px-3 py-1.5 text-[11px] font-semibold leading-snug text-[#78A9FF] md:px-3.5 md:py-2 md:text-xs">
                 <span className="md:hidden">
                   R$0,56 por dia — e você economiza R$120 contra o mensal.
                 </span>
@@ -459,41 +460,35 @@ export function PricingSection() {
               <CheckoutLink
                 href={checkoutHref(ANNUAL_CHECKOUT_URL)}
                 valor={ANNUAL_PRICE}
-                className="mt-4 flex h-11 items-center justify-center rounded-xl bg-[#146CFF] text-[11px] font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)] md:mt-8 md:h-[54px] md:text-sm"
+                className="mt-5 flex h-12 items-center justify-center rounded-xl border border-[#20242C] bg-white/[0.03] text-xs font-bold tracking-wide text-[#F5F7FA] transition-all hover:border-[#146CFF]/60 hover:bg-[#146CFF]/[0.08] max-md:mt-auto md:mt-8 md:h-[54px] md:border-none md:bg-[#146CFF] md:text-sm md:text-white md:hover:bg-[#3B82F6] md:hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)]"
               >
-                <span className="md:hidden">COMEÇAR AGORA</span>
+                <span className="md:hidden">QUERO O PLANO ANUAL</span>
                 <span className="hidden md:inline">QUERO AS 228 COMBINAÇÕES</span>
               </CheckoutLink>
             </div>
           </Reveal>
 
           {/* PLANO MENSAL */}
-          <Reveal delay={250} className="h-full">
-            <div className="flex h-full flex-col rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-4 md:p-9">
-              <span className="mb-3 w-fit rounded-full border border-[#20242C] px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-[#A4AAB5] md:hidden">
-                Flexível
+          <Reveal delay={250} className="order-1 h-full md:order-2">
+            <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#146CFF]/60 bg-gradient-to-b from-[#146CFF]/[0.1] to-[#0c0e14] p-5 shadow-[0_0_60px_-18px_rgb(20_108_255/0.45)] md:border-[#20242C] md:bg-[#0A0A0A] md:bg-none md:p-9 md:shadow-none">
+              <span className="mb-3 w-fit rounded-full bg-[#146CFF] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white md:hidden">
+                Mais escolhido
               </span>
-              <p className="font-display text-sm font-bold text-[#F5F7FA] md:text-lg">MPO Mensal</p>
-              <p className="mt-2 font-display text-[22px] font-bold leading-tight tracking-tight text-[#F5F7FA] md:mt-5 md:text-4xl">
+              <p className="font-display text-base font-bold text-[#F5F7FA] md:text-lg">MPO Mensal</p>
+              <p className="mt-2 font-display text-[28px] font-bold leading-tight tracking-tight text-[#F5F7FA] md:mt-5 md:text-4xl">
                 R$27{" "}
-                <span className="text-xs font-semibold text-[#A4AAB5] md:text-lg">por mês</span>
+                <span className="text-sm font-semibold text-[#A4AAB5] md:text-lg">por mês</span>
               </p>
-              <p className="mt-1.5 text-[11px] leading-relaxed text-[#A4AAB5] md:mt-6 md:text-sm">
-                <span className="md:hidden">
-                  Mesma plataforma, mesmos 228 outfits, mesmos bônus. Cancele
-                  quando quiser.
-                </span>
-                <span className="hidden md:inline">
-                  Mesma plataforma, mesmos 228 outfits, mesmos bônus. Cancele
-                  quando quiser.
-                </span>
+              <p className="mt-2 text-xs leading-relaxed text-[#A4AAB5] md:mt-6 md:text-sm">
+                Mesma plataforma, mesmos 228 outfits, mesmos bônus. Renova
+                sozinho todo mês e você cancela quando quiser.
               </p>
               <CheckoutLink
                 href={checkoutHref(MONTHLY_CHECKOUT_URL)}
                 valor={MONTHLY_PRICE}
-                className="mt-4 flex h-11 items-center justify-center rounded-xl border border-[#20242C] bg-white/[0.03] text-[11px] font-bold tracking-wide text-[#F5F7FA] transition-all hover:border-[#146CFF]/60 hover:bg-[#146CFF]/[0.08] max-md:mt-auto md:mt-8 md:h-[54px] md:text-sm"
+                className="mt-5 flex h-12 items-center justify-center rounded-xl bg-[#146CFF] text-xs font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)] max-md:mt-auto md:mt-8 md:h-[54px] md:border md:border-[#20242C] md:bg-white/[0.03] md:text-sm md:text-[#F5F7FA] md:hover:border-[#146CFF]/60 md:hover:bg-[#146CFF]/[0.08]"
               >
-                <span className="md:hidden">PLANO MENSAL</span>
+                <span className="md:hidden">QUERO AS 228 COMBINAÇÕES</span>
                 <span className="hidden md:inline">COMEÇAR PELO MENSAL</span>
               </CheckoutLink>
             </div>
@@ -736,6 +731,9 @@ export function FinalCtaSection() {
 // PLACEHOLDERS — troque o "#" pelas URLs reais quando as páginas existirem
 // (ex.: "/termos", "/privacidade", "mailto:suporte@...").
 const FOOTER_LINKS = [
+  // O mobile não tem mais menu no topo, então este é o único caminho de
+  // login para quem já é aluno.
+  { label: "Já sou membro", href: "/login" },
   { label: "Termos de uso", href: "/termos" },
   { label: "Política de privacidade", href: "/privacidade" },
   { label: "Reembolso", href: "/reembolso" },
