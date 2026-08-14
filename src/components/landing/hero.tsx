@@ -1,4 +1,7 @@
 import Image from "next/image";
+import { CheckoutLink } from "./checkout-link";
+import { MONTHLY_CHECKOUT_URL, MONTHLY_PRICE, checkoutHref } from "./checkout";
+
 
 /** Fade que dissolve o pé do mockup no fundo da página. */
 const FADE_MOBILE =
@@ -166,12 +169,13 @@ function ChipRow({ className }: { className?: string }) {
 function OfferBlock({ className }: { className?: string }) {
   return (
     <div className={className}>
-      <a
-        href="#planos"
+      <CheckoutLink
+        href={checkoutHref(MONTHLY_CHECKOUT_URL)}
+        valor={MONTHLY_PRICE}
         className="flex min-h-[54px] w-full items-center justify-center rounded-xl bg-[#146CFF] px-5 py-3 text-center text-[13px] font-bold leading-tight tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)] sm:px-8 sm:text-sm lg:inline-flex lg:w-fit"
       >
         QUERO AS 228 COMBINAÇÕES AGORA
-      </a>
+      </CheckoutLink>
 
       <p className="mt-3 text-xs font-medium leading-relaxed text-[#A4AAB5]/80">
         Acesso liberado na hora · 7 dias pra testar tudo — não gostou,

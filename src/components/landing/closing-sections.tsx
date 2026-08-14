@@ -357,12 +357,13 @@ export function StackSection() {
 
         <Reveal delay={250}>
           <div className="mt-10 text-center">
-            <a
-              href="#planos"
+            <CheckoutLink
+              href={checkoutHref(MONTHLY_CHECKOUT_URL)}
+              valor={MONTHLY_PRICE}
               className="inline-flex h-[52px] items-center justify-center rounded-xl bg-[#146CFF] px-8 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)]"
             >
               QUERO AS 228 COMBINAÇÕES
-            </a>
+            </CheckoutLink>
           </div>
         </Reveal>
       </div>
@@ -685,12 +686,13 @@ export function FinalCtaSection() {
           </p>
         </Reveal>
         <Reveal delay={360}>
-          <a
-            href="#planos"
+          <CheckoutLink
+            href={checkoutHref(MONTHLY_CHECKOUT_URL)}
+            valor={MONTHLY_PRICE}
             className="mt-10 inline-flex h-14 items-center justify-center rounded-xl bg-[#146CFF] px-10 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_50px_-8px_rgb(20_108_255/1)]"
           >
             QUERO AS 228 COMBINAÇÕES AGORA
-          </a>
+          </CheckoutLink>
         </Reveal>
         <Reveal delay={440}>
           <p className="mt-5 text-xs font-medium text-[#A4AAB5]/70">

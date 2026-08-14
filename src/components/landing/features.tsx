@@ -17,6 +17,9 @@ import {
   Users,
 } from "lucide-react";
 import { Reveal, ProgressFill } from "./reveal";
+import { CheckoutLink } from "./checkout-link";
+import { MONTHLY_CHECKOUT_URL, MONTHLY_PRICE, checkoutHref } from "./checkout";
+
 
 /* ── Seção 7 — Bento grid de funcionalidades ──────────────── */
 
@@ -483,12 +486,13 @@ export function FitCheckSection() {
               </p>
             </Reveal>
             <Reveal delay={420}>
-              <a
-                href="#planos"
+              <CheckoutLink
+                href={checkoutHref(MONTHLY_CHECKOUT_URL)}
+                valor={MONTHLY_PRICE}
                 className="mt-8 inline-flex h-12 items-center justify-center rounded-xl bg-[#146CFF] px-7 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_36px_-8px_rgb(20_108_255/0.9)]"
               >
                 QUERO USAR O FIT CHECK
-              </a>
+              </CheckoutLink>
             </Reveal>
           </div>
 

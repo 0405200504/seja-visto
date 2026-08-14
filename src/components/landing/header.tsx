@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { CheckoutLink } from "./checkout-link";
+import { MONTHLY_CHECKOUT_URL, MONTHLY_PRICE, checkoutHref } from "./checkout";
+
 
 /**
  * Data limite da oferta, no formato dd/mm. É um valor fixo de propósito:
@@ -95,12 +98,13 @@ export function LandingHeader() {
           >
             Já sou membro
           </Link>
-          <a
-            href="#planos"
+          <CheckoutLink
+            href={checkoutHref(MONTHLY_CHECKOUT_URL)}
+            valor={MONTHLY_PRICE}
             className="hidden rounded-lg bg-[#146CFF] px-4 py-2.5 text-[13px] font-semibold text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_28px_-6px_rgb(20_108_255/0.8)] lg:inline-flex"
           >
             QUERO ACESSAR O MPO
-          </a>
+          </CheckoutLink>
         </div>
       </div>
 
