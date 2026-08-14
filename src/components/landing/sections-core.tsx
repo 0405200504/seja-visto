@@ -258,11 +258,17 @@ const METRICS = [
 
 /* ── Prova social — números de credibilidade ──────────────── */
 
-const PROOF = [
+const PROOF: {
+  value: number;
+  suffix: string;
+  label: string;
+  /** Quando definido, mostra este texto no lugar do contador. */
+  prefix?: string;
+}[] = [
   { value: 1750, suffix: "", label: "alunos no MPO" },
   { value: 120, suffix: " mil", label: "seguidores confiam" },
   { value: 10, suffix: "", label: "anos de pesquisa" },
-  { value: 228, suffix: "", label: "combinações prontas" },
+  { value: 0, prefix: "R$0,90", suffix: "", label: "por dia" },
 ];
 
 export function ProofSection() {
@@ -292,7 +298,9 @@ export function ProofSection() {
                 >
                   <dd className="font-display text-[32px] font-bold leading-none tracking-tight md:text-[42px]">
                     <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">
-                      <Counter value={item.value} suffix={item.suffix} />
+                      {item.prefix ?? (
+                        <Counter value={item.value} suffix={item.suffix} />
+                      )}
                     </span>
                   </dd>
                   <dt className="mt-3 text-[10px] font-medium uppercase leading-snug tracking-[0.18em] text-[#A4AAB5] md:text-[11px]">
