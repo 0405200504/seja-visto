@@ -18,7 +18,7 @@ const PROBLEM_CHIPS = [
 
 export function ProblemSection() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-8 md:py-14">
       <div className="mx-auto max-w-[1280px] px-5 md:px-8">
         <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <div>
@@ -127,7 +127,7 @@ const FLOW_STEPS = [
 
 export function SolutionSection() {
   return (
-    <section id="como-funciona" className="relative scroll-mt-24 py-20 md:py-28">
+    <section id="como-funciona" className="relative scroll-mt-24 py-8 md:py-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent"
@@ -201,7 +201,7 @@ export function SolutionSection() {
 
 export function OnboardingSection() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-8 md:py-14">
       <div className="mx-auto max-w-[1280px] px-5 md:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div>

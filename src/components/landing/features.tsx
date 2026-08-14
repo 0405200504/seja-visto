@@ -22,7 +22,7 @@ import { Reveal, ProgressFill } from "./reveal";
 
 export function FeaturesSection() {
   return (
-    <section id="recursos" className="relative scroll-mt-24 py-20 md:py-28">
+    <section id="recursos" className="relative scroll-mt-24 py-8 md:py-14">
       <div className="mx-auto max-w-[1280px] px-5 md:px-8">
         <div className="max-w-2xl">
           <Reveal>
@@ -321,7 +321,7 @@ const LOOKBOOK_CARDS = [
 
 export function LookbookSection() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-8 md:py-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent"
@@ -432,7 +432,7 @@ export function FitCheckSection() {
   return (
     <section
       id="fit-check"
-      className="relative scroll-mt-24 overflow-hidden py-20 md:py-28"
+      className="relative scroll-mt-24 overflow-hidden py-8 md:py-14"
     >
       {/* Background diferenciado */}
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[#0A0A0A]">

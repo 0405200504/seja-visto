@@ -71,7 +71,7 @@ const MODULES = [
 
 export function MethodSection() {
   return (
-    <section id="metodo" className="relative scroll-mt-24 py-20 md:py-28">
+    <section id="metodo" className="relative scroll-mt-24 py-8 md:py-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent"
@@ -154,7 +154,7 @@ const STYLES = [
 
 export function StylesSection() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-8 md:py-14">
       <div className="mx-auto max-w-[1280px] px-5 md:px-8">
         <div className="max-w-2xl">
           <Reveal>
@@ -263,7 +263,7 @@ const INTERACTIVE_GUIDES = [
 
 export function GuidesSection() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-8 md:py-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent"
@@ -359,7 +359,7 @@ const GLOSSARY = [
 
 export function GlossarySection() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-8 md:py-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent"
@@ -432,7 +432,7 @@ const WARDROBE_LEVELS = [
 
 export function WardrobeSection() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-8 md:py-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent"
@@ -603,7 +603,7 @@ const PLAN_DAYS = [
 
 export function PlanSection() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-8 md:py-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent"
