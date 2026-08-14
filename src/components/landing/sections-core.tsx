@@ -32,34 +32,20 @@ export function ProblemSection() {
             </div>
             <div>
               <p className="mt-6 max-w-xl leading-relaxed text-[#A4AAB5]">
-                Toda vez é o mesmo filme. Você abre o guarda-roupa, experimenta
-                três coisas, tira duas, olha no espelho, não gosta, coloca de
-                novo a mesma camiseta de sempre e sai atrasado. Perdeu 40
-                minutos pra chegar exatamente no mesmo lugar de sempre.
-              </p>
-            </div>
-            <div>
-              <p className="mt-4 max-w-xl leading-relaxed text-[#A4AAB5]">
-                E o pior não é o tempo. É a sensação depois. É entrar no lugar e
-                sentir que você desapareceu no meio da galera. É estar num date
-                sem saber se está bem vestido ou só vestido. É ver alguém entrar
-                com uma roupa simples e ocupar todo o espaço, e você não
-                conseguir explicar o que ele fez de diferente.
+                Você experimenta três coisas, tira duas, volta pra mesma
+                camiseta de sempre e sai atrasado. E entra no lugar sentindo que
+                desapareceu no meio da galera.
               </p>
             </div>
             <div>
               <div className="mt-8 rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-6">
                 <p className="leading-relaxed text-[#F5F7FA]">
-                  Roupa não é vaidade. É a primeira frase que você diz num lugar{" "}
+                  São 228 outfits prontos, montados por um stylist. Você escolhe
+                  a ocasião e{" "}
                   <span className="font-semibold text-[#78A9FF]">
-                    antes de abrir a boca
+                    já sai vestido
                   </span>
                   .
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-[#A4AAB5]">
-                  E dá pra parar de improvisar essa frase hoje: são 228 outfits
-                  prontos, montados por um stylist, esperando você escolher a
-                  ocasião.
                 </p>
               </div>
             </div>

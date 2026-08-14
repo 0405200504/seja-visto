@@ -164,54 +164,59 @@ export function StylesSection() {
           </Reveal>
           <Reveal delay={120}>
             <p className="mt-6 leading-relaxed text-[#A4AAB5]">
-              Na vida real, ninguém precisa seguir um único estilo. Você pode
-              misturar a base do Streetwear com peças do Workwear. Pode usar o
-              minimalismo com elementos de Quiet Luxury. Pode trazer o Old Money
-              para uma rotina mais casual.
-            </p>
-          </Reveal>
-          <Reveal delay={200}>
-            <p className="mt-4 leading-relaxed text-[#A4AAB5]">
-              A plataforma mostra o que define cada estética e como essas
-              referências aparecem em outfits reais.
+              Ninguém precisa seguir um estilo só — dá pra misturar Streetwear
+              com Workwear, Minimalista com Quiet Luxury. A plataforma mostra o
+              que define cada um e como isso aparece em outfits reais.
             </p>
           </Reveal>
         </div>
       </div>
 
-      {/* Galeria horizontal com scroll */}
+      {/* Esteira automática e infinita. Duas cópias da lista: o keyframe
+          anda -50%, então a segunda entra exatamente onde a primeira saiu. */}
       <Reveal delay={250}>
-        <div className="mt-12 overflow-x-auto pb-4 [scrollbar-width:thin]">
-          <div className="mx-auto flex w-max gap-4 px-5 md:px-[max(2rem,calc((100vw-1280px)/2+2rem))]">
-            {STYLES.map((style) => (
-              <article
-                key={style.slug}
-                className="group relative w-56 shrink-0 overflow-hidden rounded-2xl border border-[#20242C] bg-[#0A0A0A] transition-all hover:-translate-y-1 hover:border-[#146CFF]/60 md:w-64"
+        <div className="marquee-mask relative mt-12 overflow-hidden">
+          <div
+            className="marquee-track flex w-max hover:[animation-play-state:paused]"
+            style={{ animationDuration: "50s" }}
+          >
+            {[false, true].map((clone) => (
+              <div
+                key={clone ? "clone" : "original"}
+                aria-hidden={clone || undefined}
+                className="flex shrink-0 gap-4 pr-4"
               >
-                <div className="relative aspect-[3/4] overflow-hidden">
-                  <Image
-                    src={`/estilos/${style.slug}/01.jpg`}
-                    alt={`Referência do estilo ${style.nome}`}
-                    fill
-                    sizes="256px"
-                    quality={70}
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/70 to-transparent" />
-                  <span className="absolute right-3 top-3 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-[#F5F7FA] backdrop-blur-md">
-                    {style.refs} refs
-                  </span>
-                </div>
-                <div className="relative -mt-14 p-5">
-                  <h3 className="font-display text-lg font-bold text-[#F5F7FA]">
-                    {style.nome}
-                  </h3>
-                  <p className="mt-0.5 text-xs text-[#A4AAB5]">{style.tagline}</p>
-                  <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#78A9FF] transition-colors group-hover:text-[#F5F7FA]">
-                    Explorar estilo <ArrowRight className="size-3.5" aria-hidden />
-                  </p>
-                </div>
-              </article>
+                {STYLES.map((style) => (
+                  <article
+                    key={style.slug}
+                    className="group relative w-56 shrink-0 overflow-hidden rounded-2xl border border-[#20242C] bg-[#0A0A0A] transition-all hover:border-[#146CFF]/60 md:w-64"
+                  >
+                    <div className="relative aspect-[3/4] overflow-hidden">
+                      <Image
+                        src={`/estilos/${style.slug}/01.jpg`}
+                        alt={clone ? "" : `Referência do estilo ${style.nome}`}
+                        fill
+                        sizes="256px"
+                        quality={70}
+                        className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/70 to-transparent" />
+                      <span className="absolute right-3 top-3 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-[#F5F7FA] backdrop-blur-md">
+                        {style.refs} refs
+                      </span>
+                    </div>
+                    <div className="relative -mt-14 p-5">
+                      <h3 className="font-display text-lg font-bold text-[#F5F7FA]">
+                        {style.nome}
+                      </h3>
+                      <p className="mt-0.5 text-xs text-[#A4AAB5]">{style.tagline}</p>
+                      <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#78A9FF] transition-colors group-hover:text-[#F5F7FA]">
+                        Explorar estilo <ArrowRight className="size-3.5" aria-hidden />
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
             ))}
           </div>
         </div>
