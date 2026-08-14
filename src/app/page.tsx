@@ -6,6 +6,7 @@ import {
   SolutionSection,
   OnboardingSection,
   MetricsSection,
+  ProofSection,
 } from "@/components/landing/sections-core";
 import {
   FeaturesSection,
@@ -59,6 +60,7 @@ export default function Home() {
       <LandingHeader />
       <main>
         <Hero />
+        <ProofSection />
         <ProblemSection />
         <SolutionSection />
         <SectionCta

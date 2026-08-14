@@ -110,7 +110,7 @@ export function Counter({
 
   return (
     <span ref={ref} className={className}>
-      {shown}
+      {shown.toLocaleString("pt-BR")}
       {suffix}
     </span>
   );

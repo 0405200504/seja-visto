@@ -4,6 +4,7 @@ import {
   GraduationCap,
   Shirt,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Reveal, Counter } from "./reveal";
 import { OnboardingDemo } from "./onboarding-demo";
 
@@ -254,6 +255,58 @@ const METRICS = [
   { value: 24, suffix: "", label: "peças catalogadas" },
   { value: 7, suffix: "", label: "dias de plano prático" },
 ];
+
+/* ── Prova social — números de credibilidade ──────────────── */
+
+const PROOF = [
+  { value: 1750, suffix: "", label: "alunos no MPO" },
+  { value: 120, suffix: " mil", label: "seguidores confiam" },
+  { value: 10, suffix: "", label: "anos de pesquisa" },
+  { value: 228, suffix: "", label: "combinações prontas" },
+];
+
+export function ProofSection() {
+  return (
+    <section className="relative py-8 md:py-14">
+      <div className="mx-auto max-w-[1080px] px-5 md:px-8">
+        <Reveal>
+          <div className="relative overflow-hidden rounded-2xl border border-[#20242C] bg-[#0A0A0A]">
+            <div
+              aria-hidden
+              className="absolute -top-28 left-1/2 h-56 w-[520px] -translate-x-1/2"
+              style={{
+                background:
+                  "radial-gradient(ellipse at center, rgba(20,108,255,0.1) 0%, transparent 65%)",
+              }}
+            />
+            <dl className="relative grid grid-cols-2 md:grid-cols-4">
+              {PROOF.map((item, i) => (
+                <div
+                  key={item.label}
+                  className={cn(
+                    "border-[#20242C] px-4 py-8 text-center md:py-10",
+                    i % 2 === 1 && "border-l",
+                    i >= 2 && "border-t md:border-t-0",
+                    i > 0 && "md:border-l"
+                  )}
+                >
+                  <dd className="font-display text-[32px] font-bold leading-none tracking-tight md:text-[42px]">
+                    <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">
+                      <Counter value={item.value} suffix={item.suffix} />
+                    </span>
+                  </dd>
+                  <dt className="mt-3 text-[10px] font-medium uppercase leading-snug tracking-[0.18em] text-[#A4AAB5] md:text-[11px]">
+                    {item.label}
+                  </dt>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
 
 export function MetricsSection() {
   return (
