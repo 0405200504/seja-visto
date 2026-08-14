@@ -34,7 +34,7 @@ const MPO_WAY = [
 
 export function ComparisonSection() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-8 md:py-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent"
@@ -146,7 +146,7 @@ Já vestiu os principais artistas da geração
 
 export function RaphaelSection() {
   return (
-    <section className="relative overflow-hidden py-20 md:py-28">
+    <section className="relative overflow-hidden py-8 md:py-14">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[#0A0A0A]">
         <div className="absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent" />
       </div>
@@ -272,7 +272,7 @@ const FOR_WHO = [
 
 export function ForWhoSection() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-8 md:py-14">
       <div className="mx-auto max-w-[1280px] px-5 md:px-8">
         <Reveal>
           <h2 className="max-w-2xl font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
@@ -332,7 +332,7 @@ const DELIVERABLES = [
 
 export function StackSection() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-8 md:py-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent"
@@ -390,7 +390,7 @@ const PLAN_BENEFITS = [
 
 export function PricingSection() {
   return (
-    <section id="planos" className="relative scroll-mt-24 overflow-hidden py-20 md:py-28">
+    <section id="planos" className="relative scroll-mt-24 overflow-hidden py-8 md:py-14">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#146CFF]/40 to-transparent" />
         <div
@@ -406,13 +406,18 @@ export function PricingSection() {
         <div className="mx-auto max-w-2xl text-center">
           <Reveal>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-              228 outfits prontos por R$0,89 cada. Uma vez só, no ano.
+              228 combinações prontas por{" "}
+              <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">
+                R$0,89 cada
+              </span>
+              . Uma vez só, no ano.
             </h2>
           </Reveal>
           <Reveal delay={100}>
             <p className="mt-5 leading-relaxed text-[#A4AAB5]">
-              Você recebe acesso à mesma plataforma nos dois planos. A diferença
-              está no período de cobrança.
+              Uma peça errada no shopping custa mais que o ano inteiro de MPO —
+              e continua parada no armário. Aqui você leva as 228 combinações, o
+              Fit Check com IA e o método completo.
             </p>
           </Reveal>
         </div>
@@ -426,7 +431,7 @@ export function PricingSection() {
                 Mais vantajoso
               </span>
               <p className="font-display text-sm font-bold text-[#F5F7FA] md:text-lg">MPO Anual</p>
-              <p className="mt-2 font-display text-[26px] font-bold tracking-tight text-[#F5F7FA] md:mt-5 md:text-5xl">
+              <p className="mt-2 font-display text-[22px] font-bold leading-tight tracking-tight text-[#F5F7FA] md:mt-5 md:text-5xl">
                 12x <span className="text-[#78A9FF]">de R$17</span>
               </p>
               <p className="mt-1.5 text-[11px] text-[#A4AAB5] md:mt-2 md:text-sm">
@@ -434,11 +439,11 @@ export function PricingSection() {
               </p>
               <p className="mt-2.5 inline-block w-fit rounded-lg bg-[#146CFF]/[0.14] px-2.5 py-1.5 text-[10px] font-semibold leading-snug text-[#78A9FF] md:mt-3 md:px-3.5 md:py-2 md:text-xs">
                 <span className="md:hidden">
-                  R$0,56 por dia. Menos que meio pão na chapa.
+                  R$0,56 por dia — e você economiza R$120 contra o mensal.
                 </span>
                 <span className="hidden md:inline">
-                  Divididos pelos 228 outfits, dá R$0,89 por outfit pronto. E
-                  você economiza R$120 em relação ao mensal.
+                  R$0,89 por combinação pronta. É o mesmo acesso do mensal,
+                  R$120 mais barato no ano.
                 </span>
               </p>
 
@@ -456,8 +461,8 @@ export function PricingSection() {
                 valor={ANNUAL_PRICE}
                 className="mt-4 flex h-11 items-center justify-center rounded-xl bg-[#146CFF] text-[11px] font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)] md:mt-8 md:h-[54px] md:text-sm"
               >
-                <span className="md:hidden">QUERO OS 228 OUTFITS</span>
-                <span className="hidden md:inline">QUERO OS 228 OUTFITS</span>
+                <span className="md:hidden">COMEÇAR AGORA</span>
+                <span className="hidden md:inline">QUERO AS 228 COMBINAÇÕES</span>
               </CheckoutLink>
             </div>
           </Reveal>
@@ -469,7 +474,7 @@ export function PricingSection() {
                 Flexível
               </span>
               <p className="font-display text-sm font-bold text-[#F5F7FA] md:text-lg">MPO Mensal</p>
-              <p className="mt-2 font-display text-[26px] font-bold tracking-tight text-[#F5F7FA] md:mt-5 md:text-4xl">
+              <p className="mt-2 font-display text-[22px] font-bold leading-tight tracking-tight text-[#F5F7FA] md:mt-5 md:text-4xl">
                 R$27{" "}
                 <span className="text-xs font-semibold text-[#A4AAB5] md:text-lg">por mês</span>
               </p>
@@ -488,7 +493,7 @@ export function PricingSection() {
                 valor={MONTHLY_PRICE}
                 className="mt-4 flex h-11 items-center justify-center rounded-xl border border-[#20242C] bg-white/[0.03] text-[11px] font-bold tracking-wide text-[#F5F7FA] transition-all hover:border-[#146CFF]/60 hover:bg-[#146CFF]/[0.08] max-md:mt-auto md:mt-8 md:h-[54px] md:text-sm"
               >
-                <span className="md:hidden">COMEÇAR PELO MENSAL</span>
+                <span className="md:hidden">PLANO MENSAL</span>
                 <span className="hidden md:inline">COMEÇAR PELO MENSAL</span>
               </CheckoutLink>
             </div>
@@ -617,7 +622,7 @@ const FAQ = [
 
 export function FaqSection() {
   return (
-    <section id="duvidas" className="relative scroll-mt-24 py-20 md:py-28">
+    <section id="duvidas" className="relative scroll-mt-24 py-8 md:py-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px max-w-[1280px] bg-gradient-to-r from-transparent via-[#20242C] to-transparent"
@@ -656,7 +661,7 @@ export function FaqSection() {
 
 export function FinalCtaSection() {
   return (
-    <section className="relative overflow-hidden py-24 md:py-36">
+    <section className="relative overflow-hidden py-12 md:py-20">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
           className="absolute inset-0 opacity-30"
@@ -696,13 +701,15 @@ export function FinalCtaSection() {
         </Reveal>
         <Reveal delay={200}>
           <p className="mx-auto mt-6 max-w-xl leading-relaxed text-[#A4AAB5]">
-            São 228 outfits prontos esperando você escolher a ocasião. Mais o
-            Fit Check, o guarda-roupa inteligente, os guias e o método inteiro.
+            São 228 combinações prontas esperando você escolher a ocasião. Mais
+            o Fit Check, o guarda-roupa inteligente, os guias e o método
+            inteiro — por 12x de R$17.
           </p>
         </Reveal>
         <Reveal delay={280}>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-[#A4AAB5]/80">
-            Por 12x de R$17, com 7 dias pra testar tudo e desistir se quiser.
+            Entra hoje, abre as 228 combinações e testa por 7 dias. Se não
+            valer, devolvemos 100% — você não arrisca um centavo.
           </p>
         </Reveal>
         <Reveal delay={360}>
@@ -710,12 +717,13 @@ export function FinalCtaSection() {
             href="#planos"
             className="mt-10 inline-flex h-14 items-center justify-center rounded-xl bg-[#146CFF] px-10 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_50px_-8px_rgb(20_108_255/1)]"
           >
-            QUERO OS 228 OUTFITS AGORA
+            QUERO AS 228 COMBINAÇÕES AGORA
           </a>
         </Reveal>
         <Reveal delay={440}>
           <p className="mt-5 text-xs font-medium text-[#A4AAB5]/70">
-            Planos a partir de 12x de R$17 · 7 dias de garantia
+            Acesso liberado na hora · 12x de R$17 · 7 dias de garantia
+            incondicional
           </p>
         </Reveal>
       </div>

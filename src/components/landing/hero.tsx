@@ -1,18 +1,21 @@
 import Image from "next/image";
-import {
-  Bookmark,
-  Calendar,
-  Camera,
-  Compass,
-  Home,
-  Layers,
-  Shirt,
-} from "lucide-react";
-import { Reveal, ProgressFill } from "./reveal";
+
+/** Fade que dissolve o pé do mockup no fundo da página. */
+const FADE_MOBILE =
+  "linear-gradient(to top, #050505 0%, rgba(5,5,5,0.97) 10%, rgba(5,5,5,0.84) 26%, rgba(5,5,5,0.58) 44%, rgba(5,5,5,0.22) 64%, rgba(5,5,5,0) 86%)";
+const FADE_DESKTOP =
+  "linear-gradient(to top, #050505 0%, rgba(5,5,5,0.75) 14%, rgba(5,5,5,0) 38%)";
+
+const CHIPS = [
+  "Fit Check com IA",
+  "Guarda-roupa inteligente",
+  "16 estilos",
+  "Método completo",
+];
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-20 pb-16 md:pt-44 md:pb-24">
+    <section className="relative overflow-hidden pt-16 pb-6 md:pt-40 md:pb-20">
       {/* Fundo: grid tecnológico discreto + luz azul difusa */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
@@ -34,218 +37,146 @@ export function Hero() {
               "radial-gradient(ellipse at center, rgba(20,108,255,0.13) 0%, transparent 65%)",
           }}
         />
-        <div
-          className="absolute top-1/2 right-[-160px] h-[360px] w-[360px]"
-          style={{
-            background:
-              "radial-gradient(circle at center, rgba(20,108,255,0.07) 0%, transparent 65%)",
-          }}
-        />
       </div>
 
-      <div className="relative mx-auto grid max-w-[1280px] items-center gap-14 px-5 md:px-8 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
-        {/* Texto */}
-        <div>
-          <Reveal>
-            <p className="mb-5 inline-block rounded-full border border-[#20242C] bg-white/[0.03] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
-              Manual Prático do Outfit
-            </p>
-          </Reveal>
-
-          <Reveal delay={100}>
-            <h1 className="font-display text-4xl font-bold leading-[1.06] tracking-[-0.03em] text-[#F5F7FA] sm:text-5xl lg:text-[60px]">
-              <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
-                +228
-              </span>{" "}
-              combinações prontas pra você se vestir melhor e mais rápido no dia
-              a dia
-            </h1>
-          </Reveal>
-
-          <Reveal delay={200}>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-[#A4AAB5] md:text-lg">
-              Escolha a ocasião — trabalho, date, faculdade, rolê à noite — e o
-              MPO te entrega o outfit completo: peça por peça, com o porquê
-              daquela combinação funcionar. Você abre, copia e veste. Em 30
-              segundos você está pronto, e sai de casa com a certeza de que está
-              bem vestido.
-            </p>
-          </Reveal>
-
-          <Reveal delay={280}>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#A4AAB5]/80">
-              E vem tudo junto: Fit Check com IA pra analisar a foto do seu
-              outfit antes de sair, guarda-roupa inteligente, 16 estilos, 11
-              guias práticos e o método completo. Sem pagar nada a mais.
-            </p>
-          </Reveal>
-
-          <Reveal delay={360}>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <a
-                href="#como-funciona"
-                className="inline-flex h-[52px] items-center justify-center rounded-xl bg-[#146CFF] px-8 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)]"
-              >
-                QUERO AS 228 COMBINAÇÕES
-              </a>
-              <a
-                href="#como-funciona"
-                className="inline-flex h-[52px] items-center justify-center rounded-xl border border-[#20242C] bg-white/[0.02] px-8 text-sm font-semibold text-[#F5F7FA] transition-all hover:border-[#146CFF]/60 hover:bg-[#146CFF]/[0.06]"
-              >
-                VER COMO FUNCIONA
-              </a>
-            </div>
-          </Reveal>
-
-          <Reveal delay={440}>
-            <p className="mt-6 text-xs font-medium tracking-wide text-[#A4AAB5]/70">
-              Acesso imediato · 12x de R$17 · 7 dias de garantia incondicional
-            </p>
-          </Reveal>
+      {/* ── MOBILE: mockup no topo, headline no pé da imagem ─────────── */}
+      <div className="relative lg:hidden">
+        <div className="relative mx-auto h-[52vh] min-h-[340px] max-h-[470px] w-full max-w-[460px]">
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-4 mx-auto h-[70%] w-[85%]"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, rgba(20,108,255,0.28) 0%, transparent 68%)",
+            }}
+          />
+          <Image
+            src="/mockup-iphone.webp"
+            alt="App do MPO aberto no catálogo com 228 combinações de outfit prontas"
+            fill
+            priority
+            sizes="(max-width: 1023px) 100vw, 420px"
+            className="object-cover object-top"
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{ background: FADE_MOBILE }}
+          />
         </div>
 
-        {/* Mockup do dashboard */}
-        <Reveal delay={300} className="relative">
-          <div className="relative">
-            {/* Cards flutuantes */}
+        <div
+          className="relative mx-auto -mt-32 max-w-[560px] px-5"
+          style={{ textShadow: "0 2px 18px rgba(5,5,5,0.9)" }}
+        >
+          <p className="mb-2.5 inline-block rounded-full border border-[#20242C] bg-white/[0.03] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#78A9FF]">
+            Manual Prático do Outfit
+          </p>
+          <h1 className="font-display text-[32px] font-bold leading-[1.04] tracking-[-0.03em] text-[#F5F7FA] sm:text-[40px]">
+            <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
+              +228 combinações
+            </span>{" "}
+            prontas pra você copiar e vestir hoje
+          </h1>
+
+          <p className="mt-3.5 text-[15px] leading-snug text-[#A4AAB5]">
+            Escolha a ocasião. O outfit vem montado, peça por peça. Você abre,
+            copia e sai.
+          </p>
+
+          <ChipRow className="mt-4" />
+          <OfferBlock className="mt-5" />
+        </div>
+      </div>
+
+      {/* ── DESKTOP: texto à esquerda, mockup à direita ───────────────── */}
+      <div className="relative mx-auto hidden max-w-[1280px] items-center gap-12 px-8 lg:grid lg:grid-cols-[1.05fr_0.85fr]">
+        <div>
+          <p className="mb-5 inline-block rounded-full border border-[#20242C] bg-white/[0.03] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
+            Manual Prático do Outfit
+          </p>
+
+          <h1 className="font-display text-[60px] font-bold leading-[1.04] tracking-[-0.03em] text-[#F5F7FA]">
+            <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
+              +228 combinações
+            </span>{" "}
+            prontas pra você copiar e vestir hoje
+          </h1>
+
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#A4AAB5]">
+            Escolha a ocasião — trabalho, date, faculdade, rolê à noite. O
+            outfit vem montado, peça por peça, com o porquê de funcionar. Você
+            abre, copia e sai de casa bem vestido.
+          </p>
+
+          <ChipRow className="mt-6" />
+          <OfferBlock className="mt-8" />
+        </div>
+
+        <div className="relative">
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 mx-auto h-[75%] w-[90%]"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, rgba(20,108,255,0.24) 0%, transparent 68%)",
+            }}
+          />
+          <div className="relative mx-auto aspect-[678/1075] w-full max-w-[420px]">
+            <Image
+              src="/mockup-iphone.webp"
+              alt="App do MPO aberto no catálogo com 228 combinações de outfit prontas"
+              fill
+              priority
+              sizes="(max-width: 1023px) 100vw, 420px"
+              className="object-contain"
+            />
             <div
               aria-hidden
-              className="absolute -top-5 -left-3 z-10 hidden rounded-xl border border-[#20242C] bg-[#0A0A0A] px-3.5 py-2.5 sm:block"
-            >
-              <p className="text-[10px] font-medium text-[#A4AAB5]">Seu estilo</p>
-              <p className="text-xs font-bold text-[#F5F7FA]">Streetwear</p>
-            </div>
-            <div
-              aria-hidden
-              className="absolute -right-3 top-16 z-10 hidden rounded-xl border border-[#146CFF]/40 bg-[#0A0A0A] px-3.5 py-2.5 shadow-[0_0_24px_-8px_rgb(20_108_255/0.6)] sm:block"
-            >
-              <p className="text-[10px] font-medium text-[#A4AAB5]">Fit Check</p>
-              <p className="text-xs font-bold text-[#78A9FF]">8,7/10</p>
-            </div>
-            <div
-              aria-hidden
-              className="absolute -bottom-4 left-10 z-10 hidden items-center gap-2 rounded-xl border border-[#20242C] bg-[#0A0A0A] px-3.5 py-2.5 sm:flex"
-            >
-              <Bookmark className="size-3.5 text-[#78A9FF]" />
-              <p className="text-xs font-semibold text-[#F5F7FA]">Outfit salvo</p>
-            </div>
-
-            {/* Janela da plataforma */}
-            <div className="overflow-hidden rounded-2xl border border-[#20242C] bg-[#0A0A0A] shadow-[0_24px_80px_-24px_rgb(0_0_0/0.9),0_0_60px_-30px_rgb(20_108_255/0.4)]">
-              {/* Barra da janela */}
-              <div className="flex items-center gap-1.5 border-b border-[#20242C] bg-[#111318] px-4 py-3">
-                <span className="size-2.5 rounded-full bg-[#20242C]" />
-                <span className="size-2.5 rounded-full bg-[#20242C]" />
-                <span className="size-2.5 rounded-full bg-[#146CFF]/70" />
-                <span className="ml-3 rounded-md bg-[#050505] px-2.5 py-0.5 text-[9px] font-medium text-[#A4AAB5]">
-                  app.mpo — dashboard
-                </span>
-              </div>
-
-              <div className="flex">
-                {/* Menu lateral */}
-                <div className="hidden w-36 shrink-0 flex-col gap-0.5 border-r border-[#20242C] bg-[#0A0A0A] p-2.5 text-[10px] font-medium text-[#A4AAB5] sm:flex">
-                  <span className="flex items-center gap-2 rounded-md bg-[#146CFF]/[0.14] px-2.5 py-1.5 text-[#78A9FF]">
-                    <Home className="size-3" /> Dashboard
-                  </span>
-                  <span className="flex items-center gap-2 px-2.5 py-1.5">
-                    <Layers className="size-3" /> Método
-                  </span>
-                  <span className="flex items-center gap-2 px-2.5 py-1.5">
-                    <Compass className="size-3" /> Catálogo de Outfits
-                  </span>
-                  <span className="flex items-center gap-2 px-2.5 py-1.5">
-                    <Shirt className="size-3" /> Guarda-roupa
-                  </span>
-                  <span className="flex items-center gap-2 px-2.5 py-1.5">
-                    <Camera className="size-3" /> Fit Check
-                  </span>
-                  <span className="flex items-center gap-2 px-2.5 py-1.5">
-                    <Calendar className="size-3" /> Plano 7 dias
-                  </span>
-                </div>
-
-                {/* Conteúdo do dashboard */}
-                <div className="flex-1 space-y-3 p-4">
-                  <div>
-                    <p className="text-xs font-bold text-[#F5F7FA]">
-                      Boa noite, Lucas
-                    </p>
-                    <p className="text-[10px] text-[#A4AAB5]">
-                      Estilo principal: <span className="text-[#78A9FF]">Streetwear</span> · Objetivo:
-                      vestir melhor no dia a dia
-                    </p>
-                  </div>
-
-                  <div className="rounded-lg border border-[#20242C] bg-[#111318] p-3">
-                    <div className="mb-2 flex items-center justify-between text-[10px]">
-                      <span className="font-semibold text-[#F5F7FA]">
-                        Seu progresso
-                      </span>
-                      <span className="text-[#78A9FF]">62%</span>
-                    </div>
-                    <ProgressFill percent={62} />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg border border-[#20242C] bg-[#111318] p-3">
-                      <p className="text-[9px] font-medium uppercase tracking-wider text-[#A4AAB5]">
-                        Plano de 7 dias
-                      </p>
-                      <p className="mt-1 text-sm font-bold text-[#F5F7FA]">
-                        Dia 4 <span className="text-[10px] font-medium text-[#A4AAB5]">de 7</span>
-                      </p>
-                      <div className="mt-2 flex gap-1">
-                        {[1, 2, 3, 4, 5, 6, 7].map((d) => (
-                          <span
-                            key={d}
-                            className={`h-1 flex-1 rounded-full ${d <= 4 ? "bg-[#146CFF]" : "bg-white/[0.08]"}`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-[#146CFF]/30 bg-[#146CFF]/[0.07] p-3">
-                      <p className="text-[9px] font-medium uppercase tracking-wider text-[#78A9FF]">
-                        Continue de onde parou
-                      </p>
-                      <p className="mt-1 text-[11px] font-semibold leading-snug text-[#F5F7FA]">
-                        Módulo 3 · Guarda-Roupa Base
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="mb-2 text-[10px] font-semibold text-[#F5F7FA]">
-                      Outfits para o seu perfil
-                    </p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { src: "/estilos/streetwear/01.jpg", alt: "Outfit streetwear recomendado" },
-                        { src: "/estilos/streetwear/03.jpg", alt: "Outfit urbano recomendado" },
-                        { src: "/estilos/casual/02.jpg", alt: "Outfit casual recomendado" },
-                      ].map((img) => (
-                        <div
-                          key={img.src}
-                          className="relative aspect-[3/4] overflow-hidden rounded-md border border-[#20242C]"
-                        >
-                          <Image
-                            src={img.src}
-                            alt={img.alt}
-                            fill
-                            sizes="120px"
-                            quality={70}
-                            className="object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              className="absolute inset-0"
+              style={{ background: FADE_DESKTOP }}
+            />
           </div>
-        </Reveal>
+        </div>
       </div>
     </section>
+  );
+}
+
+/** Bônus da oferta em linha, no lugar do parágrafo longo. */
+function ChipRow({ className }: { className?: string }) {
+  return (
+    <ul className={`flex flex-wrap gap-1.5 ${className ?? ""}`}>
+      {CHIPS.map((chip) => (
+        <li
+          key={chip}
+          className="rounded-full border border-[#20242C] bg-white/[0.03] px-2.5 py-1 text-[11px] font-medium text-[#A4AAB5] md:text-xs"
+        >
+          {chip}
+        </li>
+      ))}
+      <li className="rounded-full border border-[#146CFF]/40 bg-[#146CFF]/[0.1] px-2.5 py-1 text-[11px] font-semibold text-[#78A9FF] md:text-xs">
+        Tudo incluso, sem pagar a mais
+      </li>
+    </ul>
+  );
+}
+
+/** Preço + CTA + garantia juntos, para a oferta bater antes da dobra. */
+function OfferBlock({ className }: { className?: string }) {
+  return (
+    <div className={className}>
+      <a
+        href="#planos"
+        className="flex min-h-[54px] w-full items-center justify-center rounded-xl bg-[#146CFF] px-5 py-3 text-center text-[13px] font-bold leading-tight tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)] sm:px-8 sm:text-sm lg:inline-flex lg:w-fit"
+      >
+        QUERO AS 228 COMBINAÇÕES AGORA
+      </a>
+
+      <p className="mt-3 text-xs font-medium leading-relaxed text-[#A4AAB5]/80">
+        Acesso liberado na hora · 7 dias pra testar tudo — não gostou,
+        devolvemos 100% sem perguntar nada.
+      </p>
+    </div>
   );
 }
