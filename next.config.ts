@@ -36,6 +36,9 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // Permite abrir o dev server pelo IP da rede local (testar no celular de
+  // verdade). Só afeta desenvolvimento — em produção o Next ignora.
+  allowedDevOrigins: ["192.168.1.126"],
   images: {
     // Gera AVIF/WebP e vários tamanhos automaticamente na Vercel.
     formats: ["image/avif", "image/webp"],

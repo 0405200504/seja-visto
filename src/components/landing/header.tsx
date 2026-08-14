@@ -53,7 +53,7 @@ export function LandingHeader() {
           </span>
         </Link>
 
-        <nav aria-label="Navegação principal" className="hidden items-center gap-7 md:flex">
+        <nav aria-label="Navegação principal" className="hidden items-center gap-7 lg:flex">
           {NAV_LINKS.map((link) => (
             <a
               key={link.href}
@@ -68,19 +68,19 @@ export function LandingHeader() {
         <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="hidden rounded-lg border border-[#20242C] px-4 py-2.5 text-[13px] font-semibold text-[#F5F7FA] transition-colors hover:border-[#146CFF]/60 hover:text-white sm:inline-flex"
+            className="hidden rounded-lg border border-[#20242C] px-4 py-2.5 text-[13px] font-semibold text-[#F5F7FA] transition-colors hover:border-[#146CFF]/60 hover:text-white lg:inline-flex"
           >
             Já sou membro
           </Link>
           <a
             href="#planos"
-            className="hidden rounded-lg bg-[#146CFF] px-4 py-2.5 text-[13px] font-semibold text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_28px_-6px_rgb(20_108_255/0.8)] sm:inline-flex"
+            className="hidden rounded-lg bg-[#146CFF] px-4 py-2.5 text-[13px] font-semibold text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_28px_-6px_rgb(20_108_255/0.8)] lg:inline-flex"
           >
             QUERO ACESSAR O MPO
           </a>
           <a
             href="#planos"
-            className="inline-flex rounded-lg bg-[#146CFF] px-3.5 py-2 text-xs font-semibold text-white sm:hidden"
+            className="inline-flex rounded-lg bg-[#146CFF] px-3.5 py-2 text-xs font-semibold text-white lg:hidden"
           >
             ACESSAR
           </a>
@@ -89,7 +89,7 @@ export function LandingHeader() {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? "Fechar menu" : "Abrir menu"}
-            className="inline-flex size-10 items-center justify-center rounded-lg border border-[#20242C] text-[#F5F7FA] md:hidden"
+            className="inline-flex size-10 items-center justify-center rounded-lg border border-[#20242C] text-[#F5F7FA] lg:hidden"
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
@@ -99,7 +99,7 @@ export function LandingHeader() {
       {open && (
         <nav
           aria-label="Navegação mobile"
-          className="border-t border-[#20242C]/60 bg-[#050505]/95 px-5 py-4 backdrop-blur-xl md:hidden"
+          className="border-t border-[#20242C]/60 bg-[#050505]/95 px-5 py-4 backdrop-blur-xl lg:hidden"
         >
           <ul className="flex flex-col gap-1">
             {NAV_LINKS.map((link) => (
