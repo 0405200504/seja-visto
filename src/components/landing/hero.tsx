@@ -41,10 +41,10 @@ export function Hero() {
 
       {/* ── MOBILE: mockup no topo, headline no pé da imagem ─────────── */}
       <div className="relative lg:hidden">
-        <div className="relative mx-auto h-[52vh] min-h-[340px] max-h-[470px] w-full max-w-[460px]">
+        <div className="relative mx-auto h-[46vh] min-h-[300px] max-h-[420px] w-full max-w-[300px]">
           <div
             aria-hidden
-            className="absolute inset-x-0 top-4 mx-auto h-[70%] w-[85%]"
+            className="absolute -left-[30%] top-4 h-[70%] w-[160%]"
             style={{
               background:
                 "radial-gradient(ellipse at center, rgba(20,108,255,0.28) 0%, transparent 68%)",
@@ -66,7 +66,7 @@ export function Hero() {
         </div>
 
         <div
-          className="relative mx-auto -mt-32 max-w-[560px] px-5"
+          className="relative mx-auto -mt-20 max-w-[560px] px-5"
           style={{ textShadow: "0 2px 18px rgba(5,5,5,0.9)" }}
         >
           <p className="mb-2.5 inline-block rounded-full border border-[#20242C] bg-white/[0.03] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#78A9FF]">
