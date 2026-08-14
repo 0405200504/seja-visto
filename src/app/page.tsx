@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LandingHeader, StickyCta } from "@/components/landing/header";
+import { LandingHeader } from "@/components/landing/header";
 import { Hero } from "@/components/landing/hero";
 import {
   ProblemSection,
@@ -30,6 +30,7 @@ import {
   FinalCtaSection,
   LandingFooter,
 } from "@/components/landing/closing-sections";
+import { SectionCta } from "@/components/landing/cta";
 
 export const metadata: Metadata = {
   title: "MPO — Descubra seu estilo e aprenda a se vestir melhor",
@@ -60,12 +61,24 @@ export default function Home() {
         <Hero />
         <ProblemSection />
         <SolutionSection />
+        <SectionCta
+          label="QUERO AS 228 COMBINAÇÕES"
+          nota="Acesso liberado na hora · 7 dias de garantia"
+        />
         <OnboardingSection />
         <MetricsSection />
         <FeaturesSection />
         <MethodSection />
         <LookbookSection />
+        <SectionCta
+          label="VER AS 228 COMBINAÇÕES"
+          nota="Escolha a ocasião e o outfit vem montado"
+        />
         <FitCheckSection />
+        <SectionCta
+          label="QUERO O FIT CHECK E AS 228 COMBINAÇÕES"
+          nota="Tudo incluso, sem pagar nada a mais"
+        />
         <StylesSection />
         <GuidesSection />
         <GlossarySection />
@@ -73,6 +86,10 @@ export default function Home() {
         <PlanSection />
         <ComparisonSection />
         <RaphaelSection />
+        <SectionCta
+          label="QUERO COMEÇAR AGORA"
+          nota="Teste 7 dias · não gostou, devolvemos 100%"
+        />
         <ForWhoSection />
         <StackSection />
         <PricingSection />
@@ -80,7 +97,6 @@ export default function Home() {
         <FinalCtaSection />
       </main>
       <LandingFooter />
-      <StickyCta />
     </div>
   );
 }

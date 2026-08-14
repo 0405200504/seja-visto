@@ -3,8 +3,6 @@ import { Check, ChevronDown, Minus, ShieldCheck } from "lucide-react";
 import { Reveal } from "./reveal";
 import { CheckoutLink } from "./checkout-link";
 import {
-  ANNUAL_CHECKOUT_URL,
-  ANNUAL_PRICE,
   MONTHLY_CHECKOUT_URL,
   MONTHLY_PRICE,
   checkoutHref,
@@ -374,18 +372,22 @@ export function StackSection() {
 
 /* ── Seção 19 — Planos ────────────────────────────────────── */
 
+const DESTAQUES = [
+  { n: "228", t: "combinações prontas", d: "montadas por stylist, peça por peça" },
+  { n: "37", t: "aulas em 8 módulos", d: "em texto, curtas e consultáveis" },
+  { n: "16", t: "estilos destrinchados", d: "com fotos reais de referência" },
+  { n: "11", t: "guias práticos", d: "corpo, cores, tecidos e proporção" },
+];
+
 const PLAN_BENEFITS = [
-  "Acesso completo à plataforma",
-  "Dashboard personalizado",
-  "Método com 8 módulos e 37 aulas",
-  "Catálogo com 228 outfits prontos",
-  "Guias e ferramentas interativas",
+  "Fit Check com IA pra analisar seu outfit",
   "Guarda-roupa inteligente",
-  "Plano de 7 dias",
-  "Fit Check com IA",
-  "Fits da comunidade",
+  "Plano de ação de 7 dias",
+  "Dashboard e recomendações personalizadas",
+  "Fits reais da comunidade",
   "Cupons de marcas parceiras",
-  "Atualizações durante o período de acesso",
+  "Atualizações incluídas",
+  "Acesso pelo celular, tablet e computador",
 ];
 
 export function PricingSection() {
@@ -402,120 +404,98 @@ export function PricingSection() {
         />
       </div>
 
-      <div className="relative mx-auto max-w-[1080px] px-5 md:px-8">
+      <div className="relative mx-auto max-w-[720px] px-5 md:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <Reveal>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-              228 combinações prontas por{" "}
+              Tudo isso por{" "}
               <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">
-                R$0,89 cada
+                R$27
               </span>
-              . Uma vez só, no ano.
+              .
             </h2>
           </Reveal>
           <Reveal delay={100}>
-            <p className="mt-5 leading-relaxed text-[#A4AAB5]">
-              Uma peça errada no shopping custa mais que o ano inteiro de MPO —
-              e continua parada no armário. Aqui você leva as 228 combinações, o
-              Fit Check com IA e o método completo.
+            <p className="mt-4 leading-relaxed text-[#A4AAB5]">
+              Menos de R$0,90 por dia — e uma peça errada no shopping custa mais
+              que isso o ano inteiro.
             </p>
           </Reveal>
         </div>
 
-        {/* Mobile: empilhados, mensal em destaque. Desktop: lado a lado,
-            anual em destaque. */}
-        <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-[1.15fr_1fr] md:items-start md:gap-6">
-          {/* PLANO ANUAL */}
-          <Reveal delay={150} className="order-2 h-full md:order-1">
-            <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-5 md:border-[#146CFF]/60 md:bg-gradient-to-b md:from-[#146CFF]/[0.1] md:to-[#0c0e14] md:p-9 md:shadow-[0_0_60px_-18px_rgb(20_108_255/0.45)]">
-              <span className="hidden w-fit rounded-full bg-[#146CFF] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white md:absolute md:right-6 md:top-6 md:block">
-                Mais vantajoso
+        <Reveal delay={150}>
+          <div className="relative mt-10 overflow-hidden rounded-2xl border border-[#146CFF]/60 bg-gradient-to-b from-[#146CFF]/[0.1] to-[#0c0e14] p-6 shadow-[0_0_70px_-20px_rgb(20_108_255/0.5)] md:p-10">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-24 left-1/2 h-48 w-96 -translate-x-1/2"
+              style={{
+                background:
+                  "radial-gradient(ellipse at center, rgba(20,108,255,0.22) 0%, transparent 65%)",
+              }}
+            />
+
+            <div className="relative text-center">
+              <span className="inline-block rounded-full bg-[#146CFF] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                Acesso completo
               </span>
-              <p className="font-display text-base font-bold text-[#F5F7FA] md:text-lg">MPO Anual</p>
-              <p className="mt-2 font-display text-[28px] font-bold leading-tight tracking-tight text-[#F5F7FA] md:mt-5 md:text-5xl">
-                12x <span className="text-[#78A9FF]">de R$17</span>
-              </p>
-              <p className="mt-1.5 text-xs text-[#A4AAB5] md:mt-2 md:text-sm">
-                Total de R$204 por ano.
-              </p>
-              <p className="mt-3 inline-block w-fit rounded-lg bg-[#146CFF]/[0.14] px-3 py-1.5 text-[11px] font-semibold leading-snug text-[#78A9FF] md:px-3.5 md:py-2 md:text-xs">
-                <span className="md:hidden">
-                  R$0,56 por dia — e você economiza R$120 contra o mensal.
-                </span>
-                <span className="hidden md:inline">
-                  R$0,89 por combinação pronta. É o mesmo acesso do mensal,
-                  R$120 mais barato no ano.
+              <p className="mt-5 font-display text-[44px] font-bold leading-none tracking-tight text-[#F5F7FA] md:text-6xl">
+                R$27
+                <span className="align-super text-base font-semibold text-[#A4AAB5] md:text-lg">
+                  /mês
                 </span>
               </p>
-
-              <ul className="mt-7 hidden space-y-2.5 md:block">
-                {PLAN_BENEFITS.map((b) => (
-                  <li key={b} className="flex items-start gap-3 text-sm text-[#F5F7FA]/90">
-                    <Check className="mt-0.5 size-4 shrink-0 text-[#78A9FF]" aria-hidden />
-                    {b}
-                  </li>
-                ))}
-              </ul>
-
-              <CheckoutLink
-                href={checkoutHref(ANNUAL_CHECKOUT_URL)}
-                valor={ANNUAL_PRICE}
-                className="mt-5 flex h-12 items-center justify-center rounded-xl border border-[#20242C] bg-white/[0.03] text-xs font-bold tracking-wide text-[#F5F7FA] transition-all hover:border-[#146CFF]/60 hover:bg-[#146CFF]/[0.08] max-md:mt-auto md:mt-8 md:h-[54px] md:border-none md:bg-[#146CFF] md:text-sm md:text-white md:hover:bg-[#3B82F6] md:hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)]"
-              >
-                <span className="md:hidden">QUERO O PLANO ANUAL</span>
-                <span className="hidden md:inline">QUERO AS 228 COMBINAÇÕES</span>
-              </CheckoutLink>
-            </div>
-          </Reveal>
-
-          {/* PLANO MENSAL */}
-          <Reveal delay={250} className="order-1 h-full md:order-2">
-            <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#146CFF]/60 bg-gradient-to-b from-[#146CFF]/[0.1] to-[#0c0e14] p-5 shadow-[0_0_60px_-18px_rgb(20_108_255/0.45)] md:border-[#20242C] md:bg-[#0A0A0A] md:bg-none md:p-9 md:shadow-none">
-              <span className="mb-3 w-fit rounded-full bg-[#146CFF] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white md:hidden">
-                Mais escolhido
-              </span>
-              <p className="font-display text-base font-bold text-[#F5F7FA] md:text-lg">MPO Mensal</p>
-              <p className="mt-2 font-display text-[28px] font-bold leading-tight tracking-tight text-[#F5F7FA] md:mt-5 md:text-4xl">
-                R$27{" "}
-                <span className="text-sm font-semibold text-[#A4AAB5] md:text-lg">por mês</span>
+              <p className="mt-2.5 text-sm font-semibold text-[#78A9FF]">
+                Cancele quando quiser
               </p>
-              <p className="mt-2 text-xs leading-relaxed text-[#A4AAB5] md:mt-6 md:text-sm">
-                Mesma plataforma, mesmos 228 outfits, mesmos bônus. Renova
-                sozinho todo mês e você cancela quando quiser.
-              </p>
-              <CheckoutLink
-                href={checkoutHref(MONTHLY_CHECKOUT_URL)}
-                valor={MONTHLY_PRICE}
-                className="mt-5 flex h-12 items-center justify-center rounded-xl bg-[#146CFF] text-xs font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_40px_-8px_rgb(20_108_255/0.9)] max-md:mt-auto md:mt-8 md:h-[54px] md:border md:border-[#20242C] md:bg-white/[0.03] md:text-sm md:text-[#F5F7FA] md:hover:border-[#146CFF]/60 md:hover:bg-[#146CFF]/[0.08]"
-              >
-                <span className="md:hidden">QUERO AS 228 COMBINAÇÕES</span>
-                <span className="hidden md:inline">COMEÇAR PELO MENSAL</span>
-              </CheckoutLink>
             </div>
-          </Reveal>
-        </div>
 
-        {/* Mobile: benefícios compartilhados pelos dois planos */}
-        <Reveal delay={300}>
-          <div className="mt-3 rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-5 md:hidden">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#78A9FF]">
-              Os dois planos incluem
-            </p>
-            <ul className="mt-3.5 space-y-2.5">
+            {/* Números grandes: o que a pessoa leva na mão */}
+            <div className="relative mt-8 grid grid-cols-2 gap-3">
+              {DESTAQUES.map((item) => (
+                <div
+                  key={item.t}
+                  className="rounded-xl border border-[#20242C] bg-[#0A0A0A]/70 p-4"
+                >
+                  <p className="font-display text-2xl font-bold leading-none tracking-tight text-[#78A9FF] md:text-3xl">
+                    {item.n}
+                  </p>
+                  <p className="mt-1.5 text-[13px] font-semibold leading-snug text-[#F5F7FA]">
+                    {item.t}
+                  </p>
+                  <p className="mt-1 text-[11px] leading-snug text-[#A4AAB5]">
+                    {item.d}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <ul className="relative mt-6 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
               {PLAN_BENEFITS.map((b) => (
-                <li key={b} className="flex items-start gap-2.5 text-xs text-[#F5F7FA]/90">
-                  <Check className="mt-0.5 size-3.5 shrink-0 text-[#78A9FF]" aria-hidden />
+                <li key={b} className="flex items-start gap-2.5 text-[13px] text-[#F5F7FA]/90">
+                  <Check className="mt-0.5 size-4 shrink-0 text-[#78A9FF]" aria-hidden />
                   {b}
                 </li>
               ))}
             </ul>
+
+            <CheckoutLink
+              href={checkoutHref(MONTHLY_CHECKOUT_URL)}
+              valor={MONTHLY_PRICE}
+              className="relative mt-8 flex min-h-[56px] items-center justify-center rounded-xl bg-[#146CFF] px-6 py-3 text-center text-sm font-bold tracking-wide text-white transition-all hover:bg-[#3B82F6] hover:shadow-[0_0_45px_-8px_rgb(20_108_255/1)]"
+            >
+              QUERO AS 228 COMBINAÇÕES
+            </CheckoutLink>
+
+            <p className="relative mt-3 text-center text-xs text-[#A4AAB5]/80">
+              Acesso liberado na hora, direto no seu e-mail.
+            </p>
           </div>
         </Reveal>
 
         {/* Garantia legal (CDC art. 49) — está na página de reembolso, então
             precisa aparecer aqui também, ao lado do preço. */}
-        <Reveal delay={300}>
-          <div className="mx-auto mt-8 flex max-w-2xl items-start gap-4 rounded-2xl border border-[#146CFF]/30 bg-[#146CFF]/[0.05] p-6">
+        <Reveal delay={250}>
+          <div className="mt-6 flex items-start gap-4 rounded-2xl border border-[#146CFF]/30 bg-[#146CFF]/[0.05] p-6">
             <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-[#146CFF]/40 bg-[#146CFF]/[0.1] text-[#78A9FF]">
               <ShieldCheck className="size-5" aria-hidden />
             </span>
@@ -524,10 +504,9 @@ export function PricingSection() {
                 Teste tudo. Se não valer, você não paga nada.
               </p>
               <p className="mt-1.5 text-sm leading-relaxed text-[#A4AAB5]">
-                Entre, abra os 228 outfits, monte três combinações com o que
-                você tem, use o Fit Check. Se em 7 dias achar que não valeu, pede
-                o reembolso e devolvemos 100%. Sem formulário chato, sem
-                justificar. O risco é todo nosso.{" "}
+                Entre, abra as 228 combinações, monte três looks com o que você
+                já tem e use o Fit Check. Se em 7 dias achar que não valeu, pede
+                o reembolso e devolvemos 100%.{" "}
                 <a
                   href="/reembolso"
                   className="font-medium text-[#78A9FF] hover:underline"
@@ -540,8 +519,8 @@ export function PricingSection() {
           </div>
         </Reveal>
 
-        <Reveal delay={350}>
-          <p className="mt-8 text-center text-xs text-[#A4AAB5]/70">
+        <Reveal delay={300}>
+          <p className="mt-6 text-center text-xs text-[#A4AAB5]/70">
             O acesso é individual e vinculado à conta cadastrada.
           </p>
         </Reveal>
@@ -549,7 +528,6 @@ export function PricingSection() {
     </section>
   );
 }
-
 /* ── Seção 20 — FAQ ───────────────────────────────────────── */
 
 const FAQ = [
@@ -600,10 +578,6 @@ const FAQ = [
   {
     q: "Vou precisar comprar um guarda-roupa novo?",
     a: "Não. Boa parte dos outfits de nível fácil se monta com peças que você provavelmente já tem. O guarda-roupa inteligente mostra o que falta e em que ordem comprar, se você quiser.",
-  },
-  {
-    q: "O plano anual e o mensal possuem conteúdos diferentes?",
-    a: "Não. Os dois dão acesso à mesma plataforma durante o período contratado.",
   },
   {
     q: "As recomendações são personalizadas?",
@@ -698,7 +672,7 @@ export function FinalCtaSection() {
           <p className="mx-auto mt-6 max-w-xl leading-relaxed text-[#A4AAB5]">
             São 228 combinações prontas esperando você escolher a ocasião. Mais
             o Fit Check, o guarda-roupa inteligente, os guias e o método
-            inteiro — por 12x de R$17.
+            inteiro — por R$27.
           </p>
         </Reveal>
         <Reveal delay={280}>
@@ -717,8 +691,7 @@ export function FinalCtaSection() {
         </Reveal>
         <Reveal delay={440}>
           <p className="mt-5 text-xs font-medium text-[#A4AAB5]/70">
-            Acesso liberado na hora · 12x de R$17 · 7 dias de garantia
-            incondicional
+            Acesso liberado na hora · R$27 · 7 dias de garantia incondicional
           </p>
         </Reveal>
       </div>
