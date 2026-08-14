@@ -3,8 +3,31 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+/**
+ * Data limite da oferta, no formato dd/mm. É um valor fixo de propósito:
+ * gerar a data do dia aqui faria a faixa dizer "último dia" para sempre, o que
+ * é prazo falso e dá problema no CDC. Atualize quando prorrogar ou encerrar.
+ */
+export const OFERTA_ATE = "14/08";
+
+/** Faixa de urgência acima do menu. */
+function OfferBar() {
+  return (
+    <div className="bg-[#146CFF] text-white">
+      <div className="mx-auto flex h-8 max-w-[1280px] items-center justify-center gap-2.5 px-4 md:h-9">
+        <p className="text-[11px] font-bold uppercase tracking-[0.1em] md:text-xs md:tracking-[0.14em]">
+          Último dia por R$27
+        </p>
+        <span aria-hidden className="h-3 w-px bg-white/40" />
+        <p className="text-[11px] font-semibold tabular-nums text-white/85 md:text-xs">
+          {OFERTA_ATE}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 const NAV_LINKS = [
   { href: "#como-funciona", label: "Como funciona" },
@@ -17,7 +40,6 @@ const NAV_LINKS = [
 
 export function LandingHeader() {
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -30,12 +52,15 @@ export function LandingHeader() {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-        scrolled || open
+        scrolled
           ? "border-b border-[#20242C]/80 bg-[#050505]/85 backdrop-blur-xl"
           : "border-b border-transparent bg-transparent"
       )}
     >
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-4 px-5 md:h-[72px] md:px-8">
+      <OfferBar />
+      {/* Sem menu no mobile: a barra de logo/CTA roubava a dobra e só dava
+          saídas da página. No desktop sobra espaço, então continua. */}
+      <div className="mx-auto hidden h-16 max-w-[1280px] items-center justify-between gap-4 px-5 lg:flex lg:h-[72px] lg:px-8">
         <Link href="#" aria-label="MPO — voltar ao topo" className="flex items-center gap-2.5">
           <Image
             src="/logo-mpo-192.png"
@@ -78,53 +103,9 @@ export function LandingHeader() {
           >
             QUERO ACESSAR O MPO
           </a>
-          <a
-            href="#planos"
-            className="inline-flex rounded-lg bg-[#146CFF] px-3.5 py-2 text-xs font-semibold text-white lg:hidden"
-          >
-            ACESSAR
-          </a>
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            aria-label={open ? "Fechar menu" : "Abrir menu"}
-            className="inline-flex size-10 items-center justify-center rounded-lg border border-[#20242C] text-[#F5F7FA] lg:hidden"
-          >
-            {open ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
         </div>
       </div>
 
-      {open && (
-        <nav
-          aria-label="Navegação mobile"
-          className="border-t border-[#20242C]/60 bg-[#050505]/95 px-5 py-4 backdrop-blur-xl lg:hidden"
-        >
-          <ul className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className="block rounded-lg px-3 py-3 text-sm font-medium text-[#A4AAB5] transition-colors hover:bg-white/[0.04] hover:text-[#F5F7FA]"
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-            <li className="mt-2 border-t border-[#20242C]/60 pt-2">
-              <Link
-                href="/login"
-                onClick={() => setOpen(false)}
-                className="block rounded-lg px-3 py-3 text-sm font-semibold text-[#F5F7FA] transition-colors hover:bg-white/[0.04]"
-              >
-                Já sou membro — Entrar
-              </Link>
-            </li>
-          </ul>
-        </nav>
-      )}
     </header>
   );
 }

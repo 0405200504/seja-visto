@@ -15,7 +15,7 @@ const CHIPS = [
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-16 pb-6 md:pt-40 md:pb-20">
+    <section className="relative overflow-hidden pt-11 pb-6 lg:pt-44 lg:pb-20">
       {/* Fundo: grid tecnológico discreto + luz azul difusa */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
