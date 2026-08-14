@@ -31,8 +31,6 @@ function OfferBar() {
 
 const NAV_LINKS = [
   { href: "#como-funciona", label: "Como funciona" },
-  { href: "#recursos", label: "Bônus" },
-  { href: "#metodo", label: "Método" },
   { href: "#fit-check", label: "Fit Check" },
   { href: "#planos", label: "Planos" },
   { href: "#duvidas", label: "Dúvidas" },

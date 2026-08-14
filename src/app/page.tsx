@@ -4,28 +4,17 @@ import { Hero } from "@/components/landing/hero";
 import {
   ProblemSection,
   SolutionSection,
-  OnboardingSection,
-  MetricsSection,
   ProofSection,
 } from "@/components/landing/sections-core";
 import {
-  FeaturesSection,
   LookbookSection,
   FitCheckSection,
 } from "@/components/landing/features";
-import {
-  MethodSection,
-  StylesSection,
-  GuidesSection,
-  GlossarySection,
-  WardrobeSection,
-  PlanSection,
-} from "@/components/landing/content-sections";
+import { StylesSection } from "@/components/landing/content-sections";
 import {
   ComparisonSection,
   RaphaelSection,
   ForWhoSection,
-  StackSection,
   PricingSection,
   FaqSection,
   FinalCtaSection,
@@ -67,10 +56,6 @@ export default function Home() {
           label="QUERO AS 228 COMBINAÇÕES"
           nota="Acesso liberado na hora · 7 dias de garantia"
         />
-        <OnboardingSection />
-        <MetricsSection />
-        <FeaturesSection />
-        <MethodSection />
         <LookbookSection />
         <SectionCta
           label="VER AS 228 COMBINAÇÕES"
@@ -82,10 +67,10 @@ export default function Home() {
           nota="Tudo incluso, sem pagar nada a mais"
         />
         <StylesSection />
-        <GuidesSection />
-        <GlossarySection />
-        <WardrobeSection />
-        <PlanSection />
+        <SectionCta
+          label="QUERO AS 228 COMBINAÇÕES"
+          nota="Menos de R$0,90 por dia"
+        />
         <ComparisonSection />
         <RaphaelSection />
         <SectionCta
@@ -93,7 +78,10 @@ export default function Home() {
           nota="Teste 7 dias · não gostou, devolvemos 100%"
         />
         <ForWhoSection />
-        <StackSection />
+        <SectionCta
+          label="QUERO AS 228 COMBINAÇÕES"
+          nota="Acesso liberado na hora, direto no e-mail"
+        />
         <PricingSection />
         <FaqSection />
         <FinalCtaSection />
