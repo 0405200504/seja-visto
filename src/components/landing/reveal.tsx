@@ -46,34 +46,26 @@ function useInView<T extends Element>(margin = "-80px") {
   return { ref, inView };
 }
 
-/** Revela o conteúdo com fade + movimento vertical curto quando entra na tela. */
+/**
+ * Wrapper de layout. Já animou a entrada com fade quando o bloco chegava na
+ * tela, mas numa página de venda isso atrasa o conteúdo e deixa buraco branco
+ * em rolagem rápida — o conteúdo agora aparece direto.
+ *
+ * O componente continua existindo porque carrega classes de layout
+ * (h-full, order-*) em dezenas de lugares. `delay` fica só por compatibilidade.
+ */
 export function Reveal({
   children,
-  delay = 0,
   className,
   as: Tag = "div",
 }: {
   children: ReactNode;
+  /** @deprecated sem efeito — mantido para não mexer nas chamadas existentes */
   delay?: number;
   className?: string;
   as?: "div" | "section" | "li" | "span" | "article";
 }) {
-  const reduced = usePrefersReducedMotion();
-  const { ref, inView } = useInView<HTMLDivElement>();
-  const show = inView || reduced;
-  return (
-    <Tag
-      ref={ref as never}
-      className={cn(
-        "transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity,transform] motion-reduce:transition-none",
-        show ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0",
-        className
-      )}
-      style={{ transitionDelay: show ? `${delay}ms` : undefined }}
-    >
-      {children}
-    </Tag>
-  );
+  return <Tag className={cn(className)}>{children}</Tag>;
 }
 
 /** Número que conta de 0 até o valor quando aparece na tela. */
