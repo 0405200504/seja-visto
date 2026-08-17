@@ -89,7 +89,7 @@ const nextConfig: NextConfig = {
       },
       {
         // Fotos versionadas do produto: cache imutável de 1 ano no CDN/navegador.
-        source: "/:prefix(estilos|mais-procurados)/:path*",
+        source: "/:prefix(estilos|mais-procurados|modulos)/:path*",
         headers: [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],

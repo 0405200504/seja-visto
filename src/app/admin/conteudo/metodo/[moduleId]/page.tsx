@@ -56,7 +56,7 @@ export default async function ModuloPage(props: { params: Promise<{ moduleId: st
             value={mod.cover_image_url}
             folder="modulos"
             action={updateModuleFieldAction.bind(null, moduleId, "cover_image_url")}
-            aspectHint="ideal 16:9"
+            aspectHint="pôster vertical, ideal 4:5"
           />
         </div>
       </AutosaveForm>

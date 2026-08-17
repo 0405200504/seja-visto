@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ListChecks } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
-import { ModuleCover } from "@/components/app/module-cover";
+import { ModuleHero } from "@/components/app/module-hero";
 import { LessonList } from "@/components/app/lesson-list";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import type { Lesson, Module } from "@/lib/types";
 
 export default async function ModuloPage({
@@ -31,57 +29,57 @@ export default async function ModuloPage({
         .eq("user_id", user.id)
         .eq("module_id", moduleId)
         .eq("completed", true),
-      supabase.from("modules").select("id").order("order_index"),
+      supabase.from("modules").select("id, title").order("order_index"),
     ]);
 
   if (!mod) notFound();
 
-  const moduleIndex = (allModules ?? []).findIndex((m) => m.id === mod.id) + 1;
-  const completedIds = (progress ?? []).map((p) => p.lesson_id).filter(Boolean) as string[];
+  const ordem = ((allModules ?? []) as { id: string; title: string }[]).filter(Boolean);
+  const posicao = ordem.findIndex((m) => m.id === mod.id);
+  const moduleIndex = posicao + 1;
+  const proximo = posicao >= 0 ? ordem[posicao + 1] : undefined;
+
+  // Só conta progresso de aula que ainda existe neste módulo — assim o
+  // percentual nunca passa de 100% se uma aula sair do ar.
+  const idsDasAulas = new Set((lessons ?? []).map((l) => l.id));
+  const completedIds = (progress ?? [])
+    .map((p) => p.lesson_id)
+    .filter((id): id is string => Boolean(id) && idsDasAulas.has(id));
   const total = lessons?.length ?? 0;
-  const pct = total ? Math.round((completedIds.length / total) * 100) : 0;
 
   return (
     <div className="animate-fade-up">
-      <Link
-        href="/metodo"
-        className="mb-6 inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        Voltar para o método
-      </Link>
+      <ModuleHero
+        title={mod.title}
+        description={mod.description}
+        coverUrl={mod.cover_image_url}
+        index={moduleIndex}
+        feitas={completedIds.length}
+        total={total}
+      />
 
-      <div className="mb-8 overflow-hidden rounded-2xl border border-border shadow-card">
-        <div className="relative aspect-[16/6] sm:aspect-[16/4]">
-          <ModuleCover coverUrl={mod.cover_image_url} title={mod.title} index={moduleIndex} />
-        </div>
-        <div className="bg-surface p-6 sm:p-8">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl font-bold sm:text-2xl">{mod.title}</h1>
-            {pct === 100 && (
-              <Badge variant="success">
-                <CheckCircle2 className="size-3" />
-                Concluído
-              </Badge>
-            )}
-          </div>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-            {mod.description}
-          </p>
-          <div className="mt-6 max-w-sm">
-            <div className="mb-1.5 flex justify-between text-xs text-muted">
-              <span>
-                {completedIds.length}/{total} aulas concluídas
-              </span>
-              <span className="font-medium text-foreground">{pct}%</span>
-            </div>
-            <Progress value={pct} />
-          </div>
-        </div>
-      </div>
-
-      <h2 className="mb-4 text-lg font-semibold">Aulas</h2>
+      <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+        <ListChecks className="size-5 text-accent" />
+        Aulas
+      </h2>
       <LessonList moduleId={mod.id} lessons={lessons ?? []} completedIds={completedIds} />
+
+      {proximo && (
+        <Link
+          href={`/metodo/${proximo.id}`}
+          className="mt-8 flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-5 transition-all duration-300 hover:border-border-strong hover:shadow-glow"
+        >
+          <span className="min-w-0">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">
+              Próximo módulo
+            </span>
+            <span className="mt-1 block truncate font-display text-base font-semibold text-foreground">
+              {proximo.title}
+            </span>
+          </span>
+          <ArrowRight className="size-5 shrink-0 text-accent" />
+        </Link>
+      )}
     </div>
   );
 }

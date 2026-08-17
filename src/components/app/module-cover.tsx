@@ -4,17 +4,25 @@ import { cn } from "@/lib/utils";
 /**
  * Capa do módulo com fallback editorial numerado.
  * O elemento pai precisa ter `position: relative` e proporção definida.
+ *
+ * As capas oficiais são pôsteres 4:5 com o nome do módulo já impresso — por
+ * isso nenhum layout escreve o título por cima da imagem (ficaria duplicado).
  */
 export function ModuleCover({
   coverUrl,
   title,
   index,
   className,
+  sizes = "(max-width: 640px) 45vw, 240px",
+  priority = false,
 }: {
   coverUrl: string | null;
   title: string;
   index: number;
   className?: string;
+  /** Tamanho renderizado, para o next/image não baixar imagem maior que o necessário. */
+  sizes?: string;
+  priority?: boolean;
 }) {
   if (coverUrl) {
     return (
@@ -22,7 +30,8 @@ export function ModuleCover({
         src={coverUrl}
         alt={title}
         fill
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        sizes={sizes}
+        priority={priority}
         className={cn("object-cover", className)}
       />
     );

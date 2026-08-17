@@ -21,9 +21,9 @@ import { Reveal } from "./reveal";
 const MODULES = [
   {
     n: 1,
-    title: "Diagnóstico de Estilo",
+    title: "Boas Vindas",
     lessons: 4,
-    text: "Entenda por que você sente que não se veste bem e defina a imagem que quer passar. É aqui que o método começa.",
+    text: "Comece por aqui: o que é o MPO, como o método funciona e o diagnóstico que mostra o seu ponto de partida.",
   },
   {
     n: 2,
@@ -33,39 +33,39 @@ const MODULES = [
   },
   {
     n: 3,
-    title: "Guarda-Roupa Base",
+    title: "Armário Essencial",
     lessons: 4,
-    text: "As peças essenciais e coringas que sustentam qualquer combinação — e a ordem certa de compra.",
+    text: "As peças que sustentam qualquer combinação: essenciais, coringas, as que elevam o visual — e a ordem certa de comprar.",
   },
   {
     n: 4,
-    title: "Fórmulas de Outfits",
-    lessons: 6,
-    text: "Fórmulas prontas e repetíveis para cada situação: do básico premium ao outfit de date.",
+    title: "Combinações Inteligentes",
+    lessons: 7,
+    text: "A lógica por trás de um outfit que funciona e as fórmulas prontas pra repetir em cada ocasião.",
   },
   {
     n: 5,
-    title: "Aprenda a usar as combinações do MPO",
+    title: "Cores",
     lessons: 5,
-    text: "Como usar o Catálogo de Outfits da plataforma: combinações prontas por ocasião, estilo e clima, fáceis de copiar.",
+    text: "Dos neutros que nunca erram à cor de destaque: o que combina com o quê, e por quê.",
   },
   {
     n: 6,
-    title: "Guia de Cores",
+    title: "Roupas pra Tipo de Corpo",
     lessons: 4,
-    text: "Dos neutros que nunca erram às combinações avançadas com cor de destaque.",
+    text: "Identifique a sua silhueta e descubra os cortes que equilibram o seu corpo — sem precisar esconder nada.",
   },
   {
     n: 7,
-    title: "Compras Inteligentes",
+    title: "Tamanho e Caimento",
     lessons: 4,
-    text: "Compre menos e melhor: como evitar peças inúteis e investir na ordem certa.",
+    text: "Medida certa, pontos de checagem e o ajuste no alfaiate: o detalhe que separa roupa bonita de homem bem vestido.",
   },
   {
     n: 8,
-    title: "Plano de Ação",
+    title: "Use o MPO no Dia a Dia",
     lessons: 4,
-    text: "O desafio de 7 dias que transforma o método em hábito — com missões práticas e checklist final.",
+    text: "Como transformar o método em rotina: catálogo de outfits, Fit Check, desafio de 7 dias e a manutenção do seu estilo.",
   },
 ];
 
@@ -85,7 +85,7 @@ export function MethodSection() {
           </Reveal>
           <Reveal delay={100}>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-              8 módulos, 37 aulas — e você sabe exatamente o que tem dentro.
+              8 módulos, 38 aulas — e você sabe exatamente o que tem dentro.
             </h2>
           </Reveal>
           <Reveal delay={200}>

@@ -1,11 +1,9 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { CheckCircle2 } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
-import { PageHeader } from "@/components/app/page-header";
-import { ModuleCover } from "@/components/app/module-cover";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import { ModuleBillboard } from "@/components/app/module-billboard";
+import { ModuleRail } from "@/components/app/module-rail";
+import { ModulePoster, type ModuleCardData } from "@/components/app/module-poster";
 import type { Module } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Método" };
@@ -34,56 +32,82 @@ export default async function MetodoPage() {
     }
   }
 
+  const cards: (ModuleCardData & { description: string | null })[] = (
+    (modules as Module[] | null) ?? []
+  ).map((mod, i) => {
+    const total = lessonsPerModule.get(mod.id) ?? 0;
+    // O progresso nunca passa do total de aulas do módulo: se uma aula sair do
+    // ar pelo admin, o registro antigo não pode virar "5 de 4 aulas".
+    const done = Math.min(donePerModule.get(mod.id) ?? 0, total);
+    return {
+      id: mod.id,
+      title: mod.title,
+      description: mod.description,
+      coverUrl: mod.cover_image_url,
+      index: i + 1,
+      total,
+      done,
+    };
+  });
+
+  if (cards.length === 0) {
+    return (
+      <div className="animate-fade-up rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted">
+        Os módulos do método aparecem aqui assim que o conteúdo for publicado.
+      </div>
+    );
+  }
+
+  const emAndamento = cards.filter((c) => c.done > 0 && c.done < c.total);
+  const concluidos = cards.filter((c) => c.total > 0 && c.done >= c.total);
+
+  // Destaque: o módulo já começado (o primeiro deles) ou o próximo da fila.
+  const destaque = emAndamento[0] ?? cards.find((c) => c.done < c.total) ?? cards[0];
+
+  const totalAulas = cards.reduce((s, c) => s + c.total, 0);
+  const totalFeitas = cards.reduce((s, c) => s + c.done, 0);
+  const pctGeral = totalAulas ? Math.round((totalFeitas / totalAulas) * 100) : 0;
+
   return (
     <div className="animate-fade-up">
-      <PageHeader
-        eyebrow="O Método"
-        title="Módulos do programa"
-        description="Do diagnóstico ao plano de ação: siga a ordem para construir seu estilo com base sólida."
+      <ModuleBillboard
+        mod={destaque}
+        description={destaque.description}
+        resumo={`${totalAulas} aulas no método · ${pctGeral}% concluído`}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {((modules as Module[] | null) ?? []).map((mod, i) => {
-          const total = lessonsPerModule.get(mod.id) ?? 0;
-          const done = donePerModule.get(mod.id) ?? 0;
-          const pct = total ? Math.round((done / total) * 100) : 0;
-          const complete = total > 0 && done >= total;
+      <div className="space-y-9 sm:space-y-11">
+        {emAndamento.length > 0 && (
+          <ModuleRail title="Continue assistindo" hint="Você começou, falta terminar">
+            {emAndamento.map((mod) => (
+              <ModulePoster key={mod.id} mod={mod} />
+            ))}
+          </ModuleRail>
+        )}
 
-          return (
-            <Link
-              key={mod.id}
-              href={`/metodo/${mod.id}`}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-card transition-all duration-300 hover:border-border-strong hover:shadow-glow"
-            >
-              <div className="relative aspect-[16/8] overflow-hidden">
-                <ModuleCover coverUrl={mod.cover_image_url} title={mod.title} index={i + 1} />
-                {complete && (
-                  <Badge variant="success" className="absolute right-3 top-3">
-                    <CheckCircle2 className="size-3" />
-                    Concluído
-                  </Badge>
-                )}
-              </div>
-              <div className="flex flex-1 flex-col gap-2 p-5">
-                <h3 className="font-display text-base font-semibold leading-snug">
-                  {mod.title}
-                </h3>
-                <p className="line-clamp-2 text-sm text-muted leading-relaxed">
-                  {mod.description}
-                </p>
-                <div className="mt-auto pt-3">
-                  <div className="mb-1.5 flex items-center justify-between text-xs text-muted">
-                    <span>
-                      {done}/{total} aulas
-                    </span>
-                    <span className="font-medium text-foreground">{pct}%</span>
-                  </div>
-                  <Progress value={pct} />
-                </div>
-              </div>
-            </Link>
-          );
-        })}
+        <ModuleRail title="Todos os módulos" hint={`${cards.length} módulos · na ordem certa`}>
+          {cards.map((mod) => (
+            <ModulePoster key={mod.id} mod={mod} />
+          ))}
+        </ModuleRail>
+
+        {concluidos.length > 0 && (
+          <ModuleRail title="Concluídos" hint="Volte quando quiser revisar">
+            {concluidos.map((mod) => (
+              <ModulePoster key={mod.id} mod={mod} />
+            ))}
+          </ModuleRail>
+        )}
+
+        {pctGeral === 100 && (
+          <div className="flex items-center gap-3 rounded-2xl border border-success/30 bg-success/[0.07] p-5">
+            <CheckCircle2 className="size-5 shrink-0 text-success" />
+            <p className="text-sm text-foreground">
+              Método completo. Agora é manutenção: use o Plano de Ação e o Catálogo de
+              Outfits toda semana.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

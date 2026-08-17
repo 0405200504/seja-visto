@@ -318,7 +318,7 @@ const DELIVERABLES = [
   "3 ferramentas interativas",
   "Dicionário com 24 peças",
   "Plano de ação de 7 dias",
-  "Método com 8 módulos e 37 aulas",
+  "Método com 8 módulos e 38 aulas",
   "Comunidade de fits",
   "Área de favoritos",
   "Cupons de marcas parceiras",
