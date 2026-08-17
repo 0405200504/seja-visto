@@ -23,11 +23,11 @@ import {
 import { SectionCta } from "@/components/landing/cta";
 
 export const metadata: Metadata = {
-  title: "MPO — Em 7 segundos já decidiram quem você é",
+  title: "MPO — Um simples ajuste no visual muda como te tratam",
   description:
     "228 combinações prontas montadas por stylist: escolha a ocasião e o outfit vem peça por peça, com o porquê de funcionar. Fit Check com IA, 16 estilos, guarda-roupa inteligente e o método completo em 8 módulos.",
   openGraph: {
-    title: "MPO — Em 7 segundos já decidiram quem você é",
+    title: "MPO — Um simples ajuste no visual muda como te tratam",
     description:
       "228 combinações prontas montadas por stylist: escolha a ocasião e o outfit vem peça por peça, com o porquê de funcionar. Fit Check com IA, 16 estilos, guarda-roupa inteligente e o método completo em 8 módulos.",
     type: "website",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "MPO — Em 7 segundos já decidiram quem você é",
+    title: "MPO — Um simples ajuste no visual muda como te tratam",
     description:
       "228 combinações prontas, Fit Check com IA, 16 estilos e o método completo. Escolha a ocasião e o outfit vem montado.",
   },
