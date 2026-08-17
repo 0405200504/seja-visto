@@ -85,8 +85,13 @@ export function Hero() {
           </h1>
 
           <p className="mt-3.5 text-[15px] leading-snug text-[#A4AAB5]">
-            228 combinações prontas, montadas por stylist. Escolha a ocasião e o
-            outfit vem montado, peça por peça. Você abre, copia e sai.
+            Não é ficar mais rico, mais alto, nem virar outra pessoa. É parar de
+            errar a roupa: são{" "}
+            <span className="font-semibold text-[#F5F7FA]">
+              228 combinações prontas
+            </span>{" "}
+            — você escolhe a ocasião e o outfit vem montado. E as pessoas passam
+            a te tratar diferente sem saber o que mudou.
           </p>
 
           <ChipRow className="mt-4" />
@@ -111,9 +116,14 @@ export function Hero() {
           </h1>
 
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#A4AAB5]">
-            São 228 combinações prontas, montadas por stylist. Escolha a ocasião
-            — trabalho, date, reunião, rolê à noite — e o outfit vem montado,
-            peça por peça, com o porquê de funcionar.
+            Esse ajuste não é ficar mais rico, mais alto, nem virar outra
+            pessoa. É simplesmente parar de errar a roupa: são{" "}
+            <span className="font-semibold text-[#F5F7FA]">
+              228 combinações prontas
+            </span>
+            , montadas por stylist. Você escolhe a ocasião, o outfit vem montado
+            peça por peça — e as pessoas passam a te tratar diferente sem saber
+            o que mudou.
           </p>
 
           <ChipRow className="mt-6" />
