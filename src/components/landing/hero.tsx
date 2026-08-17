@@ -76,15 +76,16 @@ export function Hero() {
             Manual Prático do Outfit
           </p>
           <h1 className="font-display text-[32px] font-bold leading-[1.04] tracking-[-0.03em] text-[#F5F7FA] sm:text-[40px]">
+            Em{" "}
             <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
-              +228 combinações
+              7 segundos
             </span>{" "}
-            prontas pra você copiar e vestir hoje
+            decidem quem você é. 228 combinações prontas pra virar esse jogo.
           </h1>
 
           <p className="mt-3.5 text-[15px] leading-snug text-[#A4AAB5]">
-            Escolha a ocasião. O outfit vem montado, peça por peça. Você abre,
-            copia e sai.
+            Escolha a ocasião — date, reunião, rolê. O outfit vem montado, peça
+            por peça. Você abre, copia e entra sabendo que tá bem.
           </p>
 
           <ChipRow className="mt-4" />
@@ -100,16 +101,17 @@ export function Hero() {
           </p>
 
           <h1 className="font-display text-[60px] font-bold leading-[1.04] tracking-[-0.03em] text-[#F5F7FA]">
+            Em{" "}
             <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
-              +228 combinações
+              7 segundos
             </span>{" "}
-            prontas pra você copiar e vestir hoje
+            decidem quem você é. 228 combinações prontas pra virar esse jogo.
           </h1>
 
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#A4AAB5]">
-            Escolha a ocasião — trabalho, date, faculdade, rolê à noite. O
-            outfit vem montado, peça por peça, com o porquê de funcionar. Você
-            abre, copia e sai de casa bem vestido.
+            Ninguém vai te dizer que a roupa te derrubou — só vai te tratar
+            diferente. Escolha a ocasião: trabalho, date, reunião, rolê à noite.
+            O outfit vem montado, peça por peça, com o porquê de funcionar.
           </p>
 
           <ChipRow className="mt-6" />

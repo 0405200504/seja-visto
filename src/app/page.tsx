@@ -23,13 +23,13 @@ import {
 import { SectionCta } from "@/components/landing/cta";
 
 export const metadata: Metadata = {
-  title: "MPO — Descubra seu estilo e aprenda a se vestir melhor",
+  title: "MPO — Em 7 segundos já decidiram quem você é",
   description:
-    "Método com 8 módulos e 37 aulas, lookbook com 228 referências, 16 estilos, guarda-roupa inteligente, plano de ação e Fit Check com IA para você construir um estilo que realmente tenha a sua cara.",
+    "228 combinações prontas montadas por stylist: escolha a ocasião e o outfit vem peça por peça, com o porquê de funcionar. Fit Check com IA, 16 estilos, guarda-roupa inteligente e o método completo em 8 módulos.",
   openGraph: {
-    title: "MPO — Descubra seu estilo e aprenda a se vestir melhor",
+    title: "MPO — Em 7 segundos já decidiram quem você é",
     description:
-      "Método com 8 módulos e 37 aulas, lookbook com 228 referências, 16 estilos, guarda-roupa inteligente, plano de ação e Fit Check com IA para você construir um estilo que realmente tenha a sua cara.",
+      "228 combinações prontas montadas por stylist: escolha a ocasião e o outfit vem peça por peça, com o porquê de funcionar. Fit Check com IA, 16 estilos, guarda-roupa inteligente e o método completo em 8 módulos.",
     type: "website",
     locale: "pt_BR",
     siteName: "MPO — Manual Prático do Outfit",
@@ -37,9 +37,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "MPO — Descubra seu estilo e aprenda a se vestir melhor",
+    title: "MPO — Em 7 segundos já decidiram quem você é",
     description:
-      "Lookbook, guias práticos, guarda-roupa inteligente, plano de ação e Fit Check com IA.",
+      "228 combinações prontas, Fit Check com IA, 16 estilos e o método completo. Escolha a ocasião e o outfit vem montado.",
   },
 };
 

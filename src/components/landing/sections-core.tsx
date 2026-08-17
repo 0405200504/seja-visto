@@ -11,10 +11,10 @@ import { OnboardingDemo } from "./onboarding-demo";
 /* ── Seção 3 — Reconhecimento do problema ─────────────────── */
 
 const PROBLEM_CHIPS = [
-  "Você tem peças boas, mas nenhuma delas conversa com a outra",
-  "A camiseta muda completamente o formato do seu corpo — e você nem percebe",
-  "O tênis derruba um outfit que estava perfeito",
-  "Cada compra nova é mais uma aposta do que uma decisão",
+  "Você já foi “o cara legal” — e ela decidiu isso antes de você contar a primeira piada",
+  "Você entrou preparado na reunião e a pergunta difícil foi feita pro outro cara",
+  "Você entra num lugar e simplesmente não acontece nada. Não é rejeição, é ser pulado",
+  "E ninguém nunca te dá o motivo. Só o resultado",
 ];
 
 export function ProblemSection() {
@@ -25,24 +25,26 @@ export function ProblemSection() {
           <div>
             <div>
               <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-                Não é falta de roupa.{" "}
+                A primeira impressão é a que fica.{" "}
                 <span className="text-[#A4AAB5]">
-                  É falta de combinação — e isso te custa tempo e presença.
+                  E você nunca fica sabendo o que ela já te custou.
                 </span>
               </h2>
             </div>
             <div>
               <p className="mt-6 max-w-xl leading-relaxed text-[#A4AAB5]">
-                Você experimenta três coisas, tira duas, volta pra mesma
-                camiseta de sempre e sai atrasado. E entra no lugar sentindo que
-                desapareceu no meio da galera.
+                A mulher que desistiu antes de você chegar perto não te conta. O
+                cliente que fechou com o outro cara não vai dizer que decidiu
+                nos primeiros segundos. Você recebe o resultado e nunca o
+                motivo — então culpa a sorte, o papo, a grana.
               </p>
             </div>
             <div>
               <div className="mt-8 rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-6">
                 <p className="leading-relaxed text-[#F5F7FA]">
-                  São 228 outfits prontos, montados por um stylist. Você escolhe
-                  a ocasião e{" "}
+                  De tudo que decide essa impressão, a parte que você controla
+                  por completo é uma só: a roupa. São 228 outfits prontos,
+                  montados por um stylist — você escolhe a ocasião e{" "}
                   <span className="font-semibold text-[#78A9FF]">
                     já sai vestido
                   </span>
@@ -128,8 +130,8 @@ export function SolutionSection() {
           </Reveal>
           <Reveal delay={100}>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-              Do &ldquo;não tenho o que vestir&rdquo; ao outfit pronto em poucos
-              toques.
+              Você não precisa entender de moda. Precisa saber o que vestir
+              agora.
             </h2>
           </Reveal>
           <Reveal delay={200}>
@@ -149,7 +151,7 @@ export function SolutionSection() {
           </Reveal>
           <Reveal delay={360}>
             <ul className="mt-6 space-y-2 text-sm text-[#A4AAB5]/85">
-              <li>Sem passar 40 minutos experimentando roupa na frente do espelho.</li>
+              <li>Sem entrar em lugar nenhum na dúvida se você está bem.</li>
               <li>Sem depender de sorte, palpite ou referência que você nunca consegue reproduzir.</li>
               <li>Sem comprar mais uma peça que fica esquecida no fundo do armário.</li>
             </ul>

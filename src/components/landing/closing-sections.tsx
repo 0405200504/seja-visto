@@ -197,10 +197,10 @@ export function RaphaelSection() {
             </Reveal>
             <Reveal delay={280}>
               <p className="mt-4 leading-relaxed text-[#A4AAB5]">
-                Para o Rapha, moda nunca foi só profissão. Se vestir bem é o
-                lifestyle dele: uma paixão que começou antes do trabalho e que
-                ele vive todos os dias — no espelho e nos bastidores com os
-                artistas.
+                O trabalho dele nunca foi colocar roupa cara em gente famosa —
+                roupa cara qualquer um compra. É fazer com que a pessoa entre
+                num lugar e mude a temperatura da sala. Controlar aquele
+                julgamento de sete segundos antes que ele aconteça.
               </p>
             </Reveal>
             <Reveal delay={360}>
@@ -257,13 +257,13 @@ export function RaphaelSection() {
 /* ── Seção 17 — Para quem é ───────────────────────────────── */
 
 const FOR_WHO = [
-  "Você perde tempo demais se arrumando e ainda sai insatisfeito",
-  "Você tem peças boas e não sabe o que casa com o quê",
+  "Você quer que a primeira impressão jogue a seu favor, não contra",
+  "Você já foi “o cara legal” e quer ser olhado de outro jeito",
+  "Você quer entrar numa reunião e ser levado a sério antes de abrir a boca",
   "Você entra nos lugares e sente que ninguém repara",
   "Você quer chegar num date sem a dúvida de “será que tá estranho?”",
+  "Você tem peças boas e não sabe o que casa com o quê",
   "Você salva referência e nunca consegue reproduzir",
-  "Você quer parecer mais bem vestido sem viver de roupa social",
-  "Você não sabe qual modelagem valoriza o seu corpo",
   "Você quer uma segunda opinião honesta antes de sair de casa",
   "Você não tem a menor paciência pra curso longo em vídeo",
 ];
@@ -418,8 +418,9 @@ export function PricingSection() {
           </Reveal>
           <Reveal delay={100}>
             <p className="mt-4 leading-relaxed text-[#A4AAB5]">
-              Menos de R$0,90 por dia — e uma peça errada no shopping custa mais
-              que isso o ano inteiro.
+              Menos de R$0,90 por dia. Uma peça errada no shopping custa mais
+              que isso o ano inteiro — e a impressão errada custa bem mais do
+              que dinheiro.
             </p>
           </Reveal>
         </div>
@@ -665,18 +666,18 @@ export function FinalCtaSection() {
         </Reveal>
         <Reveal delay={100}>
           <h2 className="font-display text-4xl font-bold leading-[1.08] tracking-[-0.03em] text-[#F5F7FA] md:text-[56px]">
-            Amanhã você vai abrir o guarda-roupa de novo.{" "}
+            Amanhã você vai causar uma primeira impressão.{" "}
             <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">
-              Já resolvido ou na mesma
+              A única escolha é qual
             </span>
-            ?
+            .
           </h2>
         </Reveal>
         <Reveal delay={200}>
           <p className="mx-auto mt-6 max-w-xl leading-relaxed text-[#A4AAB5]">
-            São 228 combinações prontas esperando você escolher a ocasião. Mais
-            o Fit Check, o guarda-roupa inteligente, os guias e o método
-            inteiro — por R$27.
+            Ela vai acontecer com ou sem a sua participação. São 228 combinações
+            prontas esperando você escolher a ocasião — mais o Fit Check, o
+            guarda-roupa inteligente, os guias e o método inteiro, por R$27.
           </p>
         </Reveal>
         <Reveal delay={280}>

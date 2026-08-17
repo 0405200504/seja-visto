@@ -459,24 +459,24 @@ export function FitCheckSection() {
             </Reveal>
             <Reveal delay={100}>
               <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-                Montou o outfit e ficou na dúvida?{" "}
+                Ninguém te fala a verdade sobre a sua roupa.{" "}
                 <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">
-                  Manda uma foto.
+                  Aqui alguém fala.
                 </span>
               </h2>
             </Reveal>
             <Reveal delay={200}>
               <p className="mt-6 leading-relaxed text-[#A4AAB5]">
-                O Fit Check analisa a combinação que você está usando e devolve
-                um feedback direto. Ele mostra o que está funcionando, aponta
-                possíveis ajustes e dá uma nota geral para o outfit.
+                Seu amigo não vai dizer que a peça te apaga. Sua mãe vai dizer
+                que você está lindo. O Fit Check analisa a combinação que você
+                está usando e devolve um feedback direto: o que está
+                funcionando, o que ajustar e uma nota geral.
               </p>
             </Reveal>
             <Reveal delay={280}>
               <p className="mt-4 leading-relaxed text-[#A4AAB5]">
-                Você pode testar uma combinação antes de sair, comparar
-                alternativas ou entender por que alguma coisa parece não
-                encaixar.
+                Você manda a foto antes de sair de casa e descobre na hora — não
+                depois, nas fotos da noite, quando a impressão já ficou.
               </p>
             </Reveal>
             <Reveal delay={360}>
