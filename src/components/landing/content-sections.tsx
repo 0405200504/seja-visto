@@ -101,7 +101,10 @@ export function MethodSection() {
                         alt={clone ? "" : `Capa do módulo ${mod.n} — ${mod.title}`}
                         fill
                         sizes="(max-width: 768px) 176px, 224px"
-                        quality={70}
+                        quality={55}
+                        /* Mesma regra da esteira de estilos: nada de lazy. */
+                        loading="eager"
+                        fetchPriority="low"
                         className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
                       />
                       <span className="absolute right-2.5 top-2.5 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-[#F5F7FA] backdrop-blur-md">
@@ -212,8 +215,15 @@ export function StylesSection() {
                         src={`/estilos/${style.slug}/01.jpg`}
                         alt={clone ? "" : `Referência do estilo ${style.nome}`}
                         fill
-                        sizes="256px"
-                        quality={70}
+                        sizes="(max-width: 768px) 224px, 256px"
+                        quality={55}
+                        /* Esteira não pode usar lazy: o card entra na tela já
+                           andando, e a foto só começaria a baixar nessa hora —
+                           o visitante via card vazio passando. Carrega tudo de
+                           uma vez, em prioridade baixa para não disputar com o
+                           topo da página. */
+                        loading="eager"
+                        fetchPriority="low"
                         className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
                       />
                       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/70 to-transparent" />
