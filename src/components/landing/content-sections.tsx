@@ -13,61 +13,36 @@ import { Reveal } from "./reveal";
 /* ── Seção 9.5 — O método, módulo por módulo ──────────────── */
 
 /**
- * Currículo real da plataforma: títulos, descrições e número de aulas saem
- * da tabela `modules`/`lessons` do banco. Se um módulo for renomeado ou
- * ganhar aula lá dentro, esta lista precisa ser atualizada junto — é a única
- * parte da página de vendas que promete conteúdo nome por nome.
+ * Currículo real da plataforma: títulos, capas e número de aulas saem da
+ * tabela `modules`/`lessons` do banco. Se um módulo for renomeado, trocar de
+ * capa ou ganhar aula lá dentro, esta lista precisa ser atualizada junto — é
+ * a única parte da página de vendas que promete conteúdo nome por nome.
+ *
+ * As capas são pôsteres 4:5 com o nome do módulo já impresso na arte; por
+ * isso os cards da esteira não repetem o título por escrito.
  */
 const MODULES = [
-  {
-    n: 1,
-    title: "Boas Vindas",
-    lessons: 4,
-    text: "Comece por aqui: o que é o MPO, como o método funciona e o diagnóstico que mostra o seu ponto de partida.",
-  },
-  {
-    n: 2,
-    title: "Fundamentos",
-    lessons: 6,
-    text: "Caimento, proporção, cores, texturas, ocasião e terceira peça: os 6 pilares que separam roupa bonita de outfit bem construído.",
-  },
-  {
-    n: 3,
-    title: "Armário Essencial",
-    lessons: 4,
-    text: "As peças que sustentam qualquer combinação: essenciais, coringas, as que elevam o visual — e a ordem certa de comprar.",
-  },
+  { n: 1, title: "Boas Vindas", lessons: 4, capa: "/modulos/01-boas-vindas.webp" },
+  { n: 2, title: "Fundamentos", lessons: 6, capa: "/modulos/02-fundamentos.webp" },
+  { n: 3, title: "Armário Essencial", lessons: 4, capa: "/modulos/03-armario-essencial.webp" },
   {
     n: 4,
     title: "Combinações Inteligentes",
     lessons: 7,
-    text: "A lógica por trás de um outfit que funciona e as fórmulas prontas pra repetir em cada ocasião.",
+    capa: "/modulos/04-combinacoes-inteligentes.webp",
   },
-  {
-    n: 5,
-    title: "Cores",
-    lessons: 5,
-    text: "Dos neutros que nunca erram à cor de destaque: o que combina com o quê, e por quê.",
-  },
+  { n: 5, title: "Cores", lessons: 5, capa: "/modulos/05-cores.webp" },
   {
     n: 6,
     title: "Roupas pra Tipo de Corpo",
     lessons: 4,
-    text: "Identifique a sua silhueta e descubra os cortes que equilibram o seu corpo — sem precisar esconder nada.",
+    capa: "/modulos/06-roupas-tipo-de-corpo.webp",
   },
-  {
-    n: 7,
-    title: "Tamanho e Caimento",
-    lessons: 4,
-    text: "Medida certa, pontos de checagem e o ajuste no alfaiate: o detalhe que separa roupa bonita de homem bem vestido.",
-  },
-  {
-    n: 8,
-    title: "Use o MPO no Dia a Dia",
-    lessons: 4,
-    text: "Como transformar o método em rotina: catálogo de outfits, Fit Check, desafio de 7 dias e a manutenção do seu estilo.",
-  },
+  { n: 7, title: "Tamanho e Caimento", lessons: 4, capa: "/modulos/07-tamanho-e-caimento.webp" },
+  { n: 8, title: "Use o MPO no Dia a Dia", lessons: 4, capa: "/modulos/08-mpo-no-dia-a-dia.webp" },
 ];
+
+const TOTAL_AULAS = MODULES.reduce((s, m) => s + m.lessons, 0);
 
 export function MethodSection() {
   return (
@@ -85,7 +60,8 @@ export function MethodSection() {
           </Reveal>
           <Reveal delay={100}>
             <h2 className="font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-[#F5F7FA] md:text-[42px] md:leading-[1.12]">
-              8 módulos, 38 aulas — e você sabe exatamente o que tem dentro.
+              8 módulos, {TOTAL_AULAS} aulas — e você sabe exatamente o que tem
+              dentro.
             </h2>
           </Reveal>
           <Reveal delay={200}>
@@ -96,32 +72,72 @@ export function MethodSection() {
             </p>
           </Reveal>
         </div>
+      </div>
 
-        <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {MODULES.map((mod, i) => (
-            <Reveal key={mod.n} delay={i * 80}>
-              <div className="group h-full rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-6 transition-all hover:-translate-y-1 hover:border-[#146CFF]/50 hover:shadow-[0_12px_40px_-16px_rgb(20_108_255/0.35)]">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <span className="flex size-9 items-center justify-center rounded-xl border border-[#20242C] bg-[#146CFF]/[0.08] font-display text-sm font-bold text-[#78A9FF] transition-colors group-hover:bg-[#146CFF]/[0.16]">
-                    {mod.n}
-                  </span>
-                  <span className="rounded-full border border-[#20242C] px-2.5 py-1 text-[10px] font-medium text-[#A4AAB5]">
-                    {mod.lessons} aulas
-                  </span>
-                </div>
-                <h3 className="font-display text-base font-bold leading-snug text-[#F5F7FA]">
-                  {mod.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#A4AAB5]">
-                  {mod.text}
-                </p>
+      {/* Esteira automática e infinita das capas. Duas cópias da lista: o
+          keyframe anda -50%, então a segunda entra exatamente onde a primeira
+          saiu. Roda ao contrário da esteira dos estilos, para as duas não
+          parecerem a mesma faixa. */}
+      <Reveal delay={250}>
+        <div className="marquee-mask relative mt-12 overflow-hidden">
+          <div
+            className="marquee-track flex w-max hover:[animation-play-state:paused]"
+            style={{ animationDuration: "44s", animationDirection: "reverse" }}
+          >
+            {[false, true].map((clone) => (
+              <div
+                key={clone ? "clone" : "original"}
+                aria-hidden={clone || undefined}
+                className="flex shrink-0 gap-4 pr-4"
+              >
+                {MODULES.map((mod) => (
+                  <article
+                    key={mod.n}
+                    className="group relative w-44 shrink-0 overflow-hidden rounded-2xl border border-[#20242C] bg-[#0A0A0A] transition-all hover:border-[#146CFF]/60 md:w-56"
+                  >
+                    <div className="relative aspect-[4/5] overflow-hidden">
+                      <Image
+                        src={mod.capa}
+                        alt={clone ? "" : `Capa do módulo ${mod.n} — ${mod.title}`}
+                        fill
+                        sizes="(max-width: 768px) 176px, 224px"
+                        quality={70}
+                        className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+                      />
+                      <span className="absolute right-2.5 top-2.5 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-[#F5F7FA] backdrop-blur-md">
+                        {mod.lessons} aulas
+                      </span>
+                    </div>
+                  </article>
+                ))}
               </div>
-            </Reveal>
-          ))}
+            ))}
+          </div>
         </div>
+      </Reveal>
 
+      <div className="mx-auto max-w-[1280px] px-5 md:px-8">
+        {/* Lista escrita: a esteira anda, e quem quiser conferir nome por nome
+            (inclusive leitor de tela) tem tudo parado aqui. */}
         <Reveal delay={300}>
-          <p className="mt-10 text-center text-sm leading-relaxed text-[#A4AAB5]/80">
+          <ul className="mt-10 flex flex-wrap justify-center gap-2">
+            {MODULES.map((mod) => (
+              <li
+                key={mod.n}
+                className="flex items-center gap-2 rounded-full border border-[#20242C] bg-[#0A0A0A] py-1.5 pl-2 pr-3.5"
+              >
+                <span className="flex size-5 items-center justify-center rounded-full bg-[#146CFF]/[0.14] text-[10px] font-bold text-[#78A9FF]">
+                  {mod.n}
+                </span>
+                <span className="text-xs font-medium text-[#F5F7FA]">{mod.title}</span>
+                <span className="text-[10px] text-[#A4AAB5]">{mod.lessons} aulas</span>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+
+        <Reveal delay={350}>
+          <p className="mt-8 text-center text-sm leading-relaxed text-[#A4AAB5]/80">
             O progresso de cada aula fica salvo, e o dashboard sempre mostra de
             onde você parou.
           </p>

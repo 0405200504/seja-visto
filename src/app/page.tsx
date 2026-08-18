@@ -10,7 +10,7 @@ import {
   LookbookSection,
   FitCheckSection,
 } from "@/components/landing/features";
-import { StylesSection } from "@/components/landing/content-sections";
+import { MethodSection, StylesSection } from "@/components/landing/content-sections";
 import {
   ComparisonSection,
   RaphaelSection,
@@ -70,6 +70,11 @@ export default function Home() {
         <SectionCta
           label="QUERO AS 228 COMBINAÇÕES"
           nota="Menos de R$0,90 por dia"
+        />
+        <MethodSection />
+        <SectionCta
+          label="QUERO O MÉTODO COMPLETO"
+          nota="8 módulos e 38 aulas inclusos no mesmo acesso"
         />
         <ComparisonSection />
         <RaphaelSection />
