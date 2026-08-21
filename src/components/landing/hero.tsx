@@ -1,13 +1,6 @@
-import Image from "next/image";
 import { CheckoutLink } from "./checkout-link";
+import { VslPlayer } from "./vsl-player";
 import { MONTHLY_CHECKOUT_URL, MONTHLY_PRICE, checkoutHref } from "./checkout";
-
-
-/** Fade que dissolve o pé do mockup no fundo da página. */
-const FADE_MOBILE =
-  "linear-gradient(to top, #050505 0%, rgba(5,5,5,0.97) 10%, rgba(5,5,5,0.84) 26%, rgba(5,5,5,0.58) 44%, rgba(5,5,5,0.22) 64%, rgba(5,5,5,0) 86%)";
-const FADE_DESKTOP =
-  "linear-gradient(to top, #050505 0%, rgba(5,5,5,0.75) 14%, rgba(5,5,5,0) 38%)";
 
 const CHIPS = [
   "Fit Check com IA",
@@ -42,117 +35,81 @@ export function Hero() {
         />
       </div>
 
-      {/* ── MOBILE: mockup no topo, headline no pé da imagem ─────────── */}
-      <div className="relative lg:hidden">
-        <div className="relative mx-auto h-[46vh] min-h-[300px] max-h-[420px] w-full max-w-[300px]">
+      {/*
+        Um único VSL no DOM (dois montariam dois players com o mesmo id e
+        duplicariam as métricas): no mobile ele vem no topo, no desktop a
+        ordem do grid joga ele para a direita do texto.
+      */}
+      <div className="relative mx-auto grid max-w-[1280px] items-center gap-8 px-5 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:px-8">
+        <div className="relative lg:order-2">
           <div
             aria-hidden
-            className="absolute -left-[30%] top-4 h-[70%] w-[160%]"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, rgba(20,108,255,0.28) 0%, transparent 68%)",
-            }}
-          />
-          <Image
-            src="/mockup-iphone.webp"
-            alt="App do MPO aberto no catálogo com 228 combinações de outfit prontas"
-            fill
-            priority
-            sizes="(max-width: 1023px) 100vw, 420px"
-            className="object-cover object-top"
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{ background: FADE_MOBILE }}
-          />
-        </div>
-
-        <div
-          className="relative mx-auto -mt-20 max-w-[560px] px-5"
-          style={{ textShadow: "0 2px 18px rgba(5,5,5,0.9)" }}
-        >
-          <p className="mb-2.5 inline-block rounded-full border border-[#20242C] bg-white/[0.03] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#78A9FF]">
-            Manual Prático do Outfit
-          </p>
-          <h1 className="font-display text-[27px] font-bold leading-[1.08] tracking-[-0.03em] text-[#F5F7FA] sm:text-[34px]">
-            O que separa você de conseguir a mulher que deseja, o cliente que
-            sonha e a promoção que busca é{" "}
-            <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
-              um simples ajuste no seu visual
-            </span>
-            .
-          </h1>
-
-          <p className="mt-3.5 text-[15px] leading-snug text-[#A4AAB5]">
-            Não é ficar mais rico, mais alto, nem virar outra pessoa. É parar de
-            errar a roupa: são{" "}
-            <span className="font-semibold text-[#F5F7FA]">
-              228 combinações prontas
-            </span>{" "}
-            — você escolhe a ocasião e o outfit vem montado. E as pessoas passam
-            a te tratar diferente sem saber o que mudou.
-          </p>
-
-          <ChipRow className="mt-4" />
-          <OfferBlock className="mt-5" />
-        </div>
-      </div>
-
-      {/* ── DESKTOP: texto à esquerda, mockup à direita ───────────────── */}
-      <div className="relative mx-auto hidden max-w-[1280px] items-center gap-12 px-8 lg:grid lg:grid-cols-[1.05fr_0.85fr]">
-        <div>
-          <p className="mb-5 inline-block rounded-full border border-[#20242C] bg-white/[0.03] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
-            Manual Prático do Outfit
-          </p>
-
-          <h1 className="font-display text-[46px] font-bold leading-[1.06] tracking-[-0.03em] text-[#F5F7FA]">
-            O que separa você de conseguir a mulher que deseja, o cliente que
-            sonha e a promoção que busca é{" "}
-            <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
-              um simples ajuste no seu visual
-            </span>
-            .
-          </h1>
-
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#A4AAB5]">
-            Esse ajuste não é ficar mais rico, mais alto, nem virar outra
-            pessoa. É simplesmente parar de errar a roupa: são{" "}
-            <span className="font-semibold text-[#F5F7FA]">
-              228 combinações prontas
-            </span>
-            , montadas por stylist. Você escolhe a ocasião, o outfit vem montado
-            peça por peça — e as pessoas passam a te tratar diferente sem saber
-            o que mudou.
-          </p>
-
-          <ChipRow className="mt-6" />
-          <OfferBlock className="mt-8" />
-        </div>
-
-        <div className="relative">
-          <div
-            aria-hidden
-            className="absolute inset-x-0 top-0 mx-auto h-[75%] w-[90%]"
+            className="pointer-events-none absolute inset-x-0 top-0 mx-auto hidden h-[75%] w-[90%] lg:block"
             style={{
               background:
                 "radial-gradient(ellipse at center, rgba(20,108,255,0.24) 0%, transparent 68%)",
             }}
           />
-          <div className="relative mx-auto aspect-[678/1075] w-full max-w-[420px]">
-            <Image
-              src="/mockup-iphone.webp"
-              alt="App do MPO aberto no catálogo com 228 combinações de outfit prontas"
-              fill
-              priority
-              sizes="(max-width: 1023px) 100vw, 420px"
-              className="object-contain"
-            />
-            <div
-              aria-hidden
-              className="absolute inset-0"
-              style={{ background: FADE_DESKTOP }}
-            />
+          <VslPlayer className="relative mx-auto w-full max-w-[560px]" />
+        </div>
+
+        <div className="relative mx-auto w-full max-w-[560px] lg:order-1 lg:mx-0 lg:max-w-none">
+          {/* ── MOBILE ───────────────────────────────────────────────── */}
+          <div className="lg:hidden">
+            <p className="mb-2.5 inline-block rounded-full border border-[#20242C] bg-white/[0.03] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#78A9FF]">
+              Manual Prático do Outfit
+            </p>
+            <h1 className="font-display text-[27px] font-bold leading-[1.08] tracking-[-0.03em] text-[#F5F7FA] sm:text-[34px]">
+              O que separa você de conseguir a mulher que deseja, o cliente que
+              sonha e a promoção que busca é{" "}
+              <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
+                um simples ajuste no seu visual
+              </span>
+              .
+            </h1>
+
+            <p className="mt-3.5 text-[15px] leading-snug text-[#A4AAB5]">
+              Não é ficar mais rico, mais alto, nem virar outra pessoa. É parar
+              de errar a roupa: são{" "}
+              <span className="font-semibold text-[#F5F7FA]">
+                228 combinações prontas
+              </span>{" "}
+              — você escolhe a ocasião e o outfit vem montado. E as pessoas
+              passam a te tratar diferente sem saber o que mudou.
+            </p>
+
+            <ChipRow className="mt-4" />
+            <OfferBlock className="mt-5" />
+          </div>
+
+          {/* ── DESKTOP ──────────────────────────────────────────────── */}
+          <div className="hidden lg:block">
+            <p className="mb-5 inline-block rounded-full border border-[#20242C] bg-white/[0.03] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#78A9FF]">
+              Manual Prático do Outfit
+            </p>
+
+            <h1 className="font-display text-[46px] font-bold leading-[1.06] tracking-[-0.03em] text-[#F5F7FA]">
+              O que separa você de conseguir a mulher que deseja, o cliente que
+              sonha e a promoção que busca é{" "}
+              <span className="bg-gradient-to-r from-[#146CFF] via-[#3B82F6] to-[#78A9FF] bg-clip-text text-transparent">
+                um simples ajuste no seu visual
+              </span>
+              .
+            </h1>
+
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#A4AAB5]">
+              Esse ajuste não é ficar mais rico, mais alto, nem virar outra
+              pessoa. É simplesmente parar de errar a roupa: são{" "}
+              <span className="font-semibold text-[#F5F7FA]">
+                228 combinações prontas
+              </span>
+              , montadas por stylist. Você escolhe a ocasião, o outfit vem
+              montado peça por peça — e as pessoas passam a te tratar diferente
+              sem saber o que mudou.
+            </p>
+
+            <ChipRow className="mt-6" />
+            <OfferBlock className="mt-8" />
           </div>
         </div>
       </div>
