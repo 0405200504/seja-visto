@@ -19,10 +19,8 @@ function OfferBar() {
           Último dia por R$27
         </p>
         <span aria-hidden className="h-3 w-px bg-white/40" />
-        <p
-          suppressHydrationWarning
-          className="text-[11px] font-semibold tabular-nums text-white/85 md:text-xs"
-        >
+        {/* min-w reserva o espaço da data, que só é preenchida no navegador */}
+        <p className="min-w-[2.9em] text-[11px] font-semibold tabular-nums text-white/85 md:text-xs">
           {dataOferta}
         </p>
       </div>

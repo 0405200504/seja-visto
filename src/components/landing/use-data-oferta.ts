@@ -60,13 +60,18 @@ function assinar(avisar: () => void) {
   };
 }
 
+/** No HTML pré-renderizado a data sai vazia — veja o porquê em `useDataOferta`. */
+const semDataNoServidor = () => "";
+
 /**
  * Data da oferta na faixa do topo, sempre o dia de hoje em Brasília.
  *
- * A home é estática, então o HTML sai com a data do build: quem resolve de
- * verdade é o navegador, na hidratação (por isso o `suppressHydrationWarning`
- * onde a data é exibida). Vira sozinha à meia-noite, sem novo deploy.
+ * A home é estática: o HTML é gerado no deploy e serviria uma data velha. Por
+ * isso o servidor não escreve data nenhuma e quem preenche é o navegador, logo
+ * após a hidratação — se o servidor escrevesse um dia e o navegador outro, o
+ * React trataria como divergência de hidratação e manteria o valor errado do
+ * HTML. Depois disso vira sozinha à meia-noite, sem novo deploy.
  */
 export function useDataOferta() {
-  return useSyncExternalStore(assinar, hojeEmBrasilia, hojeEmBrasilia);
+  return useSyncExternalStore(assinar, hojeEmBrasilia, semDataNoServidor);
 }
