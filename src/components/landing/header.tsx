@@ -6,17 +6,12 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { CheckoutLink } from "./checkout-link";
 import { MONTHLY_CHECKOUT_URL, MONTHLY_PRICE, checkoutHref } from "./checkout";
+import { useDataOferta } from "./use-data-oferta";
 
-
-/**
- * Data limite da oferta, no formato dd/mm. É um valor fixo de propósito:
- * gerar a data do dia aqui faria a faixa dizer "último dia" para sempre, o que
- * é prazo falso e dá problema no CDC. Atualize quando prorrogar ou encerrar.
- */
-export const OFERTA_ATE = "14/08";
-
-/** Faixa de urgência acima do menu. */
+/** Faixa de urgência acima do menu, com a data do dia. */
 function OfferBar() {
+  const dataOferta = useDataOferta();
+
   return (
     <div className="bg-[#146CFF] text-white">
       <div className="mx-auto flex h-8 max-w-[1280px] items-center justify-center gap-2.5 px-4 md:h-9">
@@ -24,8 +19,11 @@ function OfferBar() {
           Último dia por R$27
         </p>
         <span aria-hidden className="h-3 w-px bg-white/40" />
-        <p className="text-[11px] font-semibold tabular-nums text-white/85 md:text-xs">
-          {OFERTA_ATE}
+        <p
+          suppressHydrationWarning
+          className="text-[11px] font-semibold tabular-nums text-white/85 md:text-xs"
+        >
+          {dataOferta}
         </p>
       </div>
     </div>
