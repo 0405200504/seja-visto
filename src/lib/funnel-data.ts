@@ -1,4 +1,5 @@
 import { QuizQuestion } from "@/components/funnel/types";
+import { AUDIO_SOURCES } from "./funnel-audio-data";
 
 export const FUNNEL_QUIZ_QUESTIONS: QuizQuestion[] = [
   {
@@ -218,8 +219,10 @@ export function getChatScript(name: string, answers: {
       id: "msg_3_audio",
       step: 1,
       sender: "raphael" as const,
-      audioDuration: "0:26",
-      audioSrc: "/audios/audio-1.m4a",
+      audioDuration: AUDIO_SOURCES.audio1.durationFormatted,
+      audioSrc: AUDIO_SOURCES.audio1.url,
+      audioBase64: AUDIO_SOURCES.audio1.m4a,
+      audioSources: AUDIO_SOURCES.audio1,
       audioTranscription: `Irmão, te mandando esse áudio porque isso é muito mais comum do que você imagina. Desde 2017 eu trabalho vestindo os maiores artistas da cena — Matuê, Teto, WIU, grandes festivais e clipes —, e a primeira coisa que eu sempre falo pra eles no camarim é: as pessoas te julgam e decidem se te respeitam ou se sentem atração por você nos PRIMEIROS 7 SEGUNDOS. E isso não tem nada a ver com grife ou gastar rios de dinheiro. Tem a ver com a mensagem que o seu corte e a sua proporção tão passando.`,
       delayMs: 4500,
       quickReplies: [
@@ -270,8 +273,10 @@ export function getChatScript(name: string, answers: {
       id: "msg_8_audio",
       step: 2,
       sender: "raphael" as const,
-      audioDuration: "0:22",
-      audioSrc: "/audios/audio-2.m4a",
+      audioDuration: AUDIO_SOURCES.audio2.durationFormatted,
+      audioSrc: AUDIO_SOURCES.audio2.url,
+      audioBase64: AUDIO_SOURCES.audio2.m4a,
+      audioSources: AUDIO_SOURCES.audio2,
       audioTranscription: `${cleanName}, você marcou a estética ${styleLabel}. É uma das minhas favoritas. Se você souber usar a regra das 3 peças-chave e o contraste certo de cores neutras, você muda da água pro vinho em menos de uma semana. Olha só essa referência que separei pro seu caso:`,
       delayMs: 4000,
     },
@@ -301,8 +306,10 @@ export function getChatScript(name: string, answers: {
       id: "msg_10_audio",
       step: 3,
       sender: "raphael" as const,
-      audioDuration: "0:25",
-      audioSrc: "/audios/audio-3.m4a",
+      audioDuration: AUDIO_SOURCES.audio3.durationFormatted,
+      audioSrc: AUDIO_SOURCES.audio3.url,
+      audioBase64: AUDIO_SOURCES.audio3.m4a,
+      audioSources: AUDIO_SOURCES.audio3,
       audioTranscription: `Seguinte, meu mano: pra você não ter que quebrar a cabeça nem errar na hora de se vestir, eu juntei toda a minha experiência dentro do MPO. Lá dentro você tem 228 combinações prontas pra qualquer ocasião — date, trabalho, noite, churrasco —, mais o Fit Check com inteligência artificial, onde você manda a foto do seu look no espelho e recebe minha análise na hora. É basicamente ter um stylist no seu bolso 24 horas por dia.`,
       delayMs: 4800,
     },

@@ -31,6 +31,15 @@ export type ChatMessage = {
   audioDuration?: string;
   audioTranscription?: string;
   audioSrc?: string;
+  audioBase64?: string;
+  audioSources?: {
+    m4a?: string;
+    url?: string;
+    urlWav?: string;
+    urlOgg?: string;
+    durationSec?: number;
+    durationFormatted?: string;
+  };
   image?: string;
   imageCaption?: string;
   timestamp?: string;

@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|m4a|mp3|ogg|wav|mp4|aac)$).*)",
   ],
   // Roda em Portland, colado no Supabase (us-west-2). Sem isso o middleware
   // executa no nó de borda mais perto do aluno (São Paulo) e cada

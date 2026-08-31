@@ -26,6 +26,8 @@ function AudioBubblePlayer({
   audioDuration,
   audioTranscription,
   audioSrc,
+  audioBase64,
+  audioSources,
   isPlayingGlobal,
   onPlay,
   onPause,
@@ -34,6 +36,8 @@ function AudioBubblePlayer({
   audioDuration?: string;
   audioTranscription?: string;
   audioSrc?: string;
+  audioBase64?: string;
+  audioSources?: any;
   isPlayingGlobal: boolean;
   onPlay: () => void;
   onPause: () => void;
@@ -47,7 +51,9 @@ function AudioBubblePlayer({
   // Sincroniza se outro áudio começou a tocar na conversa
   useEffect(() => {
     if (!isPlayingGlobal && isPlaying) {
-      audioRef.current?.pause();
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
       setIsPlaying(false);
     }
   }, [isPlayingGlobal, isPlaying]);
@@ -62,16 +68,36 @@ function AudioBubblePlayer({
       onPause();
     } else {
       onPlay();
-      if (el.ended || el.currentTime >= el.duration) {
+      el.muted = false;
+      el.volume = 1.0;
+      if (el.ended || el.currentTime >= (el.duration || 100)) {
         el.currentTime = 0;
       }
-      el.play()
-        .then(() => setIsPlaying(true))
-        .catch((err) => {
-          console.warn("Erro ao tocar áudio nativo:", err);
-          setIsPlaying(true);
-          setTimeout(() => setIsPlaying(false), 7000);
-        });
+
+      const playPromise = el.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch((err) => {
+            console.warn("Erro ao reproduzir com base64, tentando fallback:", err);
+            if (audioSources?.url && el.src !== audioSources.url) {
+              el.src = audioSources.url;
+              el.load();
+              el.play()
+                .then(() => setIsPlaying(true))
+                .catch((e2) => {
+                  console.warn("Fallback 1 falhou, tentando WAV:", e2);
+                  if (audioSources?.urlWav) {
+                    el.src = audioSources.urlWav;
+                    el.load();
+                    el.play().then(() => setIsPlaying(true));
+                  }
+                });
+            }
+          });
+      }
     }
   };
 
@@ -94,31 +120,29 @@ function AudioBubblePlayer({
   };
 
   const formatSecs = (sec: number) => {
-    if (!sec || isNaN(sec)) return audioDuration || "0:25";
+    if (!sec || isNaN(sec)) return audioDuration || "0:30";
     const m = Math.floor(sec / 60);
     const s = Math.floor(sec % 60);
     return `${m}:${String(s).padStart(2, "0")}`;
   };
 
-  // Base do nome do arquivo
-  const baseName = audioSrc?.replace(/\.[^/.]+$/, "") || "/audios/audio-1";
+  // Prioriza o áudio embutido em Base64 Data URL (100% imune a erros de rede, proxies, cookies e CORS)
+  const primarySource = audioBase64 || audioSources?.m4a || audioSources?.url || audioSrc || "/audios/audio-1.m4a";
 
   return (
     <div className="w-72 rounded-2xl rounded-tl-sm border border-[#146CFF]/40 bg-gradient-to-r from-[#146CFF]/10 to-[#15181F] p-3 text-[#F5F7FA] shadow-[0_0_25px_-5px_rgb(20_108_255/0.2)]">
-      {/* Elemento nativo com múltiplas fontes universais */}
+      {/* Elemento de áudio com src inline garantido */}
       <audio
         ref={audioRef}
+        src={primarySource}
         preload="auto"
+        playsInline
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
         onPause={() => setIsPlaying(false)}
         onPlay={() => setIsPlaying(true)}
-      >
-        <source src={`${baseName}.m4a`} type="audio/mp4" />
-        <source src={`${baseName}.mp4`} type="audio/mp4" />
-        <source src={`${baseName}.ogg`} type="audio/ogg" />
-      </audio>
+      />
 
       <div className="flex items-center gap-3">
         <button
@@ -138,7 +162,8 @@ function AudioBubblePlayer({
           <div className="flex items-center gap-0.5 h-6">
             {[35, 60, 40, 85, 50, 95, 70, 45, 80, 55, 30, 90, 65, 40, 75, 50, 85, 30].map(
               (height, idx) => {
-                const progressRatio = duration > 0 ? currentTime / duration : 0;
+                const totalDur = duration || audioSources?.durationSec || 30;
+                const progressRatio = totalDur > 0 ? currentTime / totalDur : 0;
                 const isPlayed = idx / 18 <= progressRatio;
                 return (
                   <div
@@ -163,7 +188,9 @@ function AudioBubblePlayer({
               {isPlaying ? "Reproduzindo áudio..." : "Mensagem de voz"}
             </span>
             <span>
-              {isPlaying ? formatSecs(currentTime) : formatSecs(duration || 25)}
+              {isPlaying
+                ? formatSecs(currentTime)
+                : audioDuration || formatSecs(duration || audioSources?.durationSec || 30)}
             </span>
           </div>
         </div>
@@ -424,13 +451,15 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
                   </div>
                 )}
 
-                {/* 3. Mensagem de Áudio Interativo com Player Nativo */}
+                {/* 3. Mensagem de Áudio Interativo com Base64 e Player Nativo */}
                 {msg.audioDuration && (
                   <AudioBubblePlayer
                     id={msg.id}
                     audioDuration={msg.audioDuration}
                     audioTranscription={msg.audioTranscription}
                     audioSrc={msg.audioSrc}
+                    audioBase64={msg.audioBase64}
+                    audioSources={msg.audioSources}
                     isPlayingGlobal={playingAudioId === msg.id}
                     onPlay={() => setPlayingAudioId(msg.id)}
                     onPause={() => {
