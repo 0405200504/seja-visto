@@ -31,7 +31,6 @@ import {
   checkoutHref,
 } from "@/components/landing/checkout";
 import { CheckoutLink } from "@/components/landing/checkout-link";
-import { VslPlayer } from "@/components/landing/vsl-player";
 
 interface SalesStepProps {
   answers: FunnelAnswers;
@@ -259,20 +258,6 @@ export function SalesStep({ answers }: SalesStepProps) {
             </ul>
           </div>
         </div>
-      </div>
-
-      {/* 3.1. Vídeo Explicativo (VSL Express de Alta Conversão) */}
-      <div className="relative mt-8 overflow-hidden rounded-3xl border border-[#20242C] bg-[#0A0A0A] p-4 md:p-6 shadow-[0_0_60px_-20px_rgba(20,108,255,0.4)]">
-        <div className="mb-4 text-center">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-[#146CFF]/30 bg-[#146CFF]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#78A9FF]">
-            <Sparkles className="size-3" />
-            <span>Vídeo Oficial de Liberação</span>
-          </div>
-          <h3 className="mt-2 font-display text-lg font-bold text-[#F5F7FA] md:text-xl">
-            Assista a explicação de Raphael Pereira antes de continuar:
-          </h3>
-        </div>
-        <VslPlayer className="w-full" />
       </div>
 
       {/* 4. Degustação dos 228 Outfits (Prévia com Cadeado) */}
