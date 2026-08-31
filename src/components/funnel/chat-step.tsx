@@ -100,6 +100,16 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
 
   const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
 
+  // Limpa qualquer áudio ao desmontar
+  useEffect(() => {
+    return () => {
+      Object.values(audioRefs.current).forEach((audio) => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+    };
+  }, []);
+
   const handleQuickReplyClick = (reply: any) => {
     const userMsg = {
       id: `user_${Date.now()}`,
@@ -118,7 +128,7 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
   };
 
   const toggleAudio = (id: string, src?: string) => {
-    // Para qualquer outro áudio tocando
+    // 1. Pausa outros áudios ativos
     if (playingAudioId && playingAudioId !== id) {
       const prevAudio = audioRefs.current[playingAudioId];
       if (prevAudio) {
@@ -127,36 +137,45 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
       }
     }
 
+    // 2. Se já estiver tocando o atual, pausa
     if (playingAudioId === id) {
       const currAudio = audioRefs.current[id];
-      if (currAudio) currAudio.pause();
+      if (currAudio) {
+        currAudio.pause();
+      }
       setPlayingAudioId(null);
+      return;
+    }
+
+    // 3. Inicia o áudio
+    if (src) {
+      let audio = audioRefs.current[id];
+      if (!audio) {
+        audio = new Audio(src);
+        audio.preload = "auto";
+        audio.onended = () => setPlayingAudioId(null);
+        audio.onpause = () => {
+          setPlayingAudioId((prev) => (prev === id ? null : prev));
+        };
+        audio.onerror = (e) => {
+          console.warn("Erro ao carregar áudio:", src, e);
+          // Simulação caso o navegador falhe
+          setTimeout(() => setPlayingAudioId((prev) => (prev === id ? null : prev)), 6000);
+        };
+        audioRefs.current[id] = audio;
+      }
+
+      if (audio.ended || audio.currentTime >= audio.duration) {
+        audio.currentTime = 0;
+      }
+
+      setPlayingAudioId(id);
+      audio.play().catch((err) => {
+        console.warn("Falha ao dar play:", err);
+      });
     } else {
       setPlayingAudioId(id);
-      
-      if (src) {
-        if (!audioRefs.current[id]) {
-          const audio = new Audio(src);
-          audio.onended = () => setPlayingAudioId(null);
-          audio.onerror = () => {
-            // Se o arquivo ainda não existir, faz a simulação de 7s
-            setTimeout(() => {
-              setPlayingAudioId((prev) => (prev === id ? null : prev));
-            }, 7000);
-          };
-          audioRefs.current[id] = audio;
-        }
-        audioRefs.current[id].play().catch(() => {
-          // Fallback para simulação caso o navegador bloqueie autoplay
-          setTimeout(() => {
-            setPlayingAudioId((prev) => (prev === id ? null : prev));
-          }, 7000);
-        });
-      } else {
-        setTimeout(() => {
-          setPlayingAudioId((prev) => (prev === id ? null : prev));
-        }, 7000);
-      }
+      setTimeout(() => setPlayingAudioId((prev) => (prev === id ? null : prev)), 6000);
     }
   };
 
