@@ -33,6 +33,7 @@ import {
   checkoutHref,
 } from "@/components/landing/checkout";
 import { CheckoutLink } from "@/components/landing/checkout-link";
+import { VslPlayer } from "@/components/landing/vsl-player";
 
 interface SalesStepProps {
   answers: FunnelAnswers;
@@ -91,10 +92,19 @@ const TESTIMONIALS = [
   },
 ];
 
+const RECENT_SALES = [
+  { name: "Matheus B.", city: "São Paulo - SP", action: "desbloqueou as 228 combinações", time: "há 2 minutos" },
+  { name: "Felipe R.", city: "Curitiba - PR", action: "iniciou o Fit Check com IA", time: "há 4 minutos" },
+  { name: "Guilherme S.", city: "Rio de Janeiro - RJ", action: "assinou o Plano Anual MPO", time: "há 6 minutos" },
+  { name: "Arthur M.", city: "Belo Horizonte - MG", action: "desbloqueou a consultoria", time: "há 8 minutos" },
+  { name: "Lucas V.", city: "Brasília - DF", action: "acabou de entrar no MPO", time: "há 1 minuto" },
+];
+
 export function SalesStep({ answers }: SalesStepProps) {
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual">("monthly");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState(14 * 60 + 52); // 14 min 52 seg
+  const [activeToast, setActiveToast] = useState<{ name: string; city: string; action: string; time: string } | null>(null);
 
   const cleanName = answers.name?.trim() ? answers.name.trim() : "Irmão";
   const styleLabel = STYLE_NAMES_MAP[answers.desiredStyle] || "Casual Sofisticado";
@@ -107,6 +117,20 @@ export function SalesStep({ answers }: SalesStepProps) {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Notificações de prova social a cada 9 segundos
+  useEffect(() => {
+    let index = 0;
+    const toastInterval = setInterval(() => {
+      setActiveToast(RECENT_SALES[index % RECENT_SALES.length]);
+      index++;
+      setTimeout(() => {
+        setActiveToast(null);
+      }, 4500);
+    }, 9500);
+
+    return () => clearInterval(toastInterval);
   }, []);
 
   const formatTimer = (seconds: number) => {
@@ -242,6 +266,20 @@ export function SalesStep({ answers }: SalesStepProps) {
             </ul>
           </div>
         </div>
+      </div>
+
+      {/* 3.1. Vídeo Explicativo (VSL Express de Alta Conversão) */}
+      <div className="relative mt-8 overflow-hidden rounded-3xl border border-[#20242C] bg-[#0A0A0A] p-4 md:p-6 shadow-[0_0_60px_-20px_rgba(20,108,255,0.4)]">
+        <div className="mb-4 text-center">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-[#146CFF]/30 bg-[#146CFF]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#78A9FF]">
+            <Sparkles className="size-3" />
+            <span>Vídeo Oficial de Liberação</span>
+          </div>
+          <h3 className="mt-2 font-display text-lg font-bold text-[#F5F7FA] md:text-xl">
+            Assista a explicação de Raphael Pereira antes de continuar:
+          </h3>
+        </div>
+        <VslPlayer className="w-full" />
       </div>
 
       {/* 4. Degustação dos 228 Outfits (Prévia com Cadeado) */}
@@ -594,6 +632,23 @@ export function SalesStep({ answers }: SalesStepProps) {
           Acesso liberado na hora · 7 dias de garantia incondicional
         </p>
       </div>
+
+      {/* Toast Flutuante de Prova Social em Tempo Real */}
+      {activeToast && (
+        <div className="fixed bottom-5 left-5 z-50 flex max-w-xs items-center gap-3 rounded-2xl border border-[#146CFF]/40 bg-[#0E1015]/95 p-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-md animate-fadeIn">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#146CFF]/20 text-[#78A9FF]">
+            <Zap className="size-4" />
+          </div>
+          <div className="text-left">
+            <p className="text-xs font-semibold text-[#F5F7FA]">
+              <strong className="text-white">{activeToast.name}</strong> ({activeToast.city})
+            </p>
+            <p className="text-[11px] text-[#A4AAB5]">
+              {activeToast.action} · <span className="text-emerald-400">{activeToast.time}</span>
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

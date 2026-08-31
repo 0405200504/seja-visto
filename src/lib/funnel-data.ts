@@ -248,7 +248,7 @@ export function getChatScript(name: string, answers: {
       id: "msg_5_img",
       step: 2,
       sender: "raphael" as const,
-      image: "/images/raphael/artistas/artista-01.jpg",
+      image: "/images/raphael/artistas/IMG_6101.jpg",
       imageCaption: "Raphael Pereira nos bastidores com artistas da cena — proporção, contraste e impacto visual.",
       delayMs: 3200,
     },
