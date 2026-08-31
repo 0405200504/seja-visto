@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Check,
@@ -16,7 +16,8 @@ import {
   Shirt,
   Smartphone,
   Gift,
-  HelpCircle,
+  AlertCircle,
+  Eye,
 } from "lucide-react";
 import { FunnelAnswers } from "./types";
 import {
@@ -37,72 +38,164 @@ interface SalesStepProps {
   answers: FunnelAnswers;
 }
 
+const ARTIST_SAMPLE_PHOTOS = [
+  "/images/raphael/artistas/artista-01.jpg",
+  "/images/raphael/artistas/artista-02.jpg",
+  "/images/raphael/artistas/artista-03.jpg",
+  "/images/raphael/artistas/artista-04.jpg",
+  "/images/raphael/artistas/artista-05.jpg",
+  "/images/raphael/artistas/artista-06.jpg",
+];
+
 const FAQS = [
   {
     q: "Preciso ter dinheiro sobrando pra comprar roupas novas?",
-    a: "Não. O método foi desenhado exatamente para você aproveitar as peças que já tem no armário. Os outfits de nível básico usam itens comuns (como jeans reto, camiseta neutra, jaqueta básica e tênis limpo). Você só compra peças novas quando souber exatamente o que precisa.",
+    a: "Não! O método foi desenvolvido exatamente para você aproveitar as peças que já estão no seu guarda-roupa. Você vai aprender a combinar cores neutras, caimentos e proporções com camisetas e calças que já possui. Só compre novas peças quando souber exatamente o que precisa.",
   },
   {
-    q: "E se eu for muito magro, estiver acima do peso ou for baixinho?",
-    a: "O MPO tem um módulo inteiro dedicado a proporção corporal e ilusão de ótica visual. Você vai aprender a usar as linhas, contrastes e caimentos que valorizam seus ombros, disfarçam gordurinhas ou alongam sua silhueta instantaneamente.",
+    q: "E se eu for magro, tiver barriga ou for baixinho?",
+    a: "O MPO possui um módulo completo de ilusão de ótica e proporção corporal. Você vai aprender os truques exatos de cortes, golas, comprimentos e sobreposições que valorizam seus ombros, alongam a silhueta ou disfarçam gordurinhas sem aperto.",
   },
   {
     q: "Como funciona o Fit Check com Inteligência Artificial?",
-    a: "Você tira uma foto do seu outfit no espelho pelo celular e envia na plataforma. A IA do MPO — calibrada com o olhar técnico de stylist do Raphael Pereira — analisa cores, proporções e caimento, te dando a nota do look e ajustes pontuais antes de você sair de casa.",
+    a: "Você tira uma foto do seu outfit no espelho pelo celular e envia na plataforma. A IA do MPO — calibrada com o olhar técnico de stylist de Raphael Pereira — avalia na hora a harmonia de cores, caimento e proporção, te dando a nota do look e ajustes rápidos antes de você sair de casa.",
   },
   {
-    q: "Como e quando recebo o acesso?",
-    a: "O acesso é imediato. Assim que a sua assinatura de R$27 for confirmada pela Cakto, você recebe os dados de login no seu e-mail e já pode acessar a plataforma pelo celular, tablet ou computador.",
+    q: "Como e quando recebo meu acesso?",
+    a: "O acesso é imediato. Assim que o pagamento de R$ 27 for confirmado pela Cakto, você recebe seus dados de login diretamente no seu e-mail e WhatsApp, podendo usar no celular, tablet ou computador.",
   },
   {
     q: "Posso cancelar quando quiser?",
-    a: "Sim, com total liberdade e sem fidelidade. Se quiser cancelar, basta um clique dentro do seu painel ou nos enviar uma mensagem. Sem burocracia.",
+    a: "Sim, 100% livre e sem letras miúdas. Se em qualquer momento você não quiser continuar, cancela com apenas 1 clique no seu painel ou nos avisando. Sem burocracia.",
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    name: "Lucas M., 27 anos",
+    role: "Engenheiro de Software",
+    comment: "Eu sempre fui o cara que vestia qualquer camiseta preta. Na primeira semana aplicando os outfits de trabalho do MPO, meu chefe e duas colegas elogiaram meu visual no mesmo dia. Vale cada centavo.",
+    stars: 5,
+  },
+  {
+    name: "Gabriel S., 31 anos",
+    role: "Empresário",
+    comment: "A consultoria com IA (Fit Check) me salvou num date semana passada. Mandei a foto do look, ela sugeriu trocar a cor da sobreposição e foi sucesso total. Menos de 1 real por dia por isso é ridículo de barato.",
+    stars: 5,
+  },
+  {
+    name: "Rodrigo T., 24 anos",
+    role: "Advogado",
+    comment: "O que o Rapha fala sobre os 7 segundos é a mais pura verdade. A postura e o respeito das pessoas mudam imediatamente quando você acerta o caimento das peças certas.",
+    stars: 5,
   },
 ];
 
 export function SalesStep({ answers }: SalesStepProps) {
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual">("monthly");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState(14 * 60 + 52); // 14 min 52 seg
 
   const cleanName = answers.name?.trim() ? answers.name.trim() : "Irmão";
   const styleLabel = STYLE_NAMES_MAP[answers.desiredStyle] || "Casual Sofisticado";
   const styleImage = STYLE_IMAGES_MAP[answers.desiredStyle] || "/estilos/casual/01.jpg";
   const goalLabel = GOAL_NAMES_MAP[answers.mainGoal] || "ser mais atraente e seguro";
 
+  // Countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTimer = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
   const checkoutUrl =
     selectedPlan === "monthly" ? MONTHLY_CHECKOUT_URL : ANNUAL_CHECKOUT_URL;
   const currentPrice = selectedPlan === "monthly" ? MONTHLY_PRICE : ANNUAL_PRICE;
 
   return (
-    <div className="relative mx-auto w-full max-w-3xl px-4 py-8 md:py-14">
+    <div className="relative mx-auto w-full max-w-3xl px-4 py-8 md:py-12">
       {/* Background radial glow */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-20 left-1/2 h-[500px] w-[700px] -translate-x-1/2 rounded-full"
+        className="pointer-events-none absolute -top-20 left-1/2 h-[550px] w-[750px] -translate-x-1/2 rounded-full"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(20,108,255,0.18) 0%, transparent 65%)",
+            "radial-gradient(ellipse at center, rgba(20,108,255,0.2) 0%, transparent 65%)",
         }}
       />
+
+      {/* 0. Banner de Urgência & Reserva do Diagnóstico */}
+      <div className="relative mb-6 flex items-center justify-between rounded-2xl border border-[#146CFF]/40 bg-[#146CFF]/10 px-4 py-2.5 text-xs text-[#F5F7FA] shadow-md backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <Clock className="size-4 animate-pulse text-[#78A9FF]" />
+          <span>Diagnóstico reservado para <strong>{cleanName}</strong></span>
+        </div>
+        <div className="flex items-center gap-1.5 font-mono font-bold text-amber-400">
+          <span>Expira em:</span>
+          <span className="rounded bg-black/50 px-2 py-0.5">{formatTimer(timeLeft)}</span>
+        </div>
+      </div>
 
       {/* 1. Header de Prescrição Desbloqueada */}
       <div className="relative text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400">
           <Sparkles className="size-3.5" />
-          <span>Diagnóstico & Prescrição Desbloqueados</span>
+          <span>Prescrição Liberada por Raphael Pereira</span>
         </div>
 
         <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-[#F5F7FA] md:text-5xl md:leading-[1.15]">
-          A rota exata para <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">{cleanName}</span> dominar o estilo{" "}
+          A fórmula exata para <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">{cleanName}</span> dominar o estilo{" "}
           <span className="text-white">{styleLabel}</span>.
         </h1>
 
         <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-[#A4AAB5] md:text-base">
-          Você não precisa de roupas caras de R$ 2.000. Você só precisa de 3 ajustes de proporção para que as pessoas te respeitem e te achem magnético nos primeiros 7 segundos.
+          Como mudar a temperatura do ambiente e ser notado nos primeiros 7 segundos — sem gastar com roupas de grife e usando as peças que você já tem.
         </p>
       </div>
 
-      {/* 2. Card de Diagnóstico do Lead */}
+      {/* 2. Prova de Autoridade: O Stylist das Maiores Celebridades */}
+      <div className="mt-8 rounded-3xl border border-[#20242C] bg-[#0A0A0A]/90 p-5 md:p-6">
+        <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-[#78A9FF]">
+              Stylist Profissional desde 2017
+            </p>
+            <p className="font-display text-base font-bold text-[#F5F7FA]">
+              Já vestiu Matuê, Teto, WIU e os maiores artistas da geração
+            </p>
+          </div>
+          <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-[#A4AAB5]">
+            +2.000 homens transformados
+          </span>
+        </div>
+
+        {/* Mini Grid de Artistas */}
+        <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {ARTIST_SAMPLE_PHOTOS.map((src, i) => (
+            <div
+              key={src}
+              className="relative aspect-[3/4] overflow-hidden rounded-xl border border-[#20242C] bg-[#111318]"
+            >
+              <Image
+                src={src}
+                alt="Artista vestido por Raphael Pereira"
+                fill
+                sizes="120px"
+                className="object-cover transition-transform hover:scale-105"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Card de Diagnóstico & Prescrição */}
       <div className="relative mt-8 overflow-hidden rounded-3xl border border-[#146CFF]/50 bg-gradient-to-b from-[#146CFF]/10 to-[#0A0A0A] p-5 shadow-[0_0_50px_-15px_rgb(20_108_255/0.4)] md:p-8">
         <div className="grid items-center gap-6 sm:grid-cols-[140px_1fr] md:gap-8">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl border border-[#20242C] bg-[#111318]">
@@ -113,146 +206,237 @@ export function SalesStep({ answers }: SalesStepProps) {
               sizes="140px"
               className="object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-2 left-2 right-2 text-center text-[10px] font-bold uppercase tracking-wider text-white">
-              Seu Estilo Alvo
+              Sua Referência
             </div>
           </div>
 
           <div className="space-y-2.5 text-left">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-md bg-[#146CFF] px-2.5 py-0.5 text-[11px] font-bold uppercase text-white">
-                Fórmula Calibrada
+                Diagnóstico Concluído
               </span>
               <span className="text-xs font-semibold text-[#78A9FF]">
-                Por Raphael Pereira (Stylist)
+                Para: {cleanName}
               </span>
             </div>
 
             <h2 className="font-display text-xl font-bold text-[#F5F7FA]">
-              Seu Plano de Transformação Visual:
+              Seu Plano de Ação Personalizado:
             </h2>
 
             <ul className="space-y-1.5 text-xs text-[#A4AAB5] md:text-sm">
               <li className="flex items-center gap-2">
                 <Check className="size-4 shrink-0 text-[#78A9FF]" />
-                <span><strong>Objetivo Principal:</strong> {goalLabel}</span>
+                <span><strong>Foco:</strong> {goalLabel}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="size-4 shrink-0 text-[#78A9FF]" />
-                <span><strong>Estilo Ideal:</strong> {styleLabel} calibrado para o seu biotipo</span>
+                <span><strong>Estética Alvo:</strong> {styleLabel} adaptado ao seu biotipo</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="size-4 shrink-0 text-[#78A9FF]" />
-                <span><strong>Tempo para Resultados:</strong> Primeiras 24h a 7 dias</span>
+                <span><strong>Efeito 7 Segundos:</strong> Ajustes imediatos de proporção e caimento</span>
               </li>
             </ul>
           </div>
         </div>
       </div>
 
-      {/* 3. O Que Entra no Seu Acesso (O Arsenal Completo) */}
+      {/* 4. Degustação dos 228 Outfits (Prévia com Cadeado) */}
       <div className="mt-12">
         <div className="text-center">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#78A9FF]">
-            Tudo o que você recebe imediatamente
+            Amostra da Plataforma
           </p>
-          <h2 className="mt-2 font-display text-2xl font-bold text-[#F5F7FA] md:text-3xl">
-            O Arsenal Definitivo do Homem Bem Vestido
+          <h2 className="mt-1 font-display text-2xl font-bold text-[#F5F7FA] md:text-3xl">
+            228 Combinações Prontas ao Seu Alcance
           </h2>
+          <p className="mt-1 text-xs text-[#A4AAB5]">
+            Outfits montados peça por peça para você só copiar e vestir.
+          </p>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {/* Card 1 */}
-          <div className="rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-5 transition-colors hover:border-[#146CFF]/40">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-[#146CFF]/15 text-[#78A9FF]">
-              <Shirt className="size-5" />
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {/* Look Liberado 1 */}
+          <div className="overflow-hidden rounded-2xl border border-[#146CFF]/50 bg-[#0A0A0A] p-2 text-left">
+            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-[#111318]">
+              <Image
+                src="/estilos/casual/02.jpg"
+                alt="Look Liberado"
+                fill
+                sizes="180px"
+                className="object-cover"
+              />
+              <span className="absolute bottom-2 left-2 rounded-md bg-emerald-500/90 px-2 py-0.5 text-[9px] font-bold uppercase text-white">
+                Liberado
+              </span>
             </div>
-            <h3 className="mt-3 font-display text-base font-bold text-[#F5F7FA]">
-              228 Combinações Prontas
-            </h3>
-            <p className="mt-1.5 text-xs leading-relaxed text-[#A4AAB5]">
-              Montadas peça por peça por stylist. Escolha a ocasião (date, trabalho, noite, casual) e o outfit vem pronto na sua tela.
-            </p>
+            <p className="mt-2 text-xs font-bold text-[#F5F7FA]">Date & Encontros</p>
+            <p className="text-[10px] text-[#A4AAB5]">Camiseta Heavyweight + Alfaiataria</p>
           </div>
 
-          {/* Card 2 */}
-          <div className="rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-5 transition-colors hover:border-[#146CFF]/40">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-[#146CFF]/15 text-[#78A9FF]">
-              <Smartphone className="size-5" />
+          {/* Look Liberado 2 */}
+          <div className="overflow-hidden rounded-2xl border border-[#146CFF]/50 bg-[#0A0A0A] p-2 text-left">
+            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-[#111318]">
+              <Image
+                src="/estilos/smartcasual/02.jpg"
+                alt="Look Liberado"
+                fill
+                sizes="180px"
+                className="object-cover"
+              />
+              <span className="absolute bottom-2 left-2 rounded-md bg-emerald-500/90 px-2 py-0.5 text-[9px] font-bold uppercase text-white">
+                Liberado
+              </span>
             </div>
-            <h3 className="mt-3 font-display text-base font-bold text-[#F5F7FA]">
-              Fit Check com Inteligência Artificial
-            </h3>
-            <p className="mt-1.5 text-xs leading-relaxed text-[#A4AAB5]">
-              Tire foto do seu look no espelho e receba em segundos a avaliação honesta, nota e ajustes de caimento no seu celular.
-            </p>
+            <p className="mt-2 text-xs font-bold text-[#F5F7FA]">Trabalho & Reuniões</p>
+            <p className="text-[10px] text-[#A4AAB5]">Camisa Oxford + Chino + Tênis Clean</p>
           </div>
 
-          {/* Card 3 */}
-          <div className="rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-5 transition-colors hover:border-[#146CFF]/40">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-[#146CFF]/15 text-[#78A9FF]">
-              <Sparkles className="size-5" />
+          {/* Look Bloqueado 3 */}
+          <div className="relative overflow-hidden rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-2 text-left opacity-75">
+            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-[#111318] blur-[2px]">
+              <Image
+                src="/estilos/streetwear/03.jpg"
+                alt="Look Bloqueado"
+                fill
+                sizes="180px"
+                className="object-cover"
+              />
             </div>
-            <h3 className="mt-3 font-display text-base font-bold text-[#F5F7FA]">
-              Guarda-Roupa Inteligente
-            </h3>
-            <p className="mt-1.5 text-xs leading-relaxed text-[#A4AAB5]">
-              Aprenda a montar mais de 30 outfits combinando apenas 10 peças essenciais. Nunca mais compre uma peça que fica parada.
-            </p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 p-2 text-center backdrop-blur-[1px]">
+              <Lock className="size-6 text-[#78A9FF]" />
+              <span className="mt-1 text-[11px] font-bold text-white">Outfit #47</span>
+              <span className="text-[9px] text-[#A4AAB5]">Desbloqueie no MPO</span>
+            </div>
           </div>
 
-          {/* Card 4 */}
-          <div className="rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-5 transition-colors hover:border-[#146CFF]/40">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-[#146CFF]/15 text-[#78A9FF]">
-              <Flame className="size-5" />
+          {/* Look Bloqueado 4 */}
+          <div className="relative overflow-hidden rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-2 text-left opacity-75">
+            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-[#111318] blur-[2px]">
+              <Image
+                src="/estilos/oldmoney/03.jpg"
+                alt="Look Bloqueado"
+                fill
+                sizes="180px"
+                className="object-cover"
+              />
             </div>
-            <h3 className="mt-3 font-display text-base font-bold text-[#F5F7FA]">
-              Método em 8 Módulos (37 Aulas)
-            </h3>
-            <p className="mt-1.5 text-xs leading-relaxed text-[#A4AAB5]">
-              Aulas em texto e imagens rápidas e consultáveis. Sem vídeos longos e cansativos: direto ao ponto pro seu dia a dia.
-            </p>
-          </div>
-        </div>
-
-        {/* Bônus Exclusivos Inclusos */}
-        <div className="mt-6 rounded-2xl border border-[#146CFF]/30 bg-[#146CFF]/[0.05] p-5 md:p-6">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#78A9FF]">
-            <Gift className="size-4" />
-            <span>3 Bônus Exclusivos Liberados Nesta Sessão</span>
-          </div>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-[#20242C] bg-[#0A0A0A]/80 p-3.5">
-              <p className="text-[11px] font-bold uppercase text-[#78A9FF]">Bônus #1</p>
-              <p className="mt-1 text-xs font-semibold text-[#F5F7FA]">Guia do Date Perfeito</p>
-              <p className="mt-1 text-[11px] text-[#A4AAB5]">O que usar para impressionar sem parecer que tentou demais.</p>
-            </div>
-
-            <div className="rounded-xl border border-[#20242C] bg-[#0A0A0A]/80 p-3.5">
-              <p className="text-[11px] font-bold uppercase text-[#78A9FF]">Bônus #2</p>
-              <p className="mt-1 text-xs font-semibold text-[#F5F7FA]">Dicionário de 24 Peças</p>
-              <p className="mt-1 text-[11px] text-[#A4AAB5]">Os tecidos, cortes e marcas ideais para comprar sem erro.</p>
-            </div>
-
-            <div className="rounded-xl border border-[#20242C] bg-[#0A0A0A]/80 p-3.5">
-              <p className="text-[11px] font-bold uppercase text-[#78A9FF]">Bônus #3</p>
-              <p className="mt-1 text-xs font-semibold text-[#F5F7FA]">Plano de Ação de 7 Dias</p>
-              <p className="mt-1 text-[11px] text-[#A4AAB5]">Passo a passo diário para transformar seu visual em 1 semana.</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 p-2 text-center backdrop-blur-[1px]">
+              <Lock className="size-6 text-[#78A9FF]" />
+              <span className="mt-1 text-[11px] font-bold text-white">+224 Outfits</span>
+              <span className="text-[9px] text-[#A4AAB5]">Desbloqueie no MPO</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 4. Ancoragem de Preço e Oferta Irresistível */}
+      {/* 5. Comparativo: O Erro Tradicional vs. O Método MPO */}
+      <div className="mt-12 rounded-3xl border border-[#20242C] bg-[#0A0A0A] p-6 md:p-8">
+        <h3 className="text-center font-display text-xl font-bold text-[#F5F7FA]">
+          Por que tentar se vestir no “achismo” custa caro:
+        </h3>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.03] p-5">
+            <p className="font-display text-sm font-bold uppercase tracking-wider text-red-400">
+              ❌ Sem o MPO
+            </p>
+            <ul className="mt-3 space-y-2 text-xs text-[#A4AAB5]">
+              <li>• Compra roupas de shopping que nunca usa</li>
+              <li>• Insegurança no date: "será que tô estranho?"</li>
+              <li>• Passa despercebido ou parece um adolescente</li>
+              <li>• Perde 20 minutos na frente do espelho todo dia</li>
+            </ul>
+          </div>
+
+          <div className="rounded-2xl border border-[#146CFF]/40 bg-[#146CFF]/[0.08] p-5">
+            <p className="font-display text-sm font-bold uppercase tracking-wider text-[#78A9FF]">
+              ✓ Com o MPO no seu bolso
+            </p>
+            <ul className="mt-3 space-y-2 text-xs text-[#F5F7FA]">
+              <li>• 228 combinações prontas para qualquer ocasião</li>
+              <li>• Fit Check com IA que avalia seu look em segundos</li>
+              <li>• Presença, autoridade e elogios espontâneos</li>
+              <li>• Guarda-roupa inteligente com o que você já tem</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. Depoimentos Reais de Alunos */}
+      <div className="mt-12">
+        <div className="text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#78A9FF]">
+            Resultados Reais
+          </p>
+          <h2 className="mt-1 font-display text-2xl font-bold text-[#F5F7FA]">
+            O Que os Homens Estão Falando:
+          </h2>
+        </div>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          {TESTIMONIALS.map((t) => (
+            <div
+              key={t.name}
+              className="flex flex-col justify-between rounded-2xl border border-[#20242C] bg-[#0A0A0A] p-5"
+            >
+              <div>
+                <div className="flex gap-1 text-amber-400">
+                  {Array.from({ length: t.stars }).map((_, i) => (
+                    <Star key={i} className="size-3.5 fill-amber-400" />
+                  ))}
+                </div>
+                <p className="mt-3 text-xs leading-relaxed text-[#A4AAB5]">
+                  "{t.comment}"
+                </p>
+              </div>
+              <div className="mt-4 border-t border-white/5 pt-3">
+                <p className="text-xs font-bold text-[#F5F7FA]">{t.name}</p>
+                <p className="text-[10px] text-[#78A9FF]">{t.role}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 7. Caixa da Oferta Irresistível com Seletor de Planos */}
       <div id="oferta" className="relative mt-14 scroll-mt-20">
-        <div className="mx-auto max-w-xl rounded-3xl border-2 border-[#146CFF] bg-gradient-to-b from-[#146CFF]/[0.15] via-[#0E1015] to-[#0A0A0A] p-6 shadow-[0_0_70px_-15px_rgb(20_108_255/0.6)] md:p-10">
+        <div className="mx-auto max-w-xl rounded-3xl border-2 border-[#146CFF] bg-gradient-to-b from-[#146CFF]/[0.18] via-[#0E1015] to-[#0A0A0A] p-6 shadow-[0_0_70px_-15px_rgb(20_108_255/0.6)] md:p-10">
           {/* Header da Oferta */}
           <div className="text-center">
             <span className="inline-block rounded-full bg-[#146CFF] px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-md">
-              Acesso Completo Liberado
+              Oferta do Diagnóstico Liberada
             </span>
+
+            {/* Toggle de Planos: Mensal vs Anual */}
+            <div className="mt-6 inline-flex rounded-xl border border-[#20242C] bg-[#050505] p-1">
+              <button
+                onClick={() => setSelectedPlan("monthly")}
+                className={`rounded-lg px-4 py-2 text-xs font-bold transition-all ${
+                  selectedPlan === "monthly"
+                    ? "bg-[#146CFF] text-white shadow"
+                    : "text-[#A4AAB5] hover:text-white"
+                }`}
+              >
+                Plano Mensal (R$ 27/mês)
+              </button>
+              <button
+                onClick={() => setSelectedPlan("annual")}
+                className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
+                  selectedPlan === "annual"
+                    ? "bg-[#146CFF] text-white shadow"
+                    : "text-[#A4AAB5] hover:text-white"
+                }`}
+              >
+                <span>Plano Anual</span>
+                <span className="rounded bg-emerald-500/30 px-1.5 py-0.2 text-[9px] text-emerald-300">
+                  Economize R$ 120
+                </span>
+              </button>
+            </div>
 
             <div className="mt-4 flex items-center justify-center gap-2 text-sm text-[#A4AAB5]">
               <span>Consultoria Individual:</span>
@@ -260,16 +444,30 @@ export function SalesStep({ answers }: SalesStepProps) {
             </div>
 
             <div className="mt-3">
-              <div className="font-display text-5xl font-extrabold tracking-tight text-[#F5F7FA] md:text-6xl">
-                R$ 27<span className="text-xl font-normal text-[#A4AAB5]">/mês</span>
-              </div>
-              <p className="mt-2 text-xs font-semibold text-[#78A9FF]">
-                Menos de R$ 0,90 por dia · Cancele quando quiser sem pegadinhas
-              </p>
+              {selectedPlan === "monthly" ? (
+                <div>
+                  <div className="font-display text-5xl font-extrabold tracking-tight text-[#F5F7FA] md:text-6xl">
+                    R$ 27<span className="text-xl font-normal text-[#A4AAB5]">/mês</span>
+                  </div>
+                  <p className="mt-2 text-xs font-semibold text-[#78A9FF]">
+                    Menos de R$ 0,90 por dia · Cancele quando quiser
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <div className="font-display text-5xl font-extrabold tracking-tight text-[#F5F7FA] md:text-6xl">
+                    12x R$ 20<span className="text-xl font-normal text-[#A4AAB5]">,40</span>
+                  </div>
+                  <p className="mt-1 text-xs text-[#A4AAB5]">ou R$ 204 à vista (R$ 17/mês)</p>
+                  <p className="mt-2 text-xs font-semibold text-emerald-400">
+                    Acesso garantido por 1 ano inteiro com 3 meses grátis
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Lista de Checkmarks */}
+          {/* Lista de Benefícios */}
           <ul className="mt-8 space-y-2.5 border-t border-[#20242C] pt-6 text-xs text-[#F5F7FA] md:text-sm">
             <li className="flex items-center gap-2.5">
               <Check className="size-4 shrink-0 text-[#78A9FF]" />
@@ -277,19 +475,19 @@ export function SalesStep({ answers }: SalesStepProps) {
             </li>
             <li className="flex items-center gap-2.5">
               <Check className="size-4 shrink-0 text-[#78A9FF]" />
-              <span><strong>Fit Check com IA</strong> para analisar seus outfits no celular</span>
+              <span><strong>Fit Check com IA</strong> para avaliar seus looks no celular</span>
             </li>
             <li className="flex items-center gap-2.5">
               <Check className="size-4 shrink-0 text-[#78A9FF]" />
-              <span>Guarda-roupa inteligente & lista de compras na ordem certa</span>
+              <span>Guarda-roupa inteligente (10 peças = 30 looks)</span>
             </li>
             <li className="flex items-center gap-2.5">
               <Check className="size-4 shrink-0 text-[#78A9FF]" />
-              <span>Todos os 8 módulos e 37 aulas do método prático</span>
+              <span>Método completo em 8 módulos e 37 aulas</span>
             </li>
             <li className="flex items-center gap-2.5">
               <Check className="size-4 shrink-0 text-[#78A9FF]" />
-              <span>3 Bônus Exclusivos inclusos (sem pagar nada a mais)</span>
+              <span>3 Bônus Exclusivos (Guia do Date, Dicionário e Plano 7 Dias)</span>
             </li>
             <li className="flex items-center gap-2.5">
               <Check className="size-4 shrink-0 text-[#78A9FF]" />
@@ -300,82 +498,55 @@ export function SalesStep({ answers }: SalesStepProps) {
           {/* Botão de Compra Pulsante (Checkout Cakto) */}
           <div className="mt-8">
             <CheckoutLink
-              href={checkoutHref(MONTHLY_CHECKOUT_URL)}
-              valor={MONTHLY_PRICE}
-              className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#146CFF] via-[#2575FC] to-[#0D57D6] py-5 text-base font-extrabold tracking-wide text-white shadow-[0_0_40px_-5px_rgb(20_108_255/0.9)] transition-all hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
+              href={checkoutHref(checkoutUrl)}
+              valor={currentPrice}
+              className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#146CFF] via-[#2575FC] to-[#0D57D6] py-5 text-base font-extrabold tracking-wide text-white shadow-[0_0_45px_-5px_rgb(20_108_255/0.9)] transition-all hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
             >
-              <span>QUERO MEU ACESSO AGORA POR R$ 27</span>
+              <span>LIBERAR MEU ACESSO AGORA</span>
               <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
             </CheckoutLink>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-center text-[11px] text-[#A4AAB5]/70">
               <div className="flex items-center gap-1">
                 <ShieldCheck className="size-3.5 text-[#78A9FF]" />
-                <span>Pagamento 100% Seguro (Cakto)</span>
+                <span>Pagamento Seguro (Cakto)</span>
               </div>
               <div className="flex items-center gap-1">
                 <Zap className="size-3.5 text-emerald-400" />
-                <span>Liberação Imediata no E-mail</span>
+                <span>Acesso Imediato</span>
               </div>
               <div className="flex items-center gap-1">
                 <Lock className="size-3.5 text-[#78A9FF]" />
-                <span>Cancele com 1 Clique</span>
+                <span>Sem Fidelidade</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 5. Quem é Raphael Pereira (Autoridade) */}
-      <div className="mt-14 rounded-3xl border border-[#20242C] bg-[#0A0A0A] p-6 md:p-8">
-        <div className="grid items-center gap-6 md:grid-cols-[160px_1fr]">
-          <div className="relative mx-auto aspect-square w-36 overflow-hidden rounded-2xl border border-[#20242C]">
-            <Image
-              src="/images/raphael/raphael.jpg"
-              alt="Raphael Pereira"
-              fill
-              sizes="160px"
-              className="object-cover"
-            />
-          </div>
-
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#78A9FF]">
-              Seu Mentor & Stylist
-            </span>
-            <h3 className="mt-1 font-display text-xl font-bold text-[#F5F7FA]">
-              Raphael Pereira
-            </h3>
-            <p className="mt-2 text-xs leading-relaxed text-[#A4AAB5] md:text-sm">
-              Stylist profissional desde 2017, vestiu os principais artistas da geração (como Matuê), trabalhou com marcas como Renner e PlayStation e destilou todo o seu conhecimento prático para colocar o olhar de um stylist de elite no bolso de qualquer homem comum.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 6. Garantia Blindada de 7 Dias */}
-      <div className="mt-8 flex flex-col items-center rounded-3xl border border-[#20242C] bg-[#0A0A0A] p-6 text-center md:flex-row md:gap-6 md:text-left">
-        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
-          <ShieldCheck className="size-8" />
+      {/* 8. Garantia Blindada de 7 Dias */}
+      <div className="mt-12 flex flex-col items-center rounded-3xl border border-[#20242C] bg-[#0A0A0A] p-6 text-center md:flex-row md:gap-6 md:text-left">
+        <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+          <ShieldCheck className="size-9" />
         </div>
         <div>
           <h3 className="font-display text-base font-bold text-[#F5F7FA] md:text-lg">
-            Garantia Incondicional de 7 Dias · Risco Zero
+            Teste por 7 Dias sem Risco · Devolução de 100%
           </h3>
           <p className="mt-1 text-xs leading-relaxed text-[#A4AAB5]">
-            Entre na plataforma, teste o Fit Check, copie as combinações e aplique no seu dia a dia. Se você não receber elogios ou achar que o MPO não mudou seu visual, basta nos avisar que devolvemos 100% do seu dinheiro. Sem perguntas e sem ressentimentos.
+            Você tem 7 dias completos para explorar a plataforma, testar as combinações no espelho e usar o Fit Check com IA. Se você não receber elogios ou achar que não valeu cada centavo, basta nos enviar uma mensagem que devolvemos 100% do seu valor imediatamente. O risco é todo meu.
           </p>
         </div>
       </div>
 
-      {/* 7. FAQs Anti-Objeção */}
+      {/* 9. FAQs Anti-Objeção */}
       <div className="mt-12">
         <div className="text-center">
           <h2 className="font-display text-2xl font-bold text-[#F5F7FA]">
             Perguntas Frequentes
           </h2>
           <p className="mt-1 text-xs text-[#A4AAB5]">
-            Tudo o que você precisa saber antes de destravar seu acesso.
+            Tire suas dúvidas antes de destravar seu acesso.
           </p>
         </div>
 
@@ -409,14 +580,14 @@ export function SalesStep({ answers }: SalesStepProps) {
         </div>
       </div>
 
-      {/* CTA Sticky / Final */}
+      {/* CTA Final */}
       <div className="mt-12 text-center">
         <CheckoutLink
-          href={checkoutHref(MONTHLY_CHECKOUT_URL)}
-          valor={MONTHLY_PRICE}
-          className="group inline-flex w-full max-w-md items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#146CFF] via-[#2575FC] to-[#0D57D6] py-5 text-base font-extrabold tracking-wide text-white shadow-[0_0_40px_-5px_rgb(20_108_255/0.9)] transition-all hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
+          href={checkoutHref(checkoutUrl)}
+          valor={currentPrice}
+          className="group inline-flex w-full max-w-md items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#146CFF] via-[#2575FC] to-[#0D57D6] py-5 text-base font-extrabold tracking-wide text-white shadow-[0_0_45px_-5px_rgb(20_108_255/0.9)] transition-all hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
         >
-          <span>QUERO MEU ACESSO POR R$ 27</span>
+          <span>QUERO DESTRAVAR MEU ACESSO</span>
           <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
         </CheckoutLink>
         <p className="mt-2 text-xs text-[#A4AAB5]/60">

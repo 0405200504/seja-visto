@@ -30,6 +30,7 @@ export type ChatMessage = {
   text?: string;
   audioDuration?: string;
   audioTranscription?: string;
+  audioSrc?: string;
   image?: string;
   imageCaption?: string;
   timestamp?: string;

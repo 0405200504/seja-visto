@@ -4,7 +4,7 @@ export const FUNNEL_QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: "name",
     title: "Antes de começar: como posso te chamar?",
-    subtitle: "Vou analisar suas respostas pessoalmente para traçar seu diagnóstico de estilo.",
+    subtitle: "Vou analisar suas respostas pessoalmente para montar seu diagnóstico de estilo.",
     type: "text",
     placeholder: "Digite seu primeiro nome...",
   },
@@ -43,7 +43,7 @@ export const FUNNEL_QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: "painPoint",
     title: "Qual dessas situações mais te irrita ou te deixa inseguro?",
-    subtitle: "Seja 100% sincero. 90% dos homens erram aqui sem perceber.",
+    subtitle: "Seja 100% sincero. Quase todo homem erra aqui sem perceber.",
     type: "single_choice",
     options: [
       {
@@ -169,10 +169,10 @@ export const STYLE_IMAGES_MAP: Record<string, string> = {
 };
 
 export const GOAL_NAMES_MAP: Record<string, string> = {
-  attraction: "aumentar seu magnetismo, atração e poder de conquista",
-  authority: "impor respeito imediato e autoridade profissional",
-  maturity: "abandonar o visual de garoto e assumir a postura de homem",
-  confidence: "ter segurança inabalável ao se vestir sem perder horas",
+  attraction: "aumentar seu poder de atração e presença em encontros",
+  authority: "impor respeito e autoridade antes de abrir a boca",
+  maturity: "abandonar o visual de garoto e assumir postura de homem",
+  confidence: "ter segurança inabalável ao se vestir sem perder tempo",
 };
 
 export const PAIN_NAMES_MAP: Record<string, string> = {
@@ -183,7 +183,8 @@ export const PAIN_NAMES_MAP: Record<string, string> = {
 };
 
 /**
- * Mensagens sequenciais do chat fake com Raphael Pereira baseadas nas respostas do usuário.
+ * Roteiro ultra-humanizado do chat com Raphael Pereira.
+ * Tom: Stylist de elite trocando ideia direta no WhatsApp, citando grandes artistas (Matuê, Teto, WIU, clipes, festivais).
  */
 export function getChatScript(name: string, answers: {
   mainGoal: string;
@@ -191,126 +192,133 @@ export function getChatScript(name: string, answers: {
   desiredStyle: string;
   bodyType: string;
 }) {
-  const cleanName = name?.trim() ? name.trim() : "meu amigo";
+  const cleanName = name?.trim() ? name.trim() : "irmão";
   const styleLabel = STYLE_NAMES_MAP[answers.desiredStyle] || "Casual Sofisticado";
   const styleImg = STYLE_IMAGES_MAP[answers.desiredStyle] || "/estilos/casual/01.jpg";
   const goalLabel = GOAL_NAMES_MAP[answers.mainGoal] || "ser mais atraente e seguro";
   const painLabel = PAIN_NAMES_MAP[answers.painPoint] || "ter roupas que não combinam";
 
   return [
+    // ETAPA 1 DO CHAT: Conexão & Diagnóstico Inicial
     {
       id: "msg_1",
       step: 1,
       sender: "raphael" as const,
-      text: `Fala ${cleanName}, beleza irmão? Sou o Raphael Pereira.`,
-      delayMs: 1200,
+      text: `Fala ${cleanName}, beleza? Raphael aqui.`,
+      delayMs: 2200,
     },
     {
       id: "msg_2",
       step: 1,
       sender: "raphael" as const,
-      text: `Acabei de receber seu diagnóstico aqui na minha tela. Parei o que estava fazendo no estúdio pra trocar essa ideia direta contigo.`,
-      delayMs: 2200,
+      text: `Tava olhando suas respostas do diagnóstico... vi que você quer focar em **${goalLabel}** e que hoje o que mais te pega é **${painLabel}**.`,
+      delayMs: 3800,
     },
     {
-      id: "msg_3",
+      id: "msg_3_audio",
       step: 1,
       sender: "raphael" as const,
-      text: `Vi que o seu foco principal é **${goalLabel}** e que você se incomoda com **${painLabel}**.`,
-      delayMs: 2500,
-    },
-    {
-      id: "msg_4_audio",
-      step: 1,
-      sender: "raphael" as const,
-      audioDuration: "0:24",
-      audioTranscription: `Irmão, escuta isso com atenção: em quase 10 anos vestindo os maiores artistas do país e milhares de caras comuns, eu percebi uma regra brutal. As pessoas decidem se te respeitam ou se sentem atração por você nos PRIMEIROS 7 SEGUNDOS. E não tem nada a ver com gastar 3 mil reais em roupa de grife. Tem a ver com proporção e intenção.`,
-      delayMs: 3000,
+      audioDuration: "0:26",
+      audioSrc: "/audios/audio-01-sete-segundos.mp3",
+      audioTranscription: `Irmão, te mandando esse áudio porque isso é muito mais comum do que você imagina. Desde 2017 eu trabalho vestindo os maiores artistas da cena — Matuê, Teto, WIU, grandes festivais e clipes —, e a primeira coisa que eu sempre falo pra eles no camarim é: as pessoas te julgam e decidem se te respeitam ou se sentem atração por você nos PRIMEIROS 7 SEGUNDOS. E isso não tem nada a ver com grife ou gastar rios de dinheiro. Tem a ver com a mensagem que o seu corte e a sua proporção tão passando.`,
+      delayMs: 4500,
       quickReplies: [
         {
           id: "qr_1",
-          text: "Faz total sentido, Rapha. Como eu resolvo isso?",
+          text: "Total sentido, Rapha. Qual é o segredo então?",
           nextStepId: "step_2",
         },
         {
           id: "qr_2",
-          text: "É exatamente isso que eu sinto quando saio!",
+          text: "Caramba, é exatamente essa sensação dos 7 segundos!",
           nextStepId: "step_2",
         },
       ],
     },
-    // Step 2
+
+    // ETAPA 2 DO CHAT: Autoridade, Prova com Artistas & Quebra de Mito
     {
-      id: "msg_5",
+      id: "msg_4",
       step: 2,
       sender: "raphael" as const,
-      text: `Olha só essa foto de bastidor de quando montei outfits pra artistas de topo:`,
-      delayMs: 1400,
+      text: `Dá uma olhada nessa foto de bastidor. Aqui eu tava montando a composição pro palco:`,
+      delayMs: 2600,
     },
     {
-      id: "msg_6_img",
+      id: "msg_5_img",
       step: 2,
       sender: "raphael" as const,
       image: "/images/raphael/artistas/artista-01.jpg",
-      imageCaption: "Raphael Pereira nos bastidores — ajustando proporções e presença de palco.",
-      delayMs: 2200,
+      imageCaption: "Raphael Pereira nos bastidores com artistas da cena — proporção, contraste e impacto visual.",
+      delayMs: 3200,
+    },
+    {
+      id: "msg_6",
+      step: 2,
+      sender: "raphael" as const,
+      text: `Eu já fiz trabalhos com grandes marcas como Renner, PlayStation e dirigi figurinos de clipes com milhões de views. E o grande erro que vejo 99% dos homens cometerem é comprar roupa cara no shopping achando que a etiqueta vai fazer o trabalho por eles.`,
+      delayMs: 4400,
     },
     {
       id: "msg_7",
       step: 2,
       sender: "raphael" as const,
-      text: `Sabe qual é a maior ilusão? Achar que pra ter presença você precisa de um guarda-roupa gigante ou de marca cara. Roupa cara qualquer um compra no shopping. Mas quando o caimento tá errado, o cara continua parecendo um garoto desajeitado.`,
-      delayMs: 3000,
+      text: `Se a camiseta sobra no ombro ou a calça embola no tornozelo, você pode estar com R$ 5.000 no corpo que ainda vai parecer desajeitado. Por outro lado, com as peças certas e o caimento calibrado, uma roupa simples de R$ 80 faz você parecer o cara mais interessante do ambiente.`,
+      delayMs: 4600,
     },
     {
-      id: "msg_8",
+      id: "msg_8_audio",
       step: 2,
       sender: "raphael" as const,
-      text: `Você escolheu a estética **${styleLabel}**. É um estilo absurdamente magnético quando montado com a regra de 3 camadas e caimento nos ombros.`,
-      delayMs: 2400,
+      audioDuration: "0:22",
+      audioSrc: "/audios/audio-02-caimento.mp3",
+      audioTranscription: `${cleanName}, você marcou a estética ${styleLabel}. É uma das minhas favoritas. Se você souber usar a regra das 3 peças-chave e o contraste certo de cores neutras, você muda da água pro vinho em menos de uma semana. Olha só essa referência que separei pro seu caso:`,
+      delayMs: 4000,
     },
     {
       id: "msg_9_style_img",
       step: 2,
       sender: "raphael" as const,
       image: styleImg,
-      imageCaption: `Referência de combinação calibrada para o seu perfil (${styleLabel}).`,
-      delayMs: 2200,
+      imageCaption: `Referência de combinação pronta para o estilo ${styleLabel}.`,
+      delayMs: 3000,
       quickReplies: [
         {
           id: "qr_3",
-          text: "Animal! Como faço pra ter esses outfits montados pra mim?",
+          text: "Muito foda! Como eu monto isso com o que já tenho?",
           nextStepId: "step_3",
         },
         {
           id: "qr_4",
-          text: "Preciso de um guia prático assim pro meu dia a dia!",
+          text: "Preciso exatamente desse passo a passo no meu dia a dia!",
           nextStepId: "step_3",
         },
       ],
     },
-    // Step 3
+
+    // ETAPA 3 DO CHAT: Apresentação da Solução & Convite
     {
       id: "msg_10_audio",
       step: 3,
       sender: "raphael" as const,
-      audioDuration: "0:21",
-      audioTranscription: `${cleanName}, pra você não depender de sorte nem perder horas na frente do espelho, eu criei o MPO: são 228 combinações prontas divididas por ocasião, mais o Fit Check com IA que avalia a foto do seu look na hora, direto no seu celular. Eu montei sua prescrição exclusiva com tudo o que você precisa pra destravar seu visual essa semana.`,
-      delayMs: 2500,
+      audioDuration: "0:25",
+      audioSrc: "/audios/audio-03-mpo.mp3",
+      audioTranscription: `Seguinte, meu mano: pra você não ter que quebrar a cabeça nem errar na hora de se vestir, eu juntei toda a minha experiência dentro do MPO. Lá dentro você tem 228 combinações prontas pra qualquer ocasião — date, trabalho, noite, churrasco —, mais o Fit Check com inteligência artificial, onde você manda a foto do seu look no espelho e recebe minha análise na hora. É basicamente ter um stylist no seu bolso 24 horas por dia.`,
+      delayMs: 4800,
     },
     {
       id: "msg_11",
       step: 3,
       sender: "raphael" as const,
-      text: `Eu condensei anos de consultoria VIP (que custa R$ 2.500) em uma plataforma prática no seu bolso por **menos de R$ 0,90 por dia**.`,
-      delayMs: 2600,
+      text: `Uma consultoria individual comigo custa R$ 2.500. Mas eu criei o MPO justamente pra qualquer cara ter acesso a isso por **R$ 27 por mês** (menos que uma cerveja ou R$ 0,90 por dia).`,
+      delayMs: 3800,
     },
     {
       id: "msg_12",
       step: 3,
       sender: "raphael" as const,
-      text: `Liberei a sua **Página de Prescrição Exclusiva** com a sua rota de 7 dias e todos os bônus. Clica no botão abaixo pra ver o seu plano completo antes que a sessão expire!`,
-      delayMs: 2000,
+      text: `Eu deixei a sua **Prescrição Exclusiva** liberada na próxima página com seu plano de 7 dias, a amostra dos outfits e os bônus. Clica no botão abaixo pra destravar antes que o acesso expire! Tamo junto!`,
+      delayMs: 3200,
       isFinalCta: true,
     },
   ];

@@ -7,15 +7,13 @@ import {
   CheckCheck,
   Play,
   Pause,
-  Volume2,
   ChevronDown,
   ChevronUp,
   ArrowRight,
   Sparkles,
-  ShieldCheck,
   Zap,
 } from "lucide-react";
-import { FunnelAnswers, ChatMessage } from "./types";
+import { FunnelAnswers } from "./types";
 import { getChatScript, STYLE_NAMES_MAP } from "@/lib/funnel-data";
 
 interface ChatStepProps {
@@ -36,7 +34,7 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const cleanName = answers.name?.trim() ? answers.name.trim() : "amigo";
+  const cleanName = answers.name?.trim() ? answers.name.trim() : "irmão";
   const script = getChatScript(cleanName, {
     mainGoal: answers.mainGoal,
     painPoint: answers.painPoint,
@@ -52,7 +50,7 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
     scrollToBottom();
   }, [messages, isTyping, activeQuickReplies, showFinalCta]);
 
-  // Carrega as mensagens do step atual
+  // Carrega as mensagens do step atual com delays realistas e humanizados
   useEffect(() => {
     const stepMessages = script.filter((m) => m.step === currentStep);
     let timeoutId: NodeJS.Timeout;
@@ -71,8 +69,10 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
         }
         setIsTyping(true);
 
+        // Tempo de digitação proporcional ao conteúdo
+        const typingTime = msg.delayMs || (msg.audioDuration ? 3500 : 2500);
         await new Promise((resolve) => {
-          timeoutId = setTimeout(resolve, msg.delayMs || 1500);
+          timeoutId = setTimeout(resolve, typingTime);
         });
 
         setIsTyping(false);
@@ -86,8 +86,9 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
           setShowFinalCta(true);
         }
 
+        // Pequena pausa natural entre mensagens consecutivas
         await new Promise((resolve) => {
-          timeoutId = setTimeout(resolve, 400);
+          timeoutId = setTimeout(resolve, 800);
         });
       }
     };
@@ -97,8 +98,9 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
     return () => clearTimeout(timeoutId);
   }, [currentStep]);
 
+  const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
+
   const handleQuickReplyClick = (reply: any) => {
-    // 1. Adiciona a resposta do usuário como mensagem no chat
     const userMsg = {
       id: `user_${Date.now()}`,
       sender: "user" as const,
@@ -108,23 +110,53 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
     setMessages((prev) => [...prev, userMsg]);
     setActiveQuickReplies([]);
 
-    // 2. Avança para o próximo step do script
     if (reply.nextStepId === "step_2") {
-      setTimeout(() => setCurrentStep(2), 600);
+      setTimeout(() => setCurrentStep(2), 900);
     } else if (reply.nextStepId === "step_3") {
-      setTimeout(() => setCurrentStep(3), 600);
+      setTimeout(() => setCurrentStep(3), 900);
     }
   };
 
-  const toggleAudio = (id: string) => {
+  const toggleAudio = (id: string, src?: string) => {
+    // Para qualquer outro áudio tocando
+    if (playingAudioId && playingAudioId !== id) {
+      const prevAudio = audioRefs.current[playingAudioId];
+      if (prevAudio) {
+        prevAudio.pause();
+        prevAudio.currentTime = 0;
+      }
+    }
+
     if (playingAudioId === id) {
+      const currAudio = audioRefs.current[id];
+      if (currAudio) currAudio.pause();
       setPlayingAudioId(null);
     } else {
       setPlayingAudioId(id);
-      // Auto pause após 6 segundos de simulação
-      setTimeout(() => {
-        setPlayingAudioId((prev) => (prev === id ? null : prev));
-      }, 6000);
+      
+      if (src) {
+        if (!audioRefs.current[id]) {
+          const audio = new Audio(src);
+          audio.onended = () => setPlayingAudioId(null);
+          audio.onerror = () => {
+            // Se o arquivo ainda não existir, faz a simulação de 7s
+            setTimeout(() => {
+              setPlayingAudioId((prev) => (prev === id ? null : prev));
+            }, 7000);
+          };
+          audioRefs.current[id] = audio;
+        }
+        audioRefs.current[id].play().catch(() => {
+          // Fallback para simulação caso o navegador bloqueie autoplay
+          setTimeout(() => {
+            setPlayingAudioId((prev) => (prev === id ? null : prev));
+          }, 7000);
+        });
+      } else {
+        setTimeout(() => {
+          setPlayingAudioId((prev) => (prev === id ? null : prev));
+        }, 7000);
+      }
     }
   };
 
@@ -169,7 +201,7 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
               </span>
             </div>
             <p className="text-[11px] font-medium text-emerald-400">
-              Online agora · Canal VIP
+              Online agora · Stylist dos Artistas
             </p>
           </div>
         </div>
@@ -191,8 +223,8 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
       >
         {/* Aviso de Início da Conversa */}
         <div className="my-2 flex justify-center">
-          <span className="rounded-full border border-[#20242C] bg-[#111318]/80 px-3 py-1 text-[10px] font-medium text-[#A4AAB5]/70">
-            🔒 Conversa criptografada com Raphael Pereira
+          <span className="rounded-full border border-[#20242C] bg-[#111318]/80 px-3.5 py-1 text-[10px] font-medium text-[#A4AAB5]/80">
+            🔒 Conversa privada · Diagnóstico de Estilo
           </span>
         </div>
 
@@ -272,8 +304,8 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
                   <div className="w-72 rounded-2xl rounded-tl-sm border border-[#146CFF]/40 bg-gradient-to-r from-[#146CFF]/10 to-[#15181F] p-3 text-[#F5F7FA] shadow-[0_0_25px_-5px_rgb(20_108_255/0.2)]">
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => toggleAudio(msg.id)}
-                        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#146CFF] text-white transition-transform hover:scale-105 active:scale-95"
+                        onClick={() => toggleAudio(msg.id, msg.audioSrc)}
+                        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#146CFF] text-white transition-transform hover:scale-105 active:scale-95 shadow-md"
                       >
                         {playingAudioId === msg.id ? (
                           <Pause className="size-5" />
@@ -315,7 +347,7 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
                       <div className="mt-2.5 border-t border-white/10 pt-2">
                         <button
                           onClick={() => toggleTranscription(msg.id)}
-                          className="flex items-center gap-1 text-[11px] font-medium text-[#A4AAB5] hover:text-white"
+                          className="flex items-center gap-1 text-[11px] font-medium text-[#A4AAB5] hover:text-white transition-colors"
                         >
                           <span>
                             {expandedTranscriptions[msg.id]
@@ -329,7 +361,7 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
                           )}
                         </button>
                         {expandedTranscriptions[msg.id] && (
-                          <p className="mt-1.5 rounded-lg bg-black/40 p-2 text-xs italic leading-relaxed text-[#F5F7FA]/90">
+                          <p className="mt-1.5 rounded-lg bg-black/50 p-2.5 text-xs italic leading-relaxed text-[#F5F7FA]/90 border border-white/5">
                             "{msg.audioTranscription}"
                           </p>
                         )}
@@ -354,8 +386,8 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
                 className="object-cover"
               />
             </div>
-            <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-sm border border-[#20242C] bg-[#15181F] px-3.5 py-2.5">
-              <span className="text-xs text-[#78A9FF] mr-1">{typingStatus}</span>
+            <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm border border-[#20242C] bg-[#15181F] px-4 py-2.5">
+              <span className="text-xs font-medium text-[#78A9FF]">{typingStatus}</span>
               <div className="flex items-center gap-1">
                 <span className="size-1.5 animate-bounce rounded-full bg-[#146CFF] [animation-delay:-0.3s]" />
                 <span className="size-1.5 animate-bounce rounded-full bg-[#146CFF] [animation-delay:-0.15s]" />
@@ -402,7 +434,7 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </button>
             <p className="mt-2 text-center text-[11px] text-[#A4AAB5]/70">
-              Acesso individual · Prescrição calculada para {cleanName}
+              Acesso individual · Prescrição calibrada para {cleanName}
             </p>
           </div>
         )}
