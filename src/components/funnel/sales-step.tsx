@@ -27,9 +27,7 @@ import {
 } from "@/lib/funnel-data";
 import {
   MONTHLY_CHECKOUT_URL,
-  ANNUAL_CHECKOUT_URL,
   MONTHLY_PRICE,
-  ANNUAL_PRICE,
   checkoutHref,
 } from "@/components/landing/checkout";
 import { CheckoutLink } from "@/components/landing/checkout-link";
@@ -95,13 +93,12 @@ const TESTIMONIALS = [
 const RECENT_SALES = [
   { name: "Matheus B.", city: "São Paulo - SP", action: "desbloqueou as 228 combinações", time: "há 2 minutos" },
   { name: "Felipe R.", city: "Curitiba - PR", action: "iniciou o Fit Check com IA", time: "há 4 minutos" },
-  { name: "Guilherme S.", city: "Rio de Janeiro - RJ", action: "assinou o Plano Anual MPO", time: "há 6 minutos" },
+  { name: "Guilherme S.", city: "Rio de Janeiro - RJ", action: "entrou no MPO", time: "há 6 minutos" },
   { name: "Arthur M.", city: "Belo Horizonte - MG", action: "desbloqueou a consultoria", time: "há 8 minutos" },
   { name: "Lucas V.", city: "Brasília - DF", action: "acabou de entrar no MPO", time: "há 1 minuto" },
 ];
 
 export function SalesStep({ answers }: SalesStepProps) {
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual">("monthly");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState(14 * 60 + 52); // 14 min 52 seg
   const [activeToast, setActiveToast] = useState<{ name: string; city: string; action: string; time: string } | null>(null);
@@ -138,10 +135,6 @@ export function SalesStep({ answers }: SalesStepProps) {
     const s = seconds % 60;
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
-
-  const checkoutUrl =
-    selectedPlan === "monthly" ? MONTHLY_CHECKOUT_URL : ANNUAL_CHECKOUT_URL;
-  const currentPrice = selectedPlan === "monthly" ? MONTHLY_PRICE : ANNUAL_PRICE;
 
   return (
     <div className="relative mx-auto w-full max-w-3xl px-4 py-8 md:py-12">
@@ -449,59 +442,18 @@ export function SalesStep({ answers }: SalesStepProps) {
               Oferta do Diagnóstico Liberada
             </span>
 
-            {/* Toggle de Planos: Mensal vs Anual */}
-            <div className="mt-6 inline-flex rounded-xl border border-[#20242C] bg-[#050505] p-1">
-              <button
-                onClick={() => setSelectedPlan("monthly")}
-                className={`rounded-lg px-4 py-2 text-xs font-bold transition-all ${
-                  selectedPlan === "monthly"
-                    ? "bg-[#146CFF] text-white shadow"
-                    : "text-[#A4AAB5] hover:text-white"
-                }`}
-              >
-                Plano Mensal (R$ 27/mês)
-              </button>
-              <button
-                onClick={() => setSelectedPlan("annual")}
-                className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
-                  selectedPlan === "annual"
-                    ? "bg-[#146CFF] text-white shadow"
-                    : "text-[#A4AAB5] hover:text-white"
-                }`}
-              >
-                <span>Plano Anual</span>
-                <span className="rounded bg-emerald-500/30 px-1.5 py-0.2 text-[9px] text-emerald-300">
-                  Economize R$ 120
-                </span>
-              </button>
-            </div>
-
             <div className="mt-4 flex items-center justify-center gap-2 text-sm text-[#A4AAB5]">
               <span>Consultoria Individual:</span>
               <span className="line-through">R$ 2.500,00</span>
             </div>
 
             <div className="mt-3">
-              {selectedPlan === "monthly" ? (
-                <div>
-                  <div className="font-display text-5xl font-extrabold tracking-tight text-[#F5F7FA] md:text-6xl">
-                    R$ 27<span className="text-xl font-normal text-[#A4AAB5]">/mês</span>
-                  </div>
-                  <p className="mt-2 text-xs font-semibold text-[#78A9FF]">
-                    Menos de R$ 0,90 por dia · Cancele quando quiser
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <div className="font-display text-5xl font-extrabold tracking-tight text-[#F5F7FA] md:text-6xl">
-                    12x R$ 20<span className="text-xl font-normal text-[#A4AAB5]">,40</span>
-                  </div>
-                  <p className="mt-1 text-xs text-[#A4AAB5]">ou R$ 204 à vista (R$ 17/mês)</p>
-                  <p className="mt-2 text-xs font-semibold text-emerald-400">
-                    Acesso garantido por 1 ano inteiro com 3 meses grátis
-                  </p>
-                </div>
-              )}
+              <div className="font-display text-5xl font-extrabold tracking-tight text-[#F5F7FA] md:text-6xl">
+                R$ 27<span className="text-xl font-normal text-[#A4AAB5]">/mês</span>
+              </div>
+              <p className="mt-2 text-xs font-semibold text-[#78A9FF]">
+                Menos de R$ 0,90 por dia · Cancele quando quiser sem pegadinhas
+              </p>
             </div>
           </div>
 
@@ -536,11 +488,11 @@ export function SalesStep({ answers }: SalesStepProps) {
           {/* Botão de Compra Pulsante (Checkout Cakto) */}
           <div className="mt-8">
             <CheckoutLink
-              href={checkoutHref(checkoutUrl)}
-              valor={currentPrice}
+              href={checkoutHref(MONTHLY_CHECKOUT_URL)}
+              valor={MONTHLY_PRICE}
               className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#146CFF] via-[#2575FC] to-[#0D57D6] py-5 text-base font-extrabold tracking-wide text-white shadow-[0_0_45px_-5px_rgb(20_108_255/0.9)] transition-all hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
             >
-              <span>LIBERAR MEU ACESSO AGORA</span>
+              <span>LIBERAR MEU ACESSO POR R$ 27</span>
               <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
             </CheckoutLink>
 
@@ -621,11 +573,11 @@ export function SalesStep({ answers }: SalesStepProps) {
       {/* CTA Final */}
       <div className="mt-12 text-center">
         <CheckoutLink
-          href={checkoutHref(checkoutUrl)}
-          valor={currentPrice}
+          href={checkoutHref(MONTHLY_CHECKOUT_URL)}
+          valor={MONTHLY_PRICE}
           className="group inline-flex w-full max-w-md items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#146CFF] via-[#2575FC] to-[#0D57D6] py-5 text-base font-extrabold tracking-wide text-white shadow-[0_0_45px_-5px_rgb(20_108_255/0.9)] transition-all hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
         >
-          <span>QUERO DESTRAVAR MEU ACESSO</span>
+          <span>QUERO DESTRAVAR MEU ACESSO POR R$ 27</span>
           <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
         </CheckoutLink>
         <p className="mt-2 text-xs text-[#A4AAB5]/60">
