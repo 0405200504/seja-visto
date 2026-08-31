@@ -81,8 +81,8 @@ export function AnalyzingStep({ answers, onComplete }: AnalyzingStepProps) {
 
         {/* Badge VIP */}
         <div className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-[#146CFF]/50 bg-[#050505] px-3 py-0.5 text-[11px] font-bold text-[#78A9FF] shadow-md">
-          <Sparkles className="size-3 text-[#146CFF]" />
-          <span>Stylist IA</span>
+          <Zap className="size-3 text-[#146CFF]" />
+          <span>Raphael Pereira · Stylist</span>
         </div>
       </div>
 

@@ -46,6 +46,7 @@ function AudioBubblePlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState<1 | 1.5 | 2>(1);
   const [showTranscription, setShowTranscription] = useState(false);
 
   // Sincroniza se outro áudio começou a tocar na conversa
@@ -57,6 +58,15 @@ function AudioBubblePlayer({
       setIsPlaying(false);
     }
   }, [isPlayingGlobal, isPlaying]);
+
+  const toggleSpeed = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextSpeed: 1 | 1.5 | 2 = playbackSpeed === 1 ? 1.5 : playbackSpeed === 1.5 ? 2 : 1;
+    setPlaybackSpeed(nextSpeed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = nextSpeed;
+    }
+  };
 
   const togglePlay = () => {
     const el = audioRef.current;
@@ -70,6 +80,7 @@ function AudioBubblePlayer({
       onPlay();
       el.muted = false;
       el.volume = 1.0;
+      el.playbackRate = playbackSpeed;
       if (el.ended || el.currentTime >= (el.duration || 100)) {
         el.currentTime = 0;
       }
@@ -84,6 +95,7 @@ function AudioBubblePlayer({
             console.warn("Erro ao reproduzir com base64, tentando fallback:", err);
             if (audioSources?.url && el.src !== audioSources.url) {
               el.src = audioSources.url;
+              el.playbackRate = playbackSpeed;
               el.load();
               el.play()
                 .then(() => setIsPlaying(true))
@@ -91,6 +103,7 @@ function AudioBubblePlayer({
                   console.warn("Fallback 1 falhou, tentando WAV:", e2);
                   if (audioSources?.urlWav) {
                     el.src = audioSources.urlWav;
+                    el.playbackRate = playbackSpeed;
                     el.load();
                     el.play().then(() => setIsPlaying(true));
                   }
@@ -184,9 +197,20 @@ function AudioBubblePlayer({
             )}
           </div>
           <div className="mt-1 flex items-center justify-between text-[10px] text-[#78A9FF]">
-            <span className="font-semibold">
-              {isPlaying ? "Reproduzindo áudio..." : "Mensagem de voz"}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold">
+                {isPlaying ? "Reproduzindo..." : "Mensagem de voz"}
+              </span>
+              {/* Botão de Velocidade 1x / 1.5x / 2x */}
+              <button
+                type="button"
+                onClick={toggleSpeed}
+                className="rounded-md border border-[#146CFF]/40 bg-[#146CFF]/20 px-1.5 py-0.5 text-[9px] font-bold text-[#78A9FF] hover:bg-[#146CFF]/40 hover:text-white transition-all active:scale-90"
+                title="Acelerar áudio"
+              >
+                {playbackSpeed}x
+              </button>
+            </div>
             <span>
               {isPlaying
                 ? formatSecs(currentTime)
