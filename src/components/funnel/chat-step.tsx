@@ -21,6 +21,184 @@ interface ChatStepProps {
   onComplete: () => void;
 }
 
+function AudioBubblePlayer({
+  id,
+  audioDuration,
+  audioTranscription,
+  audioSrc,
+  isPlayingGlobal,
+  onPlay,
+  onPause,
+}: {
+  id: string;
+  audioDuration?: string;
+  audioTranscription?: string;
+  audioSrc?: string;
+  isPlayingGlobal: boolean;
+  onPlay: () => void;
+  onPause: () => void;
+}) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [showTranscription, setShowTranscription] = useState(false);
+
+  // Sincroniza se outro áudio começou a tocar na conversa
+  useEffect(() => {
+    if (!isPlayingGlobal && isPlaying) {
+      audioRef.current?.pause();
+      setIsPlaying(false);
+    }
+  }, [isPlayingGlobal, isPlaying]);
+
+  const togglePlay = () => {
+    const el = audioRef.current;
+    if (!el) return;
+
+    if (isPlaying) {
+      el.pause();
+      setIsPlaying(false);
+      onPause();
+    } else {
+      onPlay();
+      if (el.ended || el.currentTime >= el.duration) {
+        el.currentTime = 0;
+      }
+      el.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.warn("Erro ao tocar áudio nativo:", err);
+          setIsPlaying(true);
+          setTimeout(() => setIsPlaying(false), 7000);
+        });
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current && audioRef.current.duration) {
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+    onPause();
+  };
+
+  const formatSecs = (sec: number) => {
+    if (!sec || isNaN(sec)) return audioDuration || "0:25";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
+  };
+
+  // Base do nome do arquivo
+  const baseName = audioSrc?.replace(/\.[^/.]+$/, "") || "/audios/audio-1";
+
+  return (
+    <div className="w-72 rounded-2xl rounded-tl-sm border border-[#146CFF]/40 bg-gradient-to-r from-[#146CFF]/10 to-[#15181F] p-3 text-[#F5F7FA] shadow-[0_0_25px_-5px_rgb(20_108_255/0.2)]">
+      {/* Elemento nativo com múltiplas fontes universais */}
+      <audio
+        ref={audioRef}
+        preload="auto"
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={handleEnded}
+        onPause={() => setIsPlaying(false)}
+        onPlay={() => setIsPlaying(true)}
+      >
+        <source src={`${baseName}.m4a`} type="audio/mp4" />
+        <source src={`${baseName}.mp4`} type="audio/mp4" />
+        <source src={`${baseName}.ogg`} type="audio/ogg" />
+      </audio>
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={togglePlay}
+          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#146CFF] text-white transition-transform hover:scale-105 active:scale-95 shadow-md"
+        >
+          {isPlaying ? (
+            <Pause className="size-5" />
+          ) : (
+            <Play className="ml-0.5 size-5" />
+          )}
+        </button>
+
+        {/* Waveform animada sincronizada com o progresso real */}
+        <div className="flex-1">
+          <div className="flex items-center gap-0.5 h-6">
+            {[35, 60, 40, 85, 50, 95, 70, 45, 80, 55, 30, 90, 65, 40, 75, 50, 85, 30].map(
+              (height, idx) => {
+                const progressRatio = duration > 0 ? currentTime / duration : 0;
+                const isPlayed = idx / 18 <= progressRatio;
+                return (
+                  <div
+                    key={idx}
+                    className={`w-1 rounded-full transition-all duration-150 ${
+                      isPlaying
+                        ? isPlayed
+                          ? "bg-[#78A9FF] animate-pulse"
+                          : "bg-[#146CFF]/40"
+                        : "bg-[#A4AAB5]/40"
+                    }`}
+                    style={{
+                      height: `${isPlaying ? Math.max(25, (height * (idx % 3 + 1)) % 100) : height}%`,
+                    }}
+                  />
+                );
+              }
+            )}
+          </div>
+          <div className="mt-1 flex items-center justify-between text-[10px] text-[#78A9FF]">
+            <span className="font-semibold">
+              {isPlaying ? "Reproduzindo áudio..." : "Mensagem de voz"}
+            </span>
+            <span>
+              {isPlaying ? formatSecs(currentTime) : formatSecs(duration || 25)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Botão de Transcrição */}
+      {audioTranscription && (
+        <div className="mt-2.5 border-t border-white/10 pt-2">
+          <button
+            type="button"
+            onClick={() => setShowTranscription(!showTranscription)}
+            className="flex items-center gap-1 text-[11px] font-medium text-[#A4AAB5] hover:text-white transition-colors"
+          >
+            <span>
+              {showTranscription
+                ? "Ocultar texto do áudio"
+                : "Ler transcrição do áudio"}
+            </span>
+            {showTranscription ? (
+              <ChevronUp className="size-3" />
+            ) : (
+              <ChevronDown className="size-3" />
+            )}
+          </button>
+          {showTranscription && (
+            <p className="mt-1.5 rounded-lg bg-black/50 p-2.5 text-xs italic leading-relaxed text-[#F5F7FA]/90 border border-white/5">
+              "{audioTranscription}"
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ChatStep({ answers, onComplete }: ChatStepProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -28,7 +206,6 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [activeQuickReplies, setActiveQuickReplies] = useState<any[]>([]);
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
-  const [expandedTranscriptions, setExpandedTranscriptions] = useState<Record<string, boolean>>({});
   const [showFinalCta, setShowFinalCta] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -98,18 +275,6 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
     return () => clearTimeout(timeoutId);
   }, [currentStep]);
 
-  const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
-
-  // Limpa qualquer áudio ao desmontar
-  useEffect(() => {
-    return () => {
-      Object.values(audioRefs.current).forEach((audio) => {
-        audio.pause();
-        audio.currentTime = 0;
-      });
-    };
-  }, []);
-
   const handleQuickReplyClick = (reply: any) => {
     const userMsg = {
       id: `user_${Date.now()}`,
@@ -125,65 +290,6 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
     } else if (reply.nextStepId === "step_3") {
       setTimeout(() => setCurrentStep(3), 900);
     }
-  };
-
-  const toggleAudio = (id: string, src?: string) => {
-    // 1. Pausa outros áudios ativos
-    if (playingAudioId && playingAudioId !== id) {
-      const prevAudio = audioRefs.current[playingAudioId];
-      if (prevAudio) {
-        prevAudio.pause();
-        prevAudio.currentTime = 0;
-      }
-    }
-
-    // 2. Se já estiver tocando o atual, pausa
-    if (playingAudioId === id) {
-      const currAudio = audioRefs.current[id];
-      if (currAudio) {
-        currAudio.pause();
-      }
-      setPlayingAudioId(null);
-      return;
-    }
-
-    // 3. Inicia o áudio
-    if (src) {
-      let audio = audioRefs.current[id];
-      if (!audio) {
-        audio = new Audio(src);
-        audio.preload = "auto";
-        audio.onended = () => setPlayingAudioId(null);
-        audio.onpause = () => {
-          setPlayingAudioId((prev) => (prev === id ? null : prev));
-        };
-        audio.onerror = (e) => {
-          console.warn("Erro ao carregar áudio:", src, e);
-          // Simulação caso o navegador falhe
-          setTimeout(() => setPlayingAudioId((prev) => (prev === id ? null : prev)), 6000);
-        };
-        audioRefs.current[id] = audio;
-      }
-
-      if (audio.ended || audio.currentTime >= audio.duration) {
-        audio.currentTime = 0;
-      }
-
-      setPlayingAudioId(id);
-      audio.play().catch((err) => {
-        console.warn("Falha ao dar play:", err);
-      });
-    } else {
-      setPlayingAudioId(id);
-      setTimeout(() => setPlayingAudioId((prev) => (prev === id ? null : prev)), 6000);
-    }
-  };
-
-  const toggleTranscription = (id: string) => {
-    setExpandedTranscriptions((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
   };
 
   function getFormattedTime() {
@@ -318,75 +424,19 @@ export function ChatStep({ answers, onComplete }: ChatStepProps) {
                   </div>
                 )}
 
-                {/* 3. Mensagem de Áudio Interativo */}
+                {/* 3. Mensagem de Áudio Interativo com Player Nativo */}
                 {msg.audioDuration && (
-                  <div className="w-72 rounded-2xl rounded-tl-sm border border-[#146CFF]/40 bg-gradient-to-r from-[#146CFF]/10 to-[#15181F] p-3 text-[#F5F7FA] shadow-[0_0_25px_-5px_rgb(20_108_255/0.2)]">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => toggleAudio(msg.id, msg.audioSrc)}
-                        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#146CFF] text-white transition-transform hover:scale-105 active:scale-95 shadow-md"
-                      >
-                        {playingAudioId === msg.id ? (
-                          <Pause className="size-5" />
-                        ) : (
-                          <Play className="ml-0.5 size-5" />
-                        )}
-                      </button>
-
-                      {/* Waveform animada */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-0.5 h-6">
-                          {[35, 60, 40, 85, 50, 95, 70, 45, 80, 55, 30, 90, 65, 40, 75, 50, 85, 30].map(
-                            (height, idx) => (
-                              <div
-                                key={idx}
-                                className={`w-1 rounded-full transition-all duration-200 ${
-                                  playingAudioId === msg.id
-                                    ? "bg-[#78A9FF] animate-pulse"
-                                    : "bg-[#A4AAB5]/40"
-                                }`}
-                                style={{
-                                  height: `${playingAudioId === msg.id ? Math.max(20, (height * (idx % 3 + 1)) % 100) : height}%`,
-                                }}
-                              />
-                            )
-                          )}
-                        </div>
-                        <div className="mt-1 flex items-center justify-between text-[10px] text-[#78A9FF]">
-                          <span className="font-semibold">
-                            {playingAudioId === msg.id ? "Reproduzindo áudio..." : "Mensagem de voz"}
-                          </span>
-                          <span>{msg.audioDuration}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Botão de Transcrição */}
-                    {msg.audioTranscription && (
-                      <div className="mt-2.5 border-t border-white/10 pt-2">
-                        <button
-                          onClick={() => toggleTranscription(msg.id)}
-                          className="flex items-center gap-1 text-[11px] font-medium text-[#A4AAB5] hover:text-white transition-colors"
-                        >
-                          <span>
-                            {expandedTranscriptions[msg.id]
-                              ? "Ocultar texto do áudio"
-                              : "Ler transcrição do áudio"}
-                          </span>
-                          {expandedTranscriptions[msg.id] ? (
-                            <ChevronUp className="size-3" />
-                          ) : (
-                            <ChevronDown className="size-3" />
-                          )}
-                        </button>
-                        {expandedTranscriptions[msg.id] && (
-                          <p className="mt-1.5 rounded-lg bg-black/50 p-2.5 text-xs italic leading-relaxed text-[#F5F7FA]/90 border border-white/5">
-                            "{msg.audioTranscription}"
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <AudioBubblePlayer
+                    id={msg.id}
+                    audioDuration={msg.audioDuration}
+                    audioTranscription={msg.audioTranscription}
+                    audioSrc={msg.audioSrc}
+                    isPlayingGlobal={playingAudioId === msg.id}
+                    onPlay={() => setPlayingAudioId(msg.id)}
+                    onPause={() => {
+                      if (playingAudioId === msg.id) setPlayingAudioId(null);
+                    }}
+                  />
                 )}
               </div>
             </div>
