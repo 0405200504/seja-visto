@@ -167,7 +167,7 @@ export function SalesStep({ answers }: SalesStepProps) {
         </div>
 
         <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-[#F5F7FA] md:text-5xl md:leading-[1.15]">
-          A fórmula exata para <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">{cleanName}</span> dominar o estilo{" "}
+          A fórmula exata para <span className="bg-gradient-to-r from-[#146CFF] to-[#78A9FF] bg-clip-text text-transparent">você</span> dominar o estilo{" "}
           <span className="text-white">{styleLabel}</span>.
         </h1>
 
